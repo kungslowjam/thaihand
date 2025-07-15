@@ -237,8 +237,8 @@ export default function CreateRequestPage() {
                         accept="image/*"
                         className="hidden"
                         onChange={handleImageFileChange}
-                      />
-                    </div>
+                />
+              </div>
                     {errors.imageFile && <div className="text-red-500 text-sm mt-1">{errors.imageFile}</div>}
                     {imagePreview && (
                       <div className="relative mt-3 w-32 h-32 rounded-xl overflow-hidden border bg-gray-50 flex items-center justify-center">
@@ -257,16 +257,16 @@ export default function CreateRequestPage() {
                         <MapPin className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-300" />
                       </div>
                       {errors.fromLocation && <div className="text-red-500 text-sm mt-1">{errors.fromLocation}</div>}
-                    </div>
+              </div>
                     <div className="flex-1">
                       <Label htmlFor="toLocation">ประเทศปลายทาง *</Label>
                       <div className="relative mt-1">
                         <Input id="toLocation" placeholder="ประเทศปลายทาง" value={form.toLocation} onChange={e => setForm(f => ({ ...f, toLocation: e.target.value }))} className={errors.toLocation ? 'border-red-400' : ''} />
                         <MapPin className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-300" />
-                      </div>
+                </div>
                       {errors.toLocation && <div className="text-red-500 text-sm mt-1">{errors.toLocation}</div>}
-                    </div>
-                  </div>
+                </div>
+              </div>
                   <div className="flex gap-4">
                     <div className="flex-1">
                       <Label htmlFor="deadline">วันที่ต้องการรับของ *</Label>
@@ -277,7 +277,7 @@ export default function CreateRequestPage() {
                       {errors.deadline && <div className="text-red-500 text-sm mt-1">{errors.deadline}</div>}
                     </div>
                     <div className="flex-1">
-                      <Label htmlFor="budget">งบประมาณ (บาท) *</Label>
+                  <Label htmlFor="budget">งบประมาณ (บาท) *</Label>
                       <div className="relative mt-1">
                         <Input id="budget" type="number" placeholder="เช่น 1000" value={form.budget} onChange={e => setForm(f => ({ ...f, budget: e.target.value }))} className={errors.budget ? 'border-red-400' : ''} />
                         <DollarSign className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-300" />
@@ -359,15 +359,15 @@ export default function CreateRequestPage() {
                     <Label>จุดนัดรับ *</Label>
                     <Input placeholder="เช่น CBD, Melbourne Central" value={offerForm.pickupPlace} onChange={e => setOfferForm(f => ({ ...f, pickupPlace: e.target.value }))} className={offerErrors.pickupPlace ? 'border-red-400' : ''} />
                     {offerErrors.pickupPlace && <div className="text-red-500 text-sm mt-1">{offerErrors.pickupPlace}</div>}
-                  </div>
+                </div>
                   <div>
                     <Label>ประเภทของที่รับ</Label>
                     <div className="flex flex-wrap gap-2 mt-1">
                       {itemTypeOptions.map(type => (
                         <Button key={type} type="button" variant={offerForm.itemTypes.includes(type) ? 'default' : 'outline'} size="sm" className="rounded-full" onClick={() => toggleItemType(type)}>{type}</Button>
                       ))}
-                    </div>
-                  </div>
+                </div>
+              </div>
                   <div>
                     <Label>ข้อจำกัด/หมายเหตุ</Label>
                     <div className="flex flex-wrap gap-2 mt-1">
@@ -395,8 +395,8 @@ export default function CreateRequestPage() {
                         accept="image/*"
                         className="hidden"
                         onChange={handleOfferImageFileChange}
-                      />
-                    </div>
+                />
+              </div>
                     {offerErrors.imageFile && <div className="text-red-500 text-sm mt-1">{offerErrors.imageFile}</div>}
                     {offerImagePreview && (
                       <div className="relative mt-3 w-32 h-32 rounded-xl overflow-hidden border bg-gray-50 flex items-center justify-center">
@@ -406,15 +406,15 @@ export default function CreateRequestPage() {
                         </Button>
                       </div>
                     )}
-                  </div>
+              </div>
                   <div className="flex items-center gap-2">
                     <input type="checkbox" id="urgent-offer" checked={offerForm.urgent} onChange={e => setOfferForm(f => ({ ...f, urgent: e.target.checked }))} className="accent-red-500 h-4 w-4" />
                     <Label htmlFor="urgent-offer" className="text-red-500">ต้องการด่วน</Label>
-                  </div>
+              </div>
                   <Button type="submit" className="w-full bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl flex items-center justify-center gap-2" disabled={offerSubmitting}>
                     {offerSubmitting && <Loader2 className="animate-spin h-5 w-5" />} ส่งข้อเสนอ
-                  </Button>
-                </form>
+              </Button>
+            </form>
               </>
             )}
           </CardContent>

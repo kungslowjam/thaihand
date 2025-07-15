@@ -3,7 +3,7 @@
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { ThaiHandLogo } from "@/components/thai-hand-logo"
-import { Plus, User, LogOut } from "lucide-react"
+import { Plus, User, LogOut, ShoppingBag } from "lucide-react"
 
 interface SimpleNavigationProps {
   user?: {
@@ -15,53 +15,54 @@ interface SimpleNavigationProps {
 
 export function SimpleNavigation({ user, onLogout }: SimpleNavigationProps) {
   return (
-    <header className="bg-white shadow-sm border-b">
-      <div className="container mx-auto px-4 py-4">
-        <div className="flex items-center justify-between">
+    <header className="backdrop-blur-xl bg-white/60 border-b border-white/40 shadow-lg sticky top-0 z-40 transition-all w-full">
+      <div className="w-full h-20 flex items-center px-0">
+        <div className="flex items-center justify-between w-full max-w-7xl mx-auto gap-4 px-4">
           {/* Logo */}
-          <Link href="/" className="flex items-center space-x-2">
-            <ThaiHandLogo className="h-8 w-8" />
-            <div>
-              <h1 className="text-xl font-bold text-gray-900">ฝากซื้อไทย</h1>
-              <p className="text-xs text-gray-500">ฝากซื้อข้ามประเทศ</p>
+          <Link href="/" className="flex items-center gap-3 group">
+            <ThaiHandLogo className="h-9 w-9 drop-shadow" />
+            <div className="hidden sm:block">
+              <h1 className="text-2xl font-extrabold bg-gradient-to-r from-blue-500 via-indigo-500 to-pink-400 bg-clip-text text-transparent tracking-tight group-hover:scale-105 transition">ฝากซื้อไทย</h1>
+              <p className="text-xs text-gray-400 font-mono">ฝากซื้อข้ามประเทศ</p>
             </div>
           </Link>
-
           {/* Navigation */}
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center gap-2 sm:gap-4">
             <Link href="/marketplace">
-              <Button variant="ghost">ดูรายการ</Button>
+              <Button variant="ghost" className="rounded-full flex items-center gap-2 px-4 py-2 font-semibold hover:bg-blue-50/60 transition">
+                <ShoppingBag className="h-5 w-5" />
+                <span className="hidden sm:inline">ดูรายการ</span>
+              </Button>
             </Link>
-
             {user ? (
               <>
                 <Link href="/create-request">
-                  <Button className="flex items-center space-x-2">
-                    <Plus className="h-4 w-4" />
-                    <span>สร้างรายการ</span>
+                  <Button className="rounded-full flex items-center gap-2 px-4 py-2 font-semibold bg-gradient-to-r from-blue-400 via-indigo-400 to-pink-400 text-white shadow hover:scale-105 hover:shadow-xl transition">
+                    <Plus className="h-5 w-5" />
+                    <span className="hidden sm:inline">สร้างรายการ</span>
                   </Button>
                 </Link>
                 <Link href="/dashboard">
-                  <Button variant="ghost" className="flex items-center space-x-2">
+                  <Button variant="ghost" className="rounded-full flex items-center gap-2 px-4 py-2 font-semibold hover:bg-indigo-50/60 transition">
                     {user.avatar ? (
                       <img
                         src={user.avatar}
                         alt={user.name}
-                        className="h-6 w-6 rounded-full object-cover"
+                        className="h-7 w-7 rounded-full object-cover border-2 border-white shadow"
                       />
                     ) : (
-                      <User className="h-4 w-4" />
+                      <User className="h-5 w-5" />
                     )}
-                    <span>{user.name}</span>
+                    <span className="hidden sm:inline">{user.name}</span>
                   </Button>
                 </Link>
-                <Button variant="ghost" onClick={onLogout}>
-                  <LogOut className="h-4 w-4" />
+                <Button variant="ghost" onClick={onLogout} className="rounded-full hover:bg-red-50 transition p-2">
+                  <LogOut className="h-5 w-5 text-gray-400 group-hover:text-red-500 transition" />
                 </Button>
               </>
             ) : (
               <Link href="/login">
-                <Button>เข้าสู่ระบบ</Button>
+                <Button className="rounded-full px-6 py-2 font-semibold bg-gradient-to-r from-blue-400 via-indigo-400 to-pink-400 text-white shadow hover:scale-105 hover:shadow-xl transition">เข้าสู่ระบบ</Button>
               </Link>
             )}
           </div>
