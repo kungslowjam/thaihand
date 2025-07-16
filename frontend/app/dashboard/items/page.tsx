@@ -5,16 +5,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { useSession, signOut } from "next-auth/react";
-import { SimpleNavigation } from "@/components/simple-navigation";
-
-const mockRequests = [
-  { id: 1, title: "ขนมญี่ปุ่น", status: "รอรับหิ้ว", date: "2024-07-10" },
-  { id: 2, title: "วิตามินออสเตรเลีย", status: "สำเร็จ", date: "2024-07-01" },
-];
-const mockOffers = [
-  { id: 1, route: "Melbourne → BKK", status: "เปิดรับฝาก", date: "2024-07-15" },
-  { id: 2, route: "BKK → Tokyo", status: "ปิดรับฝาก", date: "2024-06-20" },
-];
+import { mockRequests, mockOffers } from "@/lib/mockData";
 
 export default function MyItemsPage() {
   const { data: session } = useSession();
@@ -52,7 +43,6 @@ export default function MyItemsPage() {
 
   return (
     <>
-      <SimpleNavigation user={session?.user ? { name: session.user.name ?? "", avatar: session.user.image ?? undefined } : undefined} onLogout={() => signOut()} />
       <div className="min-h-screen bg-gradient-to-br from-blue-100 via-indigo-100 to-white py-10 px-2">
         <div className="max-w-2xl mx-auto">
           <h1 className="text-2xl font-extrabold text-gray-900 mb-8 text-center tracking-tight">รายการของฉัน</h1>
@@ -93,7 +83,7 @@ export default function MyItemsPage() {
                 {pagedRequests.map(req => (
                   <div key={req.id} className="bg-white/90 rounded-xl shadow flex flex-col md:flex-row md:items-center md:justify-between gap-3 border border-white/30 hover:shadow-xl hover:scale-[1.01] transition-all duration-200 animate-fade-in px-4 py-3">
                     <div className="flex items-center gap-3 min-w-0">
-                      <ShoppingBag className="h-5 w-5 text-blue-300 shrink-0" />
+                      <img src={req.image} alt={req.title} className="h-14 w-14 rounded-lg object-cover border border-gray-200 bg-white shadow-sm" />
                       <div className="min-w-0">
                         <div className="font-semibold text-gray-900 truncate">{req.title}</div>
                         <div className="text-xs text-gray-500 truncate flex items-center gap-2">
@@ -127,7 +117,7 @@ export default function MyItemsPage() {
                 {pagedOffers.map(offer => (
                   <div key={offer.id} className="bg-white/90 rounded-xl shadow flex flex-col md:flex-row md:items-center md:justify-between gap-3 border border-white/30 hover:shadow-xl hover:scale-[1.01] transition-all duration-200 animate-fade-in px-4 py-3">
                     <div className="flex items-center gap-3 min-w-0">
-                      <CheckCircle className="h-5 w-5 text-green-300 shrink-0" />
+                      <img src={offer.image} alt={offer.route} className="h-14 w-14 rounded-lg object-cover border border-gray-200 bg-white shadow-sm" />
                       <div className="min-w-0">
                         <div className="font-semibold text-gray-900 truncate">{offer.route}</div>
                         <div className="text-xs text-gray-500 truncate flex items-center gap-2">

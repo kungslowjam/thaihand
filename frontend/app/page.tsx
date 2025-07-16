@@ -4,16 +4,30 @@ import { ArrowRight, Globe, Shield, Users } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import Link from "next/link"
-import { SimpleNavigation } from "@/components/simple-navigation"
 import { useSession } from "next-auth/react"
 import { signOut } from "next-auth/react"
+import { useUserStore } from '@/store/userStore';
+import { useNotificationStore } from '@/store/notificationStore';
+import { useEffect } from "react";
 
 export default function HomePage() {
   const { data: session } = useSession();
+  const setUser = useUserStore((state) => state.setUser);
+  const user = useUserStore((state) => state.user);
+
+  // sync session กับ userStore
+  useEffect(() => {
+    if (session?.user) {
+      setUser({
+        name: session.user.name ?? '',
+        email: session.user.email ?? '',
+        image: session.user.image ?? undefined,
+      });
+    }
+  }, [session, setUser]);
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
-      <SimpleNavigation user={session?.user ? { name: session.user.name ?? "", avatar: session.user.image ?? undefined } : undefined} onLogout={() => signOut()} />
-
       {/* Hero Section */}
       <section className="py-20">
         <div className="container mx-auto px-4 text-center">
@@ -70,10 +84,8 @@ export default function HomePage() {
       </section>
 
       {/* Footer */}
-      <footer className="bg-gray-900 text-white py-8">
-        <div className="container mx-auto px-4 text-center">
-          <p>&copy; 2024 ฝากซื้อไทย. สงวนลิขสิทธิ์.</p>
-        </div>
+      <footer className="w-full bg-gray-900 text-white py-8 text-center">
+        <p>&copy; 2024 ฝากซื้อไทย. สงวนลิขสิทธิ์.</p>
       </footer>
     </div>
   )

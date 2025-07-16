@@ -1,29 +1,35 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { LogOut, ShoppingBag, CheckCircle, Star, KeyRound, Settings, Clock, Edit2, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { SimpleNavigation } from "@/components/simple-navigation";
 import { useSession, signOut } from "next-auth/react";
 import Link from "next/link";
 import Image from "next/image";
-
-const mockRequests = [
-  { id: 1, title: "ขนมญี่ปุ่น", status: "รอรับหิ้ว", date: "2024-07-10" },
-  { id: 2, title: "วิตามินออสเตรเลีย", status: "สำเร็จ", date: "2024-07-01" },
-];
-const mockOffers = [
-  { id: 1, route: "Melbourne → BKK", status: "เปิดรับฝาก", date: "2024-07-15" },
-  { id: 2, route: "BKK → Tokyo", status: "ปิดรับฝาก", date: "2024-06-20" },
-];
+import { useUserStore } from '@/store/userStore';
+import { useNotificationStore } from '@/store/notificationStore';
+import { mockRequests, mockOffers } from "@/lib/mockData";
 
 export default function DashboardPage() {
   const { data: session } = useSession();
-  console.log("session", session); // debug ดูค่า session
+  const setUser = useUserStore((state) => state.setUser);
+  const user = useUserStore((state) => state.user);
   const [tab, setTab] = useState<"requests" | "offers" | "activity">("requests");
   const [showDelete, setShowDelete] = useState<{ type: "request" | "offer"; id: number } | null>(null);
   const [deleting, setDeleting] = useState(false);
 
+  // sync session กับ userStore
+  useEffect(() => {
+    if (session?.user) {
+      setUser({
+        name: session.user.name ?? '',
+        email: session.user.email ?? '',
+        image: session.user.image ?? undefined,
+      });
+    }
+  }, [session, setUser]);
+
+  console.log("session", session); // debug ดูค่า session
   // mock delete handler
   function handleDelete() {
     setDeleting(true);
@@ -36,10 +42,6 @@ export default function DashboardPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-100 via-indigo-100 to-white">
-      <SimpleNavigation
-        user={session?.user ? { name: session.user.name ?? "", avatar: session.user.image ?? undefined } : undefined}
-        onLogout={() => signOut()}
-      />
       <div className="container mx-auto px-4 py-10 max-w-2xl flex flex-col items-center">
         {/* 1. เพิ่ม section สถิติ (mock) */}
         <div className="w-full grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8 animate-fade-in">

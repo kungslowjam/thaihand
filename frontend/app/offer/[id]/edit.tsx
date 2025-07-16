@@ -4,12 +4,12 @@ import { useRouter, useParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { SimpleNavigation } from "@/components/simple-navigation";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { ShoppingBag, MapPin, Clock, DollarSign, Loader2, Image as ImageIcon, X, Plane } from "lucide-react";
 import { useSession, signOut } from "next-auth/react";
+import { OfferForm } from "@/components/OfferForm";
 
 export default function EditOfferPage() {
   const { id } = useParams();
@@ -111,167 +111,24 @@ export default function EditOfferPage() {
     if (fileInputRef.current) fileInputRef.current.value = "";
   }
 
-  async function handleSubmit(e: any) {
-    e.preventDefault();
-    const errs = validate();
-    setErrors(errs);
-    if (Object.keys(errs).length > 0) return;
-    setSubmitting(true);
-    setTimeout(() => {
-      setSubmitting(false);
-      setSuccess(true);
-      // redirect หรือแจ้งเตือน
-    }, 1200); // mock submit
+  function handleSubmit(data: any) {
+    // TODO: ส่งข้อมูลไป backend หรือแสดง success
+    // ตัวอย่าง: console.log('edit offer', data)
   }
-
-  async function handleDelete() {
-    setDeleting(true);
-    setTimeout(() => {
-      setDeleting(false);
-      setShowDelete(false);
-      router.push("/dashboard"); // redirect หลังลบ
-    }, 1200); // mock delete
+  function handleDelete() {
+    // TODO: ลบข้อมูลและ redirect
+    router.push("/dashboard");
   }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-white">
-      <SimpleNavigation user={session?.user ? { name: session.user.name ?? "", avatar: session.user.image ?? undefined } : undefined} onLogout={() => signOut()} />
       <div className="container mx-auto px-4 py-10 flex flex-col items-center">
-        <Card className="max-w-lg w-full mx-auto p-8 rounded-3xl shadow-2xl bg-white/70 backdrop-blur-md mt-8">
-          <CardContent className="p-0">
-            <h2 className="text-2xl font-bold mb-6 flex items-center gap-2 text-gray-900">
-              <Plane className="h-6 w-6 text-indigo-500" /> แก้ไขข้อเสนอรับหิ้ว
-            </h2>
-            {success && (
-              <div className="mb-6">
-                <Badge className="bg-green-100 text-green-700 px-4 py-2 text-base">บันทึกสำเร็จ!</Badge>
-              </div>
-            )}
-            <form onSubmit={handleSubmit} className="space-y-5">
-              <div className="flex gap-4">
-                <div className="flex-1">
-                  <Label>ต้นทาง *</Label>
-                  <Input placeholder="เช่น MEL" value={form.routeFrom} onChange={e => setForm(f => ({ ...f, routeFrom: e.target.value }))} className={errors.routeFrom ? 'border-red-400' : ''} />
-                  {errors.routeFrom && <div className="text-red-500 text-sm mt-1">{errors.routeFrom}</div>}
-                </div>
-                <div className="flex items-center px-2">→</div>
-                <div className="flex-1">
-                  <Label>ปลายทาง *</Label>
-                  <Input placeholder="เช่น BKK" value={form.routeTo} onChange={e => setForm(f => ({ ...f, routeTo: e.target.value }))} className={errors.routeTo ? 'border-red-400' : ''} />
-                  {errors.routeTo && <div className="text-red-500 text-sm mt-1">{errors.routeTo}</div>}
-                </div>
-              </div>
-              <div className="flex gap-4">
-                <div className="flex-1">
-                  <Label>วันบิน *</Label>
-                  <Input type="date" value={form.flightDate} onChange={e => setForm(f => ({ ...f, flightDate: e.target.value }))} className={errors.flightDate ? 'border-red-400' : ''} />
-                  {errors.flightDate && <div className="text-red-500 text-sm mt-1">{errors.flightDate}</div>}
-                </div>
-                <div className="flex-1">
-                  <Label>ปิดรับของ *</Label>
-                  <Input type="date" value={form.closeDate} onChange={e => setForm(f => ({ ...f, closeDate: e.target.value }))} className={errors.closeDate ? 'border-red-400' : ''} />
-                  {errors.closeDate && <div className="text-red-500 text-sm mt-1">{errors.closeDate}</div>}
-                </div>
-                <div className="flex-1">
-                  <Label>วันส่งของ *</Label>
-                  <Input type="date" value={form.deliveryDate} onChange={e => setForm(f => ({ ...f, deliveryDate: e.target.value }))} className={errors.deliveryDate ? 'border-red-400' : ''} />
-                  {errors.deliveryDate && <div className="text-red-500 text-sm mt-1">{errors.deliveryDate}</div>}
-                </div>
-              </div>
-              <div>
-                <Label>เรตราคา (น้ำหนัก/ราคา) *</Label>
-                {form.rates.map((rate, idx) => (
-                  <div key={idx} className="flex gap-2 mb-2">
-                    <Input placeholder="น้ำหนัก (เช่น 0.5kg)" value={rate.weight} onChange={e => handleRateChange(idx, 'weight', e.target.value)} className="w-32" />
-                    <Input placeholder="ราคา (เช่น $15)" value={rate.price} onChange={e => handleRateChange(idx, 'price', e.target.value)} className="w-32" />
-                    {form.rates.length > 1 && (
-                      <Button type="button" size="icon" variant="ghost" onClick={() => removeRate(idx)}><X className="h-4 w-4" /></Button>
-                    )}
-                  </div>
-                ))}
-                <Button type="button" variant="outline" size="sm" className="mt-1" onClick={addRate}>+ เพิ่มเรท</Button>
-                {errors.rates && <div className="text-red-500 text-sm mt-1">{errors.rates}</div>}
-              </div>
-              <div>
-                <Label>จุดนัดรับ *</Label>
-                <Input placeholder="เช่น CBD, Melbourne Central" value={form.pickupPlace} onChange={e => setForm(f => ({ ...f, pickupPlace: e.target.value }))} className={errors.pickupPlace ? 'border-red-400' : ''} />
-                {errors.pickupPlace && <div className="text-red-500 text-sm mt-1">{errors.pickupPlace}</div>}
-              </div>
-              <div>
-                <Label>ประเภทของที่รับ</Label>
-                <div className="flex flex-wrap gap-2 mt-1">
-                  {itemTypeOptions.map(type => (
-                    <Button key={type} type="button" variant={form.itemTypes.includes(type) ? 'default' : 'outline'} size="sm" className="rounded-full" onClick={() => toggleItemType(type)}>{type}</Button>
-                  ))}
-                </div>
-              </div>
-              <div>
-                <Label>ข้อจำกัด/หมายเหตุ</Label>
-                <div className="flex flex-wrap gap-2 mt-1">
-                  {restrictionOptions.map(r => (
-                    <Button key={r} type="button" variant={form.restrictions.includes(r) ? 'default' : 'outline'} size="sm" className="rounded-full" onClick={() => toggleRestriction(r)}>{r}</Button>
-                  ))}
-                </div>
-                <Textarea className="mt-2" placeholder="หมายเหตุเพิ่มเติม (ถ้ามี)" value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} />
-              </div>
-              <div>
-                <Label>ช่องทางติดต่อ *</Label>
-                <Input placeholder="Line/IG/เบอร์โทร" value={form.contact} onChange={e => setForm(f => ({ ...f, contact: e.target.value }))} className={errors.contact ? 'border-red-400' : ''} />
-                {errors.contact && <div className="text-red-500 text-sm mt-1">{errors.contact}</div>}
-              </div>
-              {/* รูปภาพ */}
-              <div>
-                <Label>อัปโหลดรูป/ตั๋ว</Label>
-                <div className="flex gap-2 items-center mt-1">
-                  <Button type="button" variant="outline" className="flex items-center gap-1 px-3 py-2" onClick={() => fileInputRef.current?.click()}>
-                    <ImageIcon className="h-4 w-4" /> อัปโหลด
-                  </Button>
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept="image/*"
-                    className="hidden"
-                    onChange={handleImageFileChange}
-                  />
-                </div>
-                {errors.imageFile && <div className="text-red-500 text-sm mt-1">{errors.imageFile}</div>}
-                {imagePreview && (
-                  <div className="relative mt-3 w-32 h-32 rounded-xl overflow-hidden border bg-gray-50 flex items-center justify-center">
-                    <img src={imagePreview} alt="preview" className="object-contain w-full h-full" />
-                    <Button type="button" size="icon" variant="ghost" className="absolute top-1 right-1 bg-white/80" onClick={handleRemoveImage}>
-                      <X className="h-4 w-4 text-gray-500" />
-                    </Button>
-                  </div>
-                )}
-              </div>
-              <div className="flex items-center gap-2">
-                <input type="checkbox" id="urgent" checked={form.urgent} onChange={e => setForm(f => ({ ...f, urgent: e.target.checked }))} className="accent-red-500 h-4 w-4" />
-                <Label htmlFor="urgent" className="text-red-500">ต้องการด่วน</Label>
-              </div>
-              <div className="flex gap-2 mt-6">
-                <Button type="submit" className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl flex items-center gap-2" disabled={submitting}>
-                  {submitting && <Loader2 className="animate-spin h-5 w-5" />} บันทึก
-                </Button>
-                <Button type="button" variant="destructive" onClick={() => setShowDelete(true)}>ลบ</Button>
-                <Button type="button" variant="outline" onClick={() => router.back()}>ยกเลิก</Button>
-              </div>
-            </form>
-            {/* Modal ยืนยันลบ */}
-            {showDelete && (
-              <div className="fixed inset-0 flex items-center justify-center z-50 bg-black/30">
-                <div className="bg-white rounded-2xl shadow-xl p-8 max-w-xs w-full text-center">
-                  <div className="text-lg font-semibold mb-4">ยืนยันการลบรายการนี้?</div>
-                  <div className="flex gap-2 justify-center mt-4">
-                    <Button variant="destructive" onClick={handleDelete} disabled={deleting}>
-                      {deleting && <Loader2 className="animate-spin h-4 w-4 mr-2" />} ยืนยัน
-                    </Button>
-                    <Button variant="outline" onClick={() => setShowDelete(false)} disabled={deleting}>ยกเลิก</Button>
-                  </div>
-                </div>
-              </div>
-            )}
-          </CardContent>
-        </Card>
+        <OfferForm
+          mode="edit"
+          initialData={form}
+          onSubmit={handleSubmit}
+          onDelete={handleDelete}
+        />
       </div>
     </div>
   );
