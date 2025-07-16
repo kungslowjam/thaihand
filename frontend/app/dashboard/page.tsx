@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { SimpleNavigation } from "@/components/simple-navigation";
 import { useSession, signOut } from "next-auth/react";
 import Link from "next/link";
+import Image from "next/image";
 
 const mockRequests = [
   { id: 1, title: "ขนมญี่ปุ่น", status: "รอรับหิ้ว", date: "2024-07-10" },
@@ -18,6 +19,7 @@ const mockOffers = [
 
 export default function DashboardPage() {
   const { data: session } = useSession();
+  console.log("session", session); // debug ดูค่า session
   const [tab, setTab] = useState<"requests" | "offers" | "activity">("requests");
   const [showDelete, setShowDelete] = useState<{ type: "request" | "offer"; id: number } | null>(null);
   const [deleting, setDeleting] = useState(false);
@@ -68,11 +70,28 @@ export default function DashboardPage() {
               <Edit2 className="h-5 w-5" />
             </Button>
           </div>
-          <img
-            src={session?.user?.image ?? "/thaihand-logo.png"}
-            alt={session?.user?.name ?? "User"}
-            className="h-28 w-28 rounded-full object-cover border-4 border-white shadow-lg mb-4 z-10 ring-2 ring-blue-200/40 hover:scale-105 transition-transform duration-200"
-          />
+          {session?.user?.image ? (
+            <Image
+              src={session.user.image}
+              alt={session.user.name ?? "User"}
+              width={112}
+              height={112}
+              className="h-28 w-28 rounded-full object-cover border-4 border-white shadow-lg mb-4 z-10 ring-2 ring-blue-200/40 hover:scale-105 transition-transform duration-200"
+              style={{ background: "#fff" }}
+              onError={(e) => { e.currentTarget.src = "/thaihand-logo.png"; }}
+              priority
+            />
+          ) : (
+            <Image
+              src="/thaihand-logo.png"
+              alt="ThaiHand Logo"
+              width={112}
+              height={112}
+              className="h-28 w-28 rounded-full object-cover border-4 border-white shadow-lg mb-4 z-10 ring-2 ring-blue-200/40 hover:scale-105 transition-transform duration-200"
+              style={{ background: "#fff" }}
+              priority
+            />
+          )}
           <h2 className="text-2xl font-extrabold text-gray-900 mb-1 z-10 flex items-center gap-2 tracking-tight">
             {session?.user?.name ?? "-"}
             <Badge className="bg-gradient-to-r from-indigo-400 via-blue-400 to-pink-400 text-white px-3 py-1 text-xs rounded-full ml-2 flex items-center gap-1 shadow animate-bounce">
@@ -90,10 +109,6 @@ export default function DashboardPage() {
           </div>
           {/* ปุ่มลัด modern */}
           <div className="flex gap-4 mt-2 z-10 justify-center">
-            <Button variant="ghost" className="flex flex-col items-center justify-center gap-1 rounded-2xl p-4 shadow-md hover:bg-blue-50/60 transition group">
-              <KeyRound className="h-6 w-6 text-blue-400 group-hover:scale-110 transition" />
-              <span className="text-xs text-gray-600 font-semibold mt-1">เปลี่ยนรหัสผ่าน</span>
-            </Button>
             <Button variant="ghost" className="flex flex-col items-center justify-center gap-1 rounded-2xl p-4 shadow-md hover:bg-indigo-50/60 transition group">
               <Settings className="h-6 w-6 text-indigo-400 group-hover:scale-110 transition" />
               <span className="text-xs text-gray-600 font-semibold mt-1">ตั้งค่าบัญชี</span>
