@@ -67,8 +67,8 @@ export function SimpleNavigation({ user, onLogout }: SimpleNavigationProps) {
             <DropdownMenu.Root>
               <DropdownMenu.Trigger asChild>
                 <button className="rounded-full w-10 h-10 flex items-center justify-center hover:bg-gray-100">
-                  {user?.image ? (
-                    <img src={user.image} alt="user" className="w-9 h-9 rounded-full object-cover border" />
+                  {user?.avatar ? (
+                    <img src={user.avatar} alt="user" className="w-9 h-9 rounded-full object-cover border" />
                   ) : (
                     <User className="h-6 w-6 text-gray-500" />
                   )}

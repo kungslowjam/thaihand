@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 
 export default function MyOrdersPage() {
   const { data: session } = useSession();
-  const [orders, setOrders] = useState([]);
+  const [orders, setOrders] = useState<any[]>([]);
 
   useEffect(() => {
     if (session?.accessToken && session?.user?.id) {
@@ -14,9 +14,23 @@ export default function MyOrdersPage() {
         headers: { "Authorization": `Bearer ${session.accessToken}` }
       })
         .then(res => res.json())
-        .then(setOrders);
+        .then(setOrders)
+        .catch(() => setOrders([]));
     }
   }, [session]);
+
+  if (orders.length === 0) {
+    return (
+      <div className="max-w-2xl mx-auto py-10">
+        <h1 className="text-2xl font-bold mb-6">งานของฉัน</h1>
+        <div className="text-center py-20 text-gray-400">
+          <span className="text-5xl mb-4 block">📦</span>
+          <div className="text-lg mb-2">ยังไม่มีงาน</div>
+          <div className="text-sm">เมื่อคุณสร้างงาน ข้อมูลจะแสดงที่นี่</div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <>

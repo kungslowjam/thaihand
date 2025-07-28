@@ -12,7 +12,6 @@ import { ConfirmModal } from '../../../../components/ConfirmModal';
 import { useBackendToken } from "@/lib/useBackendToken";
 import { ShoppingBag } from 'lucide-react';
 import { toast } from 'sonner';
-import { Table, Thead, Tbody, Tr, Th, Td } from "@/components/ui/table";
 
 // mock data ตัวอย่าง
 const mockRequests = [

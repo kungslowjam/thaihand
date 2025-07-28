@@ -9,7 +9,7 @@ import { Progress } from '@/components/progress';
 
 export default function MyCarryOrdersPage() {
   const { data: session } = useSession();
-  const [flights, setFlights] = useState([]);
+  const [flights, setFlights] = useState<any[]>([]);
 
   useEffect(() => {
     if (session?.accessToken && session?.user?.id) {
@@ -17,9 +17,27 @@ export default function MyCarryOrdersPage() {
         headers: { "Authorization": `Bearer ${session.accessToken}` }
       })
         .then(res => res.json())
-        .then(setFlights);
+        .then(setFlights)
+        .catch(() => setFlights([]));
     }
   }, [session]);
+
+  if (flights.length === 0) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-white py-10 px-2">
+        <div className="max-w-5xl mx-auto">
+          <h1 className="text-2xl font-extrabold text-gray-900 mb-8 text-center tracking-tight flex items-center justify-center gap-2">
+            <Plane className="h-7 w-7 text-blue-400" /> เที่ยวบิน/รอบเดินทางที่ฉันรับหิ้ว
+          </h1>
+          <div className="text-center py-20 text-gray-400">
+            <span className="text-5xl mb-4 block">✈️</span>
+            <div className="text-lg mb-2">ยังไม่มีรอบเดินทาง</div>
+            <div className="text-sm">เมื่อคุณสร้างรอบเดินทาง ข้อมูลจะแสดงที่นี่</div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <>
@@ -30,7 +48,9 @@ export default function MyCarryOrdersPage() {
           </h1>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {flights.map(flight => {
-              const remainingWeight = flight.maxWeight - flight.usedWeight;
+              const maxWeight = flight?.maxWeight || 0;
+              const usedWeight = flight?.usedWeight || 0;
+              const remainingWeight = maxWeight - usedWeight;
               return (
                 <Card key={flight.id} className="overflow-hidden bg-white/90 shadow-xl border-0">
                   <img src={flight.image} alt={flight.from + ' to ' + flight.to} className="w-full h-40 object-cover" />
@@ -53,23 +73,23 @@ export default function MyCarryOrdersPage() {
                     <div className="mb-2">
                       <div className="flex justify-between items-center mb-1 text-xs font-medium">
                         <span>น้ำหนักที่รับแล้ว</span>
-                        <span>{flight.usedWeight} / {flight.maxWeight} กก.</span>
+                        <span>{usedWeight} / {maxWeight} กก.</span>
                       </div>
-                      <Progress value={Math.min((flight.usedWeight / flight.maxWeight) * 100, 100)} className="h-4 bg-gray-200" />
+                      <Progress value={Math.min((usedWeight / maxWeight) * 100, 100)} className="h-4 bg-gray-200" />
                       <div className="flex justify-between items-center mt-1 text-xs">
-                        <span className="text-gray-500 font-semibold">เหลือ {(flight.maxWeight - flight.usedWeight).toFixed(2)} กก.</span>
+                        <span className="text-gray-500 font-semibold">เหลือ {remainingWeight.toFixed(2)} กก.</span>
                       </div>
-                      {flight.usedWeight > flight.maxWeight && (
+                      {usedWeight > maxWeight && (
                         <div className="text-xs text-red-500 mt-1 font-semibold">น้ำหนักเกินลิมิต!</div>
                       )}
                     </div>
                     <div className="flex flex-wrap gap-2 mb-2 text-xs">
-                      <Badge variant="secondary">น้ำหนักสูงสุด {flight.maxWeight} กก.</Badge>
-                      <Badge variant="default">รับแล้ว {flight.usedWeight} กก.</Badge>
+                      <Badge variant="secondary">น้ำหนักสูงสุด {maxWeight} กก.</Badge>
+                      <Badge variant="default">รับแล้ว {usedWeight} กก.</Badge>
                       <Badge variant={remainingWeight <= 0 ? 'destructive' : 'outline'}>เหลือ {remainingWeight} กก.</Badge>
                     </div>
                     <div className="flex flex-wrap gap-2 mb-2 text-xs">
-                      <Badge variant="secondary">{flight.ordersCount} ออเดอร์ในรอบนี้</Badge>
+                      <Badge variant="secondary">{flight.ordersCount || 0} ออเดอร์ในรอบนี้</Badge>
                     </div>
                     {flight.note && (
                       <div className="text-xs text-gray-500 mb-2">หมายเหตุ: {flight.note}</div>

@@ -8,7 +8,6 @@ import Link from "next/link";
 import Image from "next/image";
 import { useUserStore } from '@/store/userStore';
 import { useNotificationStore } from '@/store/notificationStore';
-import { mockRequests, mockOffers } from "@/lib/mockData";
 
 export default function DashboardPage() {
   const { data: session } = useSession();

@@ -22,6 +22,7 @@ export default function EditOfferPage() {
     flightDate: "2024-07-17",
     closeDate: "2024-07-15",
     deliveryDate: "2024-07-18",
+    rate: "0.5kg = 15 บาท, 1kg = 20 บาท",
     rates: [
       { weight: "0.5kg", price: "15" },
       { weight: "1kg", price: "20" }

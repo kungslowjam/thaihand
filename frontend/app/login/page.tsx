@@ -11,7 +11,7 @@ import { useEffect } from "react"
 export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false)
   const { data: session, status } = useSession();
-  const router = useRouter();ssd
+  const router = useRouter();
 
   useEffect(() => {
     if (status === "authenticated") {

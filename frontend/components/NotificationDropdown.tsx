@@ -68,7 +68,7 @@ export default function NotificationDropdown() {
           if (data.notifications && data.notifications.length > 0) {
             // หา created_at ที่มากที่สุด
             const maxTime = data.notifications.reduce(
-              (max, n) => n.created_at > max ? n.created_at : max,
+              (max: string, n: any) => n.created_at > max ? n.created_at : max,
               lastTimeRef.current
             );
             lastTimeRef.current = maxTime;
@@ -119,13 +119,13 @@ export default function NotificationDropdown() {
           {notifications.length === 0 ? (
             <div className="text-gray-400 text-center py-4">ไม่มีแจ้งเตือน</div>
           ) : (
-            notifications.slice(0, 5).map((n) => {
-              // แปลงวันที่ให้ถูกต้อง
-              const date = new Date(n.created_at);
-              const dateStr = isNaN(date) ? "" : date.toLocaleString("th-TH", { 
-                dateStyle: "medium", 
-                timeStyle: "short" 
-              });
+                         notifications.slice(0, 5).map((n) => {
+               // แปลงวันที่ให้ถูกต้อง
+               const date = new Date(n.created_at || "");
+               const dateStr = isNaN(date.getTime()) ? "" : date.toLocaleString("th-TH", { 
+                 dateStyle: "medium", 
+                 timeStyle: "short" 
+               });
               
               return (
                 <div

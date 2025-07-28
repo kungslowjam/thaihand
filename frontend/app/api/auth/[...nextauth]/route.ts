@@ -1,6 +1,30 @@
 import NextAuth from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 import LineProvider from "next-auth/providers/line";
+import { JWT } from "next-auth/jwt";
+import { Session } from "next-auth";
+
+// Extend NextAuth types
+declare module "next-auth" {
+  interface Session {
+    accessToken?: string | null;
+    provider?: string | null;
+    user: {
+      id?: string;
+      name?: string | null;
+      email?: string | null;
+      image?: string | null;
+    };
+  }
+}
+
+declare module "next-auth/jwt" {
+  interface JWT {
+    id?: string;
+    accessToken?: string;
+    provider?: string | null;
+  }
+}
 
 const handler = NextAuth({
   providers: [
@@ -43,7 +67,7 @@ const handler = NextAuth({
       if (profile && profile.sub) {
         token.sub = profile.sub;
       }
-      if (account && account.id) {
+      if (account && account.id && typeof account.id === 'string') {
         token.id = account.id;
       }
       if (profile && typeof profile === 'object' && 'picture' in profile) {

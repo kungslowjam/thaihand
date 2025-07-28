@@ -5,9 +5,7 @@ import "./globals.css"
 import SessionProviderWrapper from "@/components/SessionProviderWrapper"
 import { useNotificationStore } from "@/store/notificationStore";
 import ToastNotification from "@/components/ToastNotification";
-import { Toaster } from 'sonner';
 import ClientNavigation from "@/components/ClientNavigation";
-import { useNotificationSocket } from "@/lib/useNotificationSocket";
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -23,8 +21,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <SessionProviderWrapper>
           <ClientNavigation />
           {children}
-          <ToastNotification />
-          <Toaster position="top-right" richColors />
+          <ToastNotification enable={true} />
         </SessionProviderWrapper>
       </body>
     </html>
