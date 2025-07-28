@@ -1,0 +1,23 @@
+{
+  "country": "Japan",
+  "cities": [
+    { "name": "Tokyo" },
+    { "name": "Osaka" },
+    { "name": "Kyoto" },
+    { "name": "Sapporo" },
+    { "name": "Fukuoka" },
+    { "name": "Nagoya" },
+    { "name": "Yokohama" },
+    { "name": "Kobe" },
+    { "name": "Hiroshima" },
+    { "name": "Sendai" },
+    { "name": "Naha" },
+    { "name": "Kagoshima" },
+    { "name": "Okinawa" },
+    { "name": "Hakodate" },
+    { "name": "Kumamoto" },
+    { "name": "Shizuoka" },
+    { "name": "Niigata" },
+    { "name": "Kanazawa" }
+  ]
+} 

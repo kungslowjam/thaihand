@@ -1,0 +1,16 @@
+{
+  "country": "France",
+  "cities": [
+    { "name": "Paris" },
+    { "name": "Marseille" },
+    { "name": "Lyon" },
+    { "name": "Toulouse" },
+    { "name": "Nice" },
+    { "name": "Nantes" },
+    { "name": "Strasbourg" },
+    { "name": "Montpellier" },
+    { "name": "Bordeaux" },
+    { "name": "Lille" },
+    { "name": "Rennes" }
+  ]
+} 

@@ -1,0 +1,23 @@
+{
+  "country": "United States",
+  "cities": [
+    { "name": "New York" },
+    { "name": "Los Angeles" },
+    { "name": "San Francisco" },
+    { "name": "Chicago" },
+    { "name": "Houston" },
+    { "name": "Seattle" },
+    { "name": "Boston" },
+    { "name": "Washington D.C." },
+    { "name": "Miami" },
+    { "name": "Dallas" },
+    { "name": "Atlanta" },
+    { "name": "Orlando" },
+    { "name": "Las Vegas" },
+    { "name": "San Diego" },
+    { "name": "Philadelphia" },
+    { "name": "Denver" },
+    { "name": "Phoenix" },
+    { "name": "Portland" }
+  ]
+} 

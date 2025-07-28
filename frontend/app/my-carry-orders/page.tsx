@@ -4,22 +4,22 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Plane, User, Calendar, BadgeDollarSign, Star, MessageCircle } from 'lucide-react';
 import Link from 'next/link';
-import { useSession, signOut } from "next-auth/react";
-import { io } from 'socket.io-client';
+import { useSession } from "next-auth/react";
 import { Progress } from '@/components/progress';
-import { mockFlights } from "@/lib/mockData";
 
 export default function MyCarryOrdersPage() {
   const { data: session } = useSession();
-  const [flights, setFlights] = useState(mockFlights);
+  const [flights, setFlights] = useState([]);
 
   useEffect(() => {
-    const socket = io('http://localhost:3001'); // เปลี่ยน URL เป็น backend จริง
-    socket.on('weight_update', (data) => {
-      setFlights((prev) => prev.map(f => f.id === data.id ? { ...f, usedWeight: data.usedWeight } : f));
-    });
-    return () => { socket.disconnect(); };
-  }, []);
+    if (session?.accessToken && session?.user?.id) {
+      fetch(`http://localhost:8000/api/my-carry-orders?user_id=${session.user.id}`, {
+        headers: { "Authorization": `Bearer ${session.accessToken}` }
+      })
+        .then(res => res.json())
+        .then(setFlights);
+    }
+  }, [session]);
 
   return (
     <>
@@ -47,7 +47,7 @@ export default function MyCarryOrdersPage() {
                     </div>
                     <div className="flex items-center gap-2 mb-2">
                       <BadgeDollarSign className="h-5 w-5 text-blue-500" />
-                      <span className="text-blue-700 font-bold text-lg">{flight.price.toLocaleString()} บาท/{flight.unit}</span>
+                      <span className="text-blue-700 font-bold text-lg">{flight.price?.toLocaleString()} บาท/{flight.unit}</span>
                       <Badge variant="outline" className="ml-2"><Plane className="h-4 w-4 inline mr-1" /> เปิดรับหิ้ว</Badge>
                     </div>
                     <div className="mb-2">

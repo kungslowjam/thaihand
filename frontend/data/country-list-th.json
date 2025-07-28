@@ -1,0 +1,12 @@
+[
+  { "alpha2": "TH", "name": "ไทย", "enName": "Thailand" },
+  { "alpha2": "AU", "name": "ออสเตรเลีย", "enName": "Australia" },
+  { "alpha2": "JP", "name": "ญี่ปุ่น", "enName": "Japan" },
+  { "alpha2": "US", "name": "สหรัฐอเมริกา", "enName": "United States" },
+  { "alpha2": "GB", "name": "สหราชอาณาจักร", "enName": "United Kingdom" },
+  { "alpha2": "KR", "name": "เกาหลีใต้", "enName": "South Korea" },
+  { "alpha2": "FR", "name": "ฝรั่งเศส", "enName": "France" },
+  { "alpha2": "DE", "name": "เยอรมนี", "enName": "Germany" },
+  { "alpha2": "SG", "name": "สิงคโปร์", "enName": "Singapore" },
+  { "alpha2": "CN", "name": "จีน", "enName": "China" }
+] 

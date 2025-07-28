@@ -1,0 +1,8 @@
+[
+  { "code": "1001", "name_th": "พระนคร", "name_en": "Phra Nakhon", "province_code": "10" },
+  { "code": "1002", "name_th": "ดุสิต", "name_en": "Dusit", "province_code": "10" },
+  { "code": "5001", "name_th": "เมืองเชียงใหม่", "name_en": "Mueang Chiang Mai", "province_code": "50" },
+  { "code": "5002", "name_th": "จอมทอง", "name_en": "Chom Thong", "province_code": "50" },
+  { "code": "2001", "name_th": "เมืองชลบุรี", "name_en": "Mueang Chonburi", "province_code": "20" },
+  { "code": "2002", "name_th": "บ้านบึง", "name_en": "Ban Bueng", "province_code": "20" }
+] 

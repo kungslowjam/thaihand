@@ -13,20 +13,50 @@ const handler = NextAuth({
       clientSecret: process.env.LINE_CLIENT_SECRET!,
     }),
   ],
+  pages: {
+    signIn: '/login'
+  },
   secret: process.env.NEXTAUTH_SECRET,
   callbacks: {
     async session({ session, token, user }) {
+      console.log('SESSION CALLBACK: token =', token, 'session =', session);
       // เพิ่ม image จาก token (Google จะส่ง url รูปมาใน token)
       if (token && session.user) {
         session.user.image = token.picture || session.user.image;
+        session.user.id = token.sub || token.id || session.user.id;
       }
+      // เพิ่ม log ตรวจสอบ accessToken
+      console.log('SESSION CALLBACK: token.accessToken =', token && token.accessToken);
+      // เพิ่ม accessToken และ provider เข้า session
+      if (token && token.accessToken) {
+        session.accessToken = token.accessToken;
+      } else {
+        session.accessToken = null;
+      }
+      // แนบ provider เสมอ
+      session.provider = token?.provider || null;
       return session;
     },
     async jwt({ token, account, profile }) {
+      console.log('JWT CALLBACK: account =', account, 'token =', token);
       // ดึง url รูปจาก profile (Google)
+      if (profile && profile.sub) {
+        token.sub = profile.sub;
+      }
+      if (account && account.id) {
+        token.id = account.id;
+      }
       if (profile && typeof profile === 'object' && 'picture' in profile) {
         token.picture = String(profile.picture);
       }
+      // ดึง accessToken และ provider จาก account (ตอน login)
+      if (account && account.access_token) {
+        token.accessToken = account.access_token;
+      }
+      // แนบ provider เสมอ
+      token.provider = account?.provider || token.provider || null;
+      // เพิ่ม log ตรวจสอบ accessToken
+      console.log('JWT CALLBACK: token.accessToken =', token && token.accessToken, 'provider =', token && token.provider);
       return token;
     },
   },

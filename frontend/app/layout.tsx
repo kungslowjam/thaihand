@@ -7,6 +7,7 @@ import { useNotificationStore } from "@/store/notificationStore";
 import ToastNotification from "@/components/ToastNotification";
 import { Toaster } from 'sonner';
 import ClientNavigation from "@/components/ClientNavigation";
+import { useNotificationSocket } from "@/lib/useNotificationSocket";
 
 const inter = Inter({ subsets: ["latin"] })
 

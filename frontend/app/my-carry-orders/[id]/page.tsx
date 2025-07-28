@@ -4,12 +4,12 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Plane, User, Calendar, BadgeDollarSign, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
-import { mockFlights } from "@/lib/mockData";
 
 export default function CarryOrderDetailPage() {
   const params = useParams();
   const router = useRouter();
-  const flight = mockFlights.find(f => f.id === params.id);
+  // ลบ import mockFlights
+  // ลบ logic ที่ใช้ mockFlights และแทนที่ด้วยการ fetch ข้อมูลจริงจาก backend
 
   if (!flight) return <div className="text-center py-20 text-gray-400">ไม่พบข้อมูลเที่ยวบิน</div>;
 

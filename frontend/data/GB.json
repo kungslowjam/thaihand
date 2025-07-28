@@ -1,0 +1,19 @@
+{
+  "country": "United Kingdom",
+  "cities": [
+    { "name": "London" },
+    { "name": "Manchester" },
+    { "name": "Birmingham" },
+    { "name": "Liverpool" },
+    { "name": "Edinburgh" },
+    { "name": "Glasgow" },
+    { "name": "Bristol" },
+    { "name": "Leeds" },
+    { "name": "Sheffield" },
+    { "name": "Nottingham" },
+    { "name": "Newcastle" },
+    { "name": "Cardiff" },
+    { "name": "Cambridge" },
+    { "name": "Oxford" }
+  ]
+} 

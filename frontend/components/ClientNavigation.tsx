@@ -7,7 +7,7 @@ export default function ClientNavigation() {
   return (
     <SimpleNavigation
       user={session?.user ? { name: session.user.name ?? '', avatar: session.user.image ?? undefined } : undefined}
-      onLogout={() => signOut()}
+      onLogout={() => signOut({ callbackUrl: "/" })}
     />
   );
 } 

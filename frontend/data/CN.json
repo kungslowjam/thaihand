@@ -1,0 +1,17 @@
+{
+  "country": "China",
+  "cities": [
+    { "name": "Beijing" },
+    { "name": "Shanghai" },
+    { "name": "Guangzhou" },
+    { "name": "Shenzhen" },
+    { "name": "Chengdu" },
+    { "name": "Chongqing" },
+    { "name": "Xi'an" },
+    { "name": "Hangzhou" },
+    { "name": "Wuhan" },
+    { "name": "Nanjing" },
+    { "name": "Tianjin" },
+    { "name": "Suzhou" }
+  ]
+} 

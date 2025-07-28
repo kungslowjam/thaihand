@@ -1,0 +1,17 @@
+{
+  "country": "South Korea",
+  "cities": [
+    { "name": "Seoul" },
+    { "name": "Busan" },
+    { "name": "Incheon" },
+    { "name": "Daegu" },
+    { "name": "Daejeon" },
+    { "name": "Gwangju" },
+    { "name": "Ulsan" },
+    { "name": "Jeju" },
+    { "name": "Suwon" },
+    { "name": "Changwon" },
+    { "name": "Goyang" },
+    { "name": "Yongin" }
+  ]
+} 

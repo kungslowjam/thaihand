@@ -1,0 +1,15 @@
+{
+  "country": "Germany",
+  "cities": [
+    { "name": "Berlin" },
+    { "name": "Munich" },
+    { "name": "Frankfurt" },
+    { "name": "Hamburg" },
+    { "name": "Cologne" },
+    { "name": "Stuttgart" },
+    { "name": "Düsseldorf" },
+    { "name": "Leipzig" },
+    { "name": "Dresden" },
+    { "name": "Nuremberg" }
+  ]
+} 
