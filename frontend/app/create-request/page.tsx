@@ -12,6 +12,9 @@ import { useSession, signOut } from "next-auth/react";
 import { RequestForm } from "@/components/RequestForm";
 import { OfferForm } from "@/components/OfferForm";
 
+// Force dynamic rendering
+export const dynamic = 'force-dynamic';
+
 export default function CreateRequestPage() {
   const { data: session } = useSession();
   const [mode, setMode] = useState<'request' | 'offer'>('request');

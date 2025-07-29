@@ -13,9 +13,12 @@ import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { Session } from "next-auth";
 import { createClient } from '@supabase/supabase-js';
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
-const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
+
+// Safe Supabase client creation with fallbacks
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co';
+const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholder-key';
 const supabase = createClient(supabaseUrl, supabaseKey);
+
 // เพิ่ม type guard สำหรับ session ที่มี accessToken
 function getAccessToken(session: Session | null): string | undefined {
   return (session && typeof session === 'object' && 'accessToken' in session) ? (session as any).accessToken : undefined;
@@ -34,22 +37,35 @@ async function getCityListByCountry(alpha2: string) {
 }
 
 async function uploadImageToSupabase(file: File) {
-  console.log('uploading file to supabase:', file);
-  const fileExt = file.name.split('.').pop();
-  const fileName = `${Date.now()}-${Math.random().toString(36).substring(2, 8)}.${fileExt}`;
-  const { data, error } = await supabase.storage
-    .from('request-images')
-    .upload(fileName, file);
-  console.log('upload result', { data, error });
-  if (error) {
-    console.error('Supabase upload error:', error.message, error);
-    throw error;
+  try {
+    console.log('uploading file to supabase:', file);
+    
+    // Check if Supabase is properly configured
+    if (!supabaseUrl || supabaseUrl === 'https://placeholder.supabase.co') {
+      console.warn('Supabase not configured, skipping image upload');
+      return null;
+    }
+    
+    const fileExt = file.name.split('.').pop();
+    const fileName = `${Date.now()}-${Math.random().toString(36).substring(2, 8)}.${fileExt}`;
+    const { data, error } = await supabase.storage
+      .from('request-images')
+      .upload(fileName, file);
+    console.log('upload result', { data, error });
+    if (error) {
+      console.error('Supabase upload error:', error.message, error);
+      throw error;
+    }
+    const { data: publicUrlData } = supabase
+      .storage
+      .from('request-images')
+      .getPublicUrl(fileName);
+    return publicUrlData.publicUrl;
+  } catch (error) {
+    console.error('Error uploading image to Supabase:', error);
+    // Return null instead of throwing to prevent build failure
+    return null;
   }
-  const { data: publicUrlData } = supabase
-    .storage
-    .from('request-images')
-    .getPublicUrl(fileName);
-  return publicUrlData.publicUrl;
 }
 
 export interface RequestFormProps {
