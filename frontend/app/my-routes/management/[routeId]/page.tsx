@@ -78,7 +78,7 @@ export default function ManagementPage() {
   // Approve/Reject
   const handleApprove = async (requestId: number) => {
     if (!backendToken) return;
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/requests/${requestId}/status`, {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || '/api'}/requests/${requestId}/status`, {
       method: "PATCH",
       headers: {
         "Content-Type": "application/json",
@@ -92,7 +92,7 @@ export default function ManagementPage() {
   };
   const handleReject = async (requestId: number) => {
     if (!backendToken) return;
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/requests/${requestId}/status`, {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || '/api'}/requests/${requestId}/status`, {
       method: "PATCH",
       headers: {
         "Content-Type": "application/json",
@@ -108,7 +108,7 @@ export default function ManagementPage() {
   const fetchRequests = () => {
     if (!routeId || !backendToken) return;
     setLoading(true);
-    fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/offers/${routeId}/requests`, {
+    fetch(`${process.env.NEXT_PUBLIC_API_URL || '/api'}/offers/${routeId}/requests`, {
       headers: {
         "Authorization": `Bearer ${backendToken}`
       }

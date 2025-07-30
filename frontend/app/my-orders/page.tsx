@@ -10,7 +10,7 @@ export default function MyOrdersPage() {
 
   useEffect(() => {
     if (session?.accessToken && session?.user?.id) {
-      fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/my-orders?user_id=${session.user.id}`, {
+      fetch(`${process.env.NEXT_PUBLIC_API_URL || '/api'}/my-orders?user_id=${session.user.id}`, {
         headers: { "Authorization": `Bearer ${session.accessToken}` }
       })
         .then(res => res.json())

@@ -59,14 +59,14 @@ export default function MarketplacePage() {
 
   useEffect(() => {
     if (backendToken) {
-      fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/offers`, {
+      fetch(`${process.env.NEXT_PUBLIC_API_URL || '/api'}/offers`, {
         headers: { "Authorization": `Bearer ${backendToken}` }
       })
         .then(res => res.json())
         .then(data => {
           setOffers(data); // ใช้ข้อมูลตรงจาก backend
         });
-      fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/requests`, {
+      fetch(`${process.env.NEXT_PUBLIC_API_URL || '/api'}/requests`, {
         headers: { "Authorization": `Bearer ${backendToken}` }
       })
         .then(res => res.json())
@@ -363,7 +363,7 @@ export default function MarketplacePage() {
               <form onSubmit={async e => {
                 e.preventDefault();
                 try {
-                  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/requests`, {
+                  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || '/api'}/requests`, {
                     method: "POST",
                     headers: {
                       "Content-Type": "application/json",

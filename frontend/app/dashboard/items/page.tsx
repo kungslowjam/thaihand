@@ -34,7 +34,7 @@ export default function MyItemsPage() {
     }
     console.log("accessToken", accessToken, "email", email); // log accessToken และ email
     if (accessToken && email) {
-      fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/my-orders?email=${email}`, {
+      fetch(`${process.env.NEXT_PUBLIC_API_URL || '/api'}/my-orders?email=${email}`, {
         headers: { "Authorization": `Bearer ${accessToken}` }
       })
         .then(res => res.json())
@@ -59,7 +59,7 @@ export default function MyItemsPage() {
           console.log("DEBUG_MY_REQUESTS", mapped);
         });
 
-      fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/my-carry-orders?email=${email}`, {
+      fetch(`${process.env.NEXT_PUBLIC_API_URL || '/api'}/my-carry-orders?email=${email}`, {
         headers: { "Authorization": `Bearer ${accessToken}` }
       })
         .then(res => res.json())
@@ -82,7 +82,7 @@ export default function MyItemsPage() {
         });
 
       // เพิ่ม fetch /api/offers เพื่อดึงข้อมูลเจ้าของ offer
-      fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/offers`, {
+      fetch(`${process.env.NEXT_PUBLIC_API_URL || '/api'}/offers`, {
         headers: { "Authorization": `Bearer ${accessToken}` }
       })
         .then(res => res.json())
@@ -144,13 +144,13 @@ export default function MyItemsPage() {
     setDeleting(true);
     const { type, id } = showDelete;
     const endpoint = type === "request"
-      ? `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/requests/${id}`
-      : `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/offers/${id}`;
+              ? `${process.env.NEXT_PUBLIC_API_URL || '/api'}/requests/${id}`
+        : `${process.env.NEXT_PUBLIC_API_URL || '/api'}/offers/${id}`;
     const accessToken = (session as any)?.accessToken;
     const provider = (session as any)?.provider || (session as any)?.user?.provider || "google";
     let backendToken = accessToken;
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/auth/exchange`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || '/api'}/auth/exchange`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ accessToken, provider }),
