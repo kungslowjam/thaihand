@@ -15,6 +15,7 @@ export function useBackendToken() {
       setLoading(true);
       setError(null);
       
+      // Use environment variable for API URL
       fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/auth/exchange`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
