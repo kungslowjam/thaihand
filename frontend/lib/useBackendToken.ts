@@ -15,7 +15,7 @@ export function useBackendToken() {
       setLoading(true);
       setError(null);
       
-      fetch("http://localhost:8000/api/auth/exchange", {
+      fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/auth/exchange`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ accessToken, provider })

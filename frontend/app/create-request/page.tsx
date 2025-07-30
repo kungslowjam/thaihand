@@ -42,7 +42,7 @@ export default function CreateRequestPage() {
       image: data.image ?? null,
       // user_id: (session as any)?.user?.id, // ลบออก ไม่ต้องส่ง
     };
-    fetch("http://localhost:8000/api/offers", {
+    fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/offers`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

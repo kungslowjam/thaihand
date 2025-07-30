@@ -216,7 +216,7 @@ export function RequestForm({ initialData, mode = 'create', onSubmit, onDelete, 
     if (mode === 'create') {
       try {
         console.log("กำลังจะ fetch /api/requests", backendToken, form);
-        const res = await fetch("http://localhost:8000/api/requests", {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/requests`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
