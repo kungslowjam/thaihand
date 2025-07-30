@@ -19,7 +19,7 @@ export function useBackendToken() {
       fetch(`${process.env.NEXT_PUBLIC_API_URL || '/api'}/auth/exchange`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ accessToken, provider })
+        body: JSON.stringify({ access_token: accessToken, provider })
       })
         .then(res => {
           if (!res.ok) {
