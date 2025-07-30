@@ -11,6 +11,7 @@ import { SimpleNavigation } from "@/components/simple-navigation";
 import { useSession, signOut } from "next-auth/react";
 import { RequestForm } from "@/components/RequestForm";
 import { OfferForm } from "@/components/OfferForm";
+import { useBackendToken } from "@/lib/useBackendToken";
 
 // Force dynamic rendering
 export const dynamic = 'force-dynamic';
@@ -18,23 +19,7 @@ export const dynamic = 'force-dynamic';
 export default function CreateRequestPage() {
   const { data: session } = useSession();
   const [mode, setMode] = useState<'request' | 'offer'>('request');
-  const [backendToken, setBackendToken] = useState<string | null>(null);
-
-  useEffect(() => {
-    const accessToken = (session as any)?.accessToken;
-    const provider = (session as any)?.provider || (session as any)?.user?.provider || "google";
-    if (accessToken) {
-      fetch("http://localhost:8000/api/auth/exchange", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ accessToken, provider })
-      })
-        .then(res => res.json())
-        .then(data => {
-          setBackendToken(data.accessToken);
-        });
-    }
-  }, [session]);
+  const { backendToken, loading, error } = useBackendToken();
 
   function handleRequestSubmit(data: any) {
     // TODO: ส่งข้อมูลไป backend หรือแสดง success

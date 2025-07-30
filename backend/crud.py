@@ -221,7 +221,14 @@ def get_notifications_after_time(db: Session, user_id: int, last_time: str = "19
     # เพิ่มข้อมูล user ของคนฝากสำหรับแต่ละ notification
     result = []
     for notif in notifications:
-        notif_dict = notif.as_dict() if hasattr(notif, 'as_dict') else notif.__dict__
+        # สร้าง dictionary จาก notification object
+        notif_dict = {
+            'id': notif.id,
+            'user_id': notif.user_id,
+            'message': notif.message,
+            'is_read': notif.is_read,
+            'created_at': notif.created_at
+        }
         
         # หา request ที่เกี่ยวข้องกับ notification นี้
         # notification.user_id คือผู้รับ notification (ผู้รับฝาก)

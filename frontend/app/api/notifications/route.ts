@@ -14,7 +14,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'user_email is required' }, { status: 400 });
     }
 
-    const response = await fetch(`${BACKEND_URL}/api/notifications?user_email=${encodeURIComponent(user_email)}`);
+    const response = await fetch(`${BACKEND_URL}/notifications?user_email=${encodeURIComponent(user_email)}`);
     
     if (!response.ok) {
       throw new Error(`Backend responded with status: ${response.status}`);

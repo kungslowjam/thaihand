@@ -4,23 +4,49 @@ import { useSession } from "next-auth/react";
 export function useBackendToken() {
   const { data: session } = useSession();
   const [backendToken, setBackendToken] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const accessToken = (session as any)?.accessToken;
-    // ดึง provider จาก session
     const provider = (session as any)?.user?.provider || (session as any)?.provider || "google";
-    if (accessToken) {
+    
+    if (accessToken && !backendToken) {
+      setLoading(true);
+      setError(null);
+      
       fetch("http://localhost:8000/api/auth/exchange", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ accessToken, provider })
       })
-        .then(res => res.json())
+        .then(res => {
+          if (!res.ok) {
+            throw new Error(`HTTP error! status: ${res.status}`);
+          }
+          return res.json();
+        })
         .then(data => {
-          if (data.accessToken) setBackendToken(data.accessToken);
+          if (data.accessToken) {
+            setBackendToken(data.accessToken);
+            console.log("Backend token obtained successfully");
+          } else {
+            throw new Error("No access token in response");
+          }
+        })
+        .catch(err => {
+          console.error("Error getting backend token:", err);
+          setError(err.message);
+          // Retry after 3 seconds
+          setTimeout(() => {
+            setLoading(false);
+          }, 3000);
+        })
+        .finally(() => {
+          setLoading(false);
         });
     }
-  }, [session]);
+  }, [session, backendToken]);
 
-  return backendToken;
+  return { backendToken, loading, error };
 } 

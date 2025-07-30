@@ -19,6 +19,16 @@ const nextConfig = {
   },
   // Disable static generation for problematic pages
   trailingSlash: false,
+  // Production optimizations
+  swcMinify: true,
+  compress: true,
+  poweredByHeader: false,
+  // CSS handling
+  cssModules: false,
+  sassOptions: {},
+  // Static file handling
+  assetPrefix: '',
+  basePath: '',
   async rewrites() {
     return [
       // NextAuth endpoints ทำงานที่ frontend (ไม่ proxy)
@@ -39,6 +49,16 @@ const nextConfig = {
   onDemandEntries: {
     maxInactiveAge: 25 * 1000,
     pagesBufferLength: 2,
+  },
+  // Webpack configuration
+  webpack: (config, { isServer }) => {
+    if (!isServer) {
+      config.resolve.fallback = {
+        ...config.resolve.fallback,
+        fs: false,
+      };
+    }
+    return config;
   },
 };
 

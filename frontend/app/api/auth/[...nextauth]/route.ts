@@ -4,6 +4,9 @@ import LineProvider from "next-auth/providers/line";
 import { JWT } from "next-auth/jwt";
 import { Session } from "next-auth";
 
+// Force dynamic rendering
+export const dynamic = 'force-dynamic';
+
 // Extend NextAuth types
 declare module "next-auth" {
   interface Session {
@@ -26,6 +29,14 @@ declare module "next-auth/jwt" {
   }
 }
 
+console.log('NextAuth Config - Environment Variables:');
+console.log('GOOGLE_CLIENT_ID:', process.env.GOOGLE_CLIENT_ID ? 'SET' : 'NOT SET');
+console.log('GOOGLE_CLIENT_SECRET:', process.env.GOOGLE_CLIENT_SECRET ? 'SET' : 'NOT SET');
+console.log('LINE_CLIENT_ID:', process.env.LINE_CLIENT_ID ? 'SET' : 'NOT SET');
+console.log('LINE_CLIENT_SECRET:', process.env.LINE_CLIENT_SECRET ? 'SET' : 'NOT SET');
+console.log('NEXTAUTH_SECRET:', process.env.NEXTAUTH_SECRET ? 'SET' : 'NOT SET');
+console.log('NEXTAUTH_URL:', process.env.NEXTAUTH_URL);
+
 const handler = NextAuth({
   providers: [
     GoogleProvider({
@@ -38,9 +49,14 @@ const handler = NextAuth({
     }),
   ],
   pages: {
-    signIn: '/login'
+    signIn: '/login',
+    error: '/api/auth/error',
   },
   secret: process.env.NEXTAUTH_SECRET,
+  debug: false, // Disable debug in production
+  session: {
+    strategy: "jwt",
+  },
   callbacks: {
     async session({ session, token, user }) {
       console.log('SESSION CALLBACK: token =', token, 'session =', session);

@@ -13,6 +13,7 @@ import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { Session } from "next-auth";
 import { createClient } from '@supabase/supabase-js';
+import { useBackendToken } from "@/lib/useBackendToken";
 
 // Safe Supabase client creation with fallbacks
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co';
@@ -115,7 +116,7 @@ export function RequestForm({ initialData, mode = 'create', onSubmit, onDelete, 
   const [cityListTo, setCityListTo] = useState<any[]>([]);
 
   const { data: session } = useSession();
-  const [backendToken, setBackendToken] = useState<string | null>(null);
+  const { backendToken, loading, error } = useBackendToken();
   const router = useRouter();
 
   // โหลดรายชื่อประเทศเมื่อ mount
@@ -123,22 +124,6 @@ export function RequestForm({ initialData, mode = 'create', onSubmit, onDelete, 
     // ใน Select ของประเทศ ใช้ countryList
     // ใน Select ของเมือง/จังหวัด ใช้ cityListFrom/cityListTo ตามเดิม
   }, []);
-
-  useEffect(() => {
-    const accessToken = getAccessToken(session);
-    const provider = (session as any)?.provider || (session as any)?.user?.provider || "google";
-    if (accessToken) {
-      fetch("http://localhost:8000/api/auth/exchange", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ accessToken, provider })
-      })
-        .then(res => res.json())
-        .then(data => {
-          setBackendToken(data.accessToken);
-        });
-    }
-  }, [session]);
 
   // โหลดเมือง/จังหวัดเมื่อเลือกประเทศ (ตัวอย่าง: ไทย = จังหวัด, อื่นๆ = เมืองหลัก)
   useEffect(() => {
@@ -209,6 +194,7 @@ export function RequestForm({ initialData, mode = 'create', onSubmit, onDelete, 
     }
     if (!backendToken) {
       console.log("ยังไม่มี backendToken");
+      setErrors({ submit: "ยังไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้ กรุณารอสักครู่" });
       return;
     }
     setSubmitting(true);
@@ -290,6 +276,21 @@ export function RequestForm({ initialData, mode = 'create', onSubmit, onDelete, 
         {success && (
           <div className="mb-6">
             <Badge className="bg-green-100 text-green-700 px-4 py-2 text-base">บันทึกสำเร็จ!</Badge>
+          </div>
+        )}
+        {loading && (
+          <div className="mb-6">
+            <Badge className="bg-blue-100 text-blue-700 px-4 py-2 text-base flex items-center gap-2">
+              <Loader2 className="h-4 w-4 animate-spin" />
+              กำลังเชื่อมต่อกับเซิร์ฟเวอร์...
+            </Badge>
+          </div>
+        )}
+        {error && (
+          <div className="mb-6">
+            <Badge className="bg-red-100 text-red-700 px-4 py-2 text-base">
+              ข้อผิดพลาดในการเชื่อมต่อ: {error}
+            </Badge>
           </div>
         )}
         <form onSubmit={handleSubmit} className="space-y-5">
@@ -410,13 +411,23 @@ export function RequestForm({ initialData, mode = 'create', onSubmit, onDelete, 
             <Label htmlFor="urgent" className="text-red-500">ต้องการด่วน</Label>
           </div>
           <div className="flex gap-2 mt-6">
-            <Button type="submit" className="bg-blue-600 hover:bg-blue-700 text-white rounded-xl flex items-center gap-2" disabled={submitting}>
-              {submitting && <Loader2 className="animate-spin h-5 w-5" />} {mode === 'edit' ? 'บันทึก' : 'สร้าง'}
+            <Button 
+              type="submit" 
+              className="bg-blue-600 hover:bg-blue-700 text-white rounded-xl flex items-center gap-2" 
+              disabled={submitting || !backendToken || loading}
+            >
+              {submitting && <Loader2 className="animate-spin h-5 w-5" />} 
+              {mode === 'edit' ? 'บันทึก' : 'สร้าง'}
             </Button>
             {mode === 'edit' && onDelete && (
               <Button type="button" variant="destructive" onClick={() => setShowDelete(true)}>ลบ</Button>
             )}
           </div>
+          {!backendToken && !loading && (
+            <div className="text-orange-600 text-sm text-center mt-2">
+              กำลังเชื่อมต่อกับเซิร์ฟเวอร์...
+            </div>
+          )}
           {errors.submit && (
             <div className="text-red-500 text-center mt-2">
               {Array.isArray(errors.submit)

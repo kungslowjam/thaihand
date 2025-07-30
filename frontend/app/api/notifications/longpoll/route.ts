@@ -16,7 +16,7 @@ export async function GET(request: NextRequest) {
     }
 
     const response = await fetch(
-      `${BACKEND_URL}/api/notifications/longpoll?user_email=${encodeURIComponent(user_email)}&last_time=${encodeURIComponent(last_time)}`
+      `${BACKEND_URL}/notifications/longpoll?user_email=${encodeURIComponent(user_email)}&last_time=${encodeURIComponent(last_time)}`
     );
     
     if (!response.ok) {
