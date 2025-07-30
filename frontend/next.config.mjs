@@ -4,6 +4,7 @@ const nextConfig = {
     domains: [
       "profile.line-scdn.net",
       "lh3.googleusercontent.com",
+      "abhprxkswysntmerxklb.supabase.co",
       // เพิ่ม domain อื่นๆ ที่ต้องการโหลดรูปได้ที่นี่
     ],
   },
