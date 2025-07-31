@@ -52,6 +52,10 @@ WORKDIR /app
 # ติดตั้ง CA certificates
 RUN apk add --no-cache ca-certificates
 
+# เพิ่ม DNS configuration
+RUN echo "nameserver 8.8.8.8" > /etc/resolv.conf && \
+    echo "nameserver 8.8.4.4" >> /etc/resolv.conf
+
 ENV NODE_ENV production
 ENV NEXT_TELEMETRY_DISABLED 1
 
