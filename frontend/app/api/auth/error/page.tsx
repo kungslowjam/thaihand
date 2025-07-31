@@ -1,115 +1,70 @@
-'use client';
+"use client"
 
-import { useSearchParams } from 'next/navigation';
-import { useEffect, useState, Suspense } from 'react';
-
-function AuthErrorContent() {
-  const searchParams = useSearchParams();
-  const [error, setError] = useState<string>('');
-
-  useEffect(() => {
-    const errorParam = searchParams.get('error');
-    if (errorParam) {
-      setError(errorParam);
-    }
-  }, [searchParams]);
-
-  const getErrorMessage = (errorCode: string) => {
-    switch (errorCode) {
-      case 'SIGNIN_OAUTH_ERROR':
-        return 'เกิดข้อผิดพลาดในการเข้าสู่ระบบผ่าน OAuth กรุณาลองใหม่อีกครั้ง';
-      case 'OAUTH_CALLBACK_ERROR':
-        return 'เกิดข้อผิดพลาดในการ callback จาก OAuth provider';
-      case 'OAUTH_CREATE_ACCOUNT_ERROR':
-        return 'เกิดข้อผิดพลาดในการสร้างบัญชีใหม่';
-      case 'OAUTH_ACCOUNT_LINK_ERROR':
-        return 'เกิดข้อผิดพลาดในการเชื่อมต่อบัญชี';
-      case 'EMAIL_CREATE_ACCOUNT_ERROR':
-        return 'เกิดข้อผิดพลาดในการสร้างบัญชีด้วยอีเมล';
-      case 'CALLBACK_OAUTH_ERROR':
-        return 'เกิดข้อผิดพลาดในการ callback OAuth';
-      case 'OAUTH_SIGNIN_ERROR':
-        return 'เกิดข้อผิดพลาดในการเข้าสู่ระบบ OAuth';
-      case 'OAUTH_V1_LEGACY_USER_ID_ERROR':
-        return 'เกิดข้อผิดพลาดกับ legacy user ID';
-      case 'OAuthSignin':
-        return 'เกิดข้อผิดพลาดในการเริ่มต้น OAuth กรุณาตรวจสอบ LINE Client ID และ Secret';
-      case 'OAuthCallback':
-        return 'เกิดข้อผิดพลาดในการ callback OAuth กรุณาลองใหม่อีกครั้ง';
-      case 'OAuthCreateAccount':
-        return 'เกิดข้อผิดพลาดในการสร้างบัญชี OAuth';
-      case 'OAuthAccountLink':
-        return 'เกิดข้อผิดพลาดในการเชื่อมต่อบัญชี OAuth';
-      case 'EmailCreateAccount':
-        return 'เกิดข้อผิดพลาดในการสร้างบัญชีด้วยอีเมล';
-      case 'Callback':
-        return 'เกิดข้อผิดพลาดในการ callback';
-      default:
-        return 'เกิดข้อผิดพลาดที่ไม่ทราบสาเหตุ กรุณาลองใหม่อีกครั้ง';
-    }
-  };
-
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8">
-        <div>
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-            เกิดข้อผิดพลาด
-          </h2>
-          <p className="mt-2 text-center text-sm text-gray-600">
-            {getErrorMessage(error)}
-          </p>
-        </div>
-        <div className="mt-8 space-y-6">
-          <div className="rounded-md bg-red-50 p-4">
-            <div className="flex">
-              <div className="flex-shrink-0">
-                <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
-                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-                </svg>
-              </div>
-              <div className="ml-3">
-                <h3 className="text-sm font-medium text-red-800">
-                  รหัสข้อผิดพลาด: {error}
-                </h3>
-              </div>
-            </div>
-          </div>
-          <div className="flex space-x-4">
-            <a
-              href="/login"
-              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-            >
-              กลับไปหน้าเข้าสู่ระบบ
-            </a>
-            <a
-              href="/"
-              className="group relative w-full flex justify-center py-2 px-4 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-            >
-              กลับหน้าหลัก
-            </a>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function LoadingFallback() {
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      <div className="text-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto"></div>
-        <p className="mt-4 text-gray-600">กำลังโหลด...</p>
-      </div>
-    </div>
-  );
-}
+import { useSearchParams } from "next/navigation"
+import { Button } from "@/components/ui/button"
+import { ThaiHandLogo } from "@/components/thai-hand-logo"
+import Link from "next/link"
 
 export default function AuthErrorPage() {
+  const searchParams = useSearchParams()
+  const error = searchParams.get('error')
+  const message = searchParams.get('message')
+
+  const getErrorMessage = () => {
+    switch (error) {
+      case 'OAuthSignin':
+        return 'เกิดข้อผิดพลาดในการเริ่มต้น OAuth กรุณาตรวจสอบ LINE Client ID และ Secret'
+      case 'OAuthCallback':
+        return 'เกิดข้อผิดพลาดในการ callback กรุณาลองใหม่อีกครั้ง'
+      case 'OAuthCreateAccount':
+        return 'เกิดข้อผิดพลาดในการสร้างบัญชี'
+      case 'EmailCreateAccount':
+        return 'เกิดข้อผิดพลาดในการสร้างบัญชีด้วยอีเมล'
+      case 'Callback':
+        return 'เกิดข้อผิดพลาดในการ callback'
+      case 'OAuthAccountNotLinked':
+        return 'บัญชีนี้เชื่อมต่อกับ provider อื่นแล้ว'
+      case 'EmailSignin':
+        return 'เกิดข้อผิดพลาดในการเข้าสู่ระบบด้วยอีเมล'
+      case 'CredentialsSignin':
+        return 'เกิดข้อผิดพลาดในการเข้าสู่ระบบด้วย credentials'
+      case 'SessionRequired':
+        return 'กรุณาเข้าสู่ระบบก่อน'
+      default:
+        return message || 'เกิดข้อผิดพลาดที่ไม่ทราบสาเหตุ'
+    }
+  }
+
   return (
-    <Suspense fallback={<LoadingFallback />}>
-      <AuthErrorContent />
-    </Suspense>
-  );
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-100 via-white to-blue-200">
+      <div className="w-full max-w-lg p-6">
+        <div className="rounded-3xl shadow-2xl bg-white/70 backdrop-blur-md px-8 py-10 flex flex-col items-center border border-white/40">
+          <div className="mb-8 flex flex-col items-center">
+            <ThaiHandLogo className="h-14 w-14 mb-2 drop-shadow" />
+            <span className="text-4xl font-extrabold text-gray-900 tracking-tight">ฝากซื้อไทย</span>
+          </div>
+          
+          <div className="text-center mb-8">
+            <h1 className="text-2xl font-bold text-red-600 mb-4">เกิดข้อผิดพลาด</h1>
+            <p className="text-gray-700 mb-4">{getErrorMessage()}</p>
+            <p className="text-sm text-gray-500">รหัสข้อผิดพลาด: {error}</p>
+          </div>
+
+          <div className="flex flex-col gap-4 w-full">
+            <Link href="/login">
+              <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white">
+                กลับไปหน้าเข้าสู่ระบบ
+              </Button>
+            </Link>
+            
+            <Link href="/">
+              <Button variant="outline" className="w-full">
+                กลับหน้าหลัก
+              </Button>
+            </Link>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
 } 
