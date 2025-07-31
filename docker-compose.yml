@@ -83,6 +83,9 @@ services:
     dns:
       - 8.8.8.8
       - 8.8.4.4
+    extra_hosts:
+      - "access.line.me:104.28.211.79"
+      - "api.line.me:104.28.211.79"
 
   # Nginx Reverse Proxy
   nginx:

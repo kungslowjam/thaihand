@@ -62,10 +62,14 @@ function LoginForm() {
       try {
         console.log(`LINE LOGIN ATTEMPT ${retryCount + 1}/${maxRetries}`);
         
-        // ใช้ window.location.href แทน signIn เพื่อ bypass NextAuth error handling
-        const lineAuthUrl = `/api/auth/signin/line?callbackUrl=${encodeURIComponent('/dashboard')}`;
-        window.location.href = lineAuthUrl;
-        return; // ออกจาก function ทันที
+        const result = await signIn("line", { 
+          callbackUrl: "/dashboard",
+          redirect: true // เปลี่ยนเป็น true
+        });
+        
+        // ถ้า redirect: true แล้ว จะไม่มาถึงบรรทัดนี้
+        console.log('LINE LOGIN SUCCESS');
+        break;
         
       } catch (error) {
         console.log('LINE LOGIN EXCEPTION:', error);

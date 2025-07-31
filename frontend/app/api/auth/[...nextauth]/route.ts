@@ -29,34 +29,6 @@ declare module "next-auth/jwt" {
   }
 }
 
-// Validate environment variables
-const requiredEnvVars = {
-  GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID,
-  GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET,
-  LINE_CLIENT_ID: process.env.LINE_CLIENT_ID,
-  LINE_CLIENT_SECRET: process.env.LINE_CLIENT_SECRET,
-  NEXTAUTH_SECRET: process.env.NEXTAUTH_SECRET,
-  NEXTAUTH_URL: process.env.NEXTAUTH_URL,
-};
-
-console.log('NextAuth Config - Environment Variables:');
-Object.entries(requiredEnvVars).forEach(([key, value]) => {
-  console.log(`${key}:`, value ? 'SET' : 'NOT SET');
-  if (!value) {
-    console.error(`❌ ${key} is not set!`);
-  }
-});
-
-// Check if all required env vars are set
-const missingEnvVars = Object.entries(requiredEnvVars)
-  .filter(([_, value]) => !value)
-  .map(([key, _]) => key);
-
-if (missingEnvVars.length > 0) {
-  console.error('❌ Missing environment variables:', missingEnvVars);
-  throw new Error(`Missing environment variables: ${missingEnvVars.join(', ')}`);
-}
-
 const handler = NextAuth({
   providers: [
     GoogleProvider({
@@ -88,7 +60,7 @@ const handler = NextAuth({
         };
       },
       httpOptions: {
-        timeout: 120000, // เพิ่ม timeout เป็น 120 วินาที
+        timeout: 60000,
         headers: {
           'User-Agent': 'Mozilla/5.0 (compatible; ThaiHand/1.0)',
         },
