@@ -46,6 +46,11 @@ const handler = NextAuth({
     LineProvider({
       clientId: process.env.LINE_CLIENT_ID!,
       clientSecret: process.env.LINE_CLIENT_SECRET!,
+      authorization: {
+        params: {
+          scope: 'profile openid email',
+        },
+      },
     }),
   ],
   pages: {
@@ -53,7 +58,7 @@ const handler = NextAuth({
     error: '/api/auth/error',
   },
   secret: process.env.NEXTAUTH_SECRET,
-  debug: false, // Disable debug in production
+  debug: true, // เปิด debug เพื่อดู error
   session: {
     strategy: "jwt",
   },
