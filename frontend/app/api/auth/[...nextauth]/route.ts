@@ -29,13 +29,33 @@ declare module "next-auth/jwt" {
   }
 }
 
+// Validate environment variables
+const requiredEnvVars = {
+  GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID,
+  GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET,
+  LINE_CLIENT_ID: process.env.LINE_CLIENT_ID,
+  LINE_CLIENT_SECRET: process.env.LINE_CLIENT_SECRET,
+  NEXTAUTH_SECRET: process.env.NEXTAUTH_SECRET,
+  NEXTAUTH_URL: process.env.NEXTAUTH_URL,
+};
+
 console.log('NextAuth Config - Environment Variables:');
-console.log('GOOGLE_CLIENT_ID:', process.env.GOOGLE_CLIENT_ID ? 'SET' : 'NOT SET');
-console.log('GOOGLE_CLIENT_SECRET:', process.env.GOOGLE_CLIENT_SECRET ? 'SET' : 'NOT SET');
-console.log('LINE_CLIENT_ID:', process.env.LINE_CLIENT_ID ? 'SET' : 'NOT SET');
-console.log('LINE_CLIENT_SECRET:', process.env.LINE_CLIENT_SECRET ? 'SET' : 'NOT SET');
-console.log('NEXTAUTH_SECRET:', process.env.NEXTAUTH_SECRET ? 'SET' : 'NOT SET');
-console.log('NEXTAUTH_URL:', process.env.NEXTAUTH_URL);
+Object.entries(requiredEnvVars).forEach(([key, value]) => {
+  console.log(`${key}:`, value ? 'SET' : 'NOT SET');
+  if (!value) {
+    console.error(`❌ ${key} is not set!`);
+  }
+});
+
+// Check if all required env vars are set
+const missingEnvVars = Object.entries(requiredEnvVars)
+  .filter(([_, value]) => !value)
+  .map(([key, _]) => key);
+
+if (missingEnvVars.length > 0) {
+  console.error('❌ Missing environment variables:', missingEnvVars);
+  throw new Error(`Missing environment variables: ${missingEnvVars.join(', ')}`);
+}
 
 const handler = NextAuth({
   providers: [
@@ -46,6 +66,19 @@ const handler = NextAuth({
     LineProvider({
       clientId: process.env.LINE_CLIENT_ID!,
       clientSecret: process.env.LINE_CLIENT_SECRET!,
+      authorization: {
+        url: 'https://access.line.me/oauth2/v2.1/authorize',
+        params: {
+          scope: 'profile openid',
+          response_type: 'code',
+        },
+      },
+      token: {
+        url: 'https://api.line.me/oauth2/v2.1/token',
+      },
+      userinfo: {
+        url: 'https://api.line.me/v2/profile',
+      },
     }),
   ],
   pages: {
