@@ -36,15 +36,15 @@ const handler = NextAuth({
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
     }),
     LineProvider({
-      clientId: process.env.LINE_CLIENT_ID!,
-      clientSecret: process.env.LINE_CLIENT_SECRET!,
+      clientId: process.env.LINE_CLIENT_ID || '',
+      clientSecret: process.env.LINE_CLIENT_SECRET || '',
     }),
   ],
   pages: {
     signIn: '/login',
   },
   secret: process.env.NEXTAUTH_SECRET,
-  debug: process.env.NODE_ENV === 'development', // เปิด debug เฉพาะใน development
+  debug: false, // ปิด debug ใน production
   session: {
     strategy: "jwt",
     maxAge: 30 * 24 * 60 * 60, // 30 วัน
@@ -60,6 +60,12 @@ const handler = NextAuth({
   callbacks: {
     async signIn({ user, account, profile, email, credentials }) {
       console.log('SIGNIN CALLBACK - User:', user?.id, 'Provider:', account?.provider);
+      
+      // ตรวจสอบ environment variables
+      if (!process.env.LINE_CLIENT_ID || !process.env.LINE_CLIENT_SECRET) {
+        console.log('LINE OAUTH ERROR - Missing environment variables');
+        return false;
+      }
       
       if (account?.provider === 'line') {
         console.log('LINE OAUTH - Account details:', {
