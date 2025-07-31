@@ -67,7 +67,10 @@ const handler = NextAuth({
       clientId: process.env.LINE_CLIENT_ID!,
       clientSecret: process.env.LINE_CLIENT_SECRET!,
       httpOptions: {
-        timeout: 30000, // 30 seconds timeout
+        timeout: 60000, // 60 seconds timeout
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (compatible; ThaiHand/1.0)',
+        },
       },
     }),
   ],
