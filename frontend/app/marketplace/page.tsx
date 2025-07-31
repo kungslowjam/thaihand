@@ -55,7 +55,7 @@ export default function MarketplacePage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [offers, setOffers] = useState<any[]>([]);
   const [requests, setRequests] = useState<any[]>([]); // ถ้ามี requests จริงให้เตรียมไว้ด้วย
-  const backendToken = useBackendToken();
+  const { backendToken, loading: tokenLoading, error: tokenError } = useBackendToken();
 
   useEffect(() => {
     if (backendToken) {
@@ -363,11 +363,16 @@ export default function MarketplacePage() {
               <form onSubmit={async e => {
                 e.preventDefault();
                 try {
+                  if (!backendToken) {
+                    alert("กรุณาเข้าสู่ระบบก่อนส่งคำขอ");
+                    return;
+                  }
+                  
                   const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || '/api'}/requests`, {
                     method: "POST",
                     headers: {
                       "Content-Type": "application/json",
-                      ...(backendToken ? { "Authorization": `Bearer ${backendToken}` } : {})
+                      "Authorization": `Bearer ${backendToken}`
                     },
                     body: JSON.stringify({
                       title: requestForm.itemName,
