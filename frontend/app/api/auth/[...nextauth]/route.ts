@@ -38,35 +38,13 @@ const handler = NextAuth({
     LineProvider({
       clientId: process.env.LINE_CLIENT_ID!,
       clientSecret: process.env.LINE_CLIENT_SECRET!,
-      authorization: {
-        url: 'https://access.line.me/oauth2/v2.1/authorize',
-        params: {
-          scope: 'openid profile',
-          response_type: 'code',
-        },
-      },
-      token: {
-        url: 'https://api.line.me/oauth2/v2.1/token',
-      },
-      userinfo: {
-        url: 'https://api.line.me/v2/profile',
-      },
-      profile(profile) {
-        return {
-          id: profile.sub,
-          name: profile.name,
-          email: profile.email,
-          image: profile.picture,
-        };
-      },
     }),
   ],
   pages: {
     signIn: '/login',
-    error: '/api/auth/error',
   },
   secret: process.env.NEXTAUTH_SECRET,
-  debug: true, // เปิด debug เพื่อดู error
+  debug: process.env.NODE_ENV === 'development', // เปิด debug เฉพาะใน development
   session: {
     strategy: "jwt",
     maxAge: 30 * 24 * 60 * 60, // 30 วัน
@@ -123,6 +101,12 @@ const handler = NextAuth({
       if (url.startsWith(baseUrl + '/api/auth/signin/line')) {
         console.log('LINE OAUTH SIGNIN - Allowing LINE redirect');
         return url;
+      }
+      
+      // ถ้าเป็น error ให้ไป login
+      if (url.includes('error=OAuthSignin')) {
+        console.log('OAUTH ERROR - Redirecting to login');
+        return baseUrl + '/login';
       }
       
       // อื่นๆ ให้ไป dashboard
