@@ -15,10 +15,17 @@ import { Session } from "next-auth";
 import { createClient } from '@supabase/supabase-js';
 import { useBackendToken } from "@/lib/useBackendToken";
 
-// Safe Supabase client creation with fallbacks
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co';
-const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholder-key';
-const supabase = createClient(supabaseUrl, supabaseKey);
+// Dynamic Supabase client creation
+function createSupabaseClient() {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  
+  if (!supabaseUrl || !supabaseKey || supabaseUrl === 'https://placeholder.supabase.co') {
+    return null;
+  }
+  
+  return createClient(supabaseUrl, supabaseKey);
+}
 
 // เพิ่ม type guard สำหรับ session ที่มี accessToken
 function getAccessToken(session: Session | null): string | undefined {
@@ -38,16 +45,14 @@ async function getCityListByCountry(alpha2: string) {
 }
 
 async function uploadImageToSupabase(file: File) {
+  const supabase = createSupabaseClient();
+  if (!supabase) {
+    console.warn('Supabase not configured, skipping image upload');
+    return null;
+  }
+
   try {
     console.log('uploading file to supabase:', file);
-    console.log('supabaseUrl:', supabaseUrl);
-    console.log('supabaseKey length:', supabaseKey?.length);
-    
-    // Check if Supabase is properly configured
-    if (!supabaseUrl || supabaseUrl === 'https://placeholder.supabase.co') {
-      console.warn('Supabase not configured, skipping image upload');
-      return null;
-    }
     
     const fileExt = file.name.split('.').pop();
     const fileName = `${Date.now()}-${Math.random().toString(36).substring(2, 8)}.${fileExt}`;
