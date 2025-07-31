@@ -87,10 +87,12 @@ def create_request(db: Session, request: schemas.RequestCreate, user_id: int, of
         if offer:
             from datetime import datetime
             # เช็คก่อนว่ามี notification สำหรับ offer_id/user_id นี้อยู่แล้วหรือยัง
+            from datetime import datetime
+            current_time = datetime.now().isoformat()
             existing_notif = db.query(models.Notification).filter(
                 models.Notification.user_id == offer.user_id,
                 models.Notification.message == "มีคนฝากหิ้วกับคุณ",
-                models.Notification.created_at >= db_request.created_at
+                models.Notification.created_at >= current_time
             ).first()
             if not existing_notif:
                 print(f"[DEBUG] Create notification for offer_id={offer_id}, user_id={user_id}, request_id={db_request.id}")
