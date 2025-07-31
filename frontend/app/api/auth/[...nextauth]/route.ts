@@ -66,6 +66,9 @@ const handler = NextAuth({
     LineProvider({
       clientId: process.env.LINE_CLIENT_ID!,
       clientSecret: process.env.LINE_CLIENT_SECRET!,
+      httpOptions: {
+        timeout: 30000, // 30 seconds timeout
+      },
     }),
   ],
   pages: {

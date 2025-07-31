@@ -71,6 +71,8 @@ services:
       - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
       - LINE_CLIENT_ID=${LINE_CLIENT_ID}
       - LINE_CLIENT_SECRET=${LINE_CLIENT_SECRET}
+      - NODE_TLS_REJECT_UNAUTHORIZED=0
+      - NODE_OPTIONS=--max-http-header-size=8192
     ports:
       - "3000:3000"
     depends_on:
