@@ -84,6 +84,15 @@ const handler = NextAuth({
     strategy: "jwt",
     maxAge: 30 * 24 * 60 * 60, // 30 วัน
   },
+  // เพิ่ม error handling
+  events: {
+    async signIn({ user, account, profile, isNewUser }) {
+      console.log('EVENT: signIn', { user, account, profile, isNewUser });
+    },
+    async signOut({ session, token }) {
+      console.log('EVENT: signOut', { session, token });
+    },
+  },
   callbacks: {
     async signIn({ user, account, profile, email, credentials }) {
       console.log('SIGNIN CALLBACK:', { user, account, profile, email, credentials });
@@ -96,7 +105,8 @@ const handler = NextAuth({
         try {
           if (!account.access_token) {
             console.error('LINE OAUTH ERROR - No access token received');
-            return false;
+            // ถ้าไม่มี access token ให้ redirect ไปหน้า login ด้วย error
+            return '/login?error=line_oauth_error&message=เกิดข้อผิดพลาดในการเชื่อมต่อกับ LINE กรุณาลองใหม่อีกครั้ง';
           }
           console.log('LINE OAUTH SUCCESS - Access token received');
           
@@ -104,7 +114,7 @@ const handler = NextAuth({
           return true;
         } catch (error) {
           console.error('LINE OAUTH ERROR - Exception during signin:', error);
-          return false;
+          return '/login?error=line_oauth_error&message=เกิดข้อผิดพลาดในการเชื่อมต่อกับ LINE กรุณาลองใหม่อีกครั้ง';
         }
       }
       
