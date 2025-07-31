@@ -72,6 +72,19 @@ const handler = NextAuth({
           'User-Agent': 'Mozilla/5.0 (compatible; ThaiHand/1.0)',
         },
       },
+      authorization: {
+        url: 'https://access.line.me/oauth2/v2.1/authorize',
+        params: {
+          scope: 'profile openid',
+          response_type: 'code',
+        },
+      },
+      token: {
+        url: 'https://api.line.me/oauth2/v2.1/token',
+      },
+      userinfo: {
+        url: 'https://api.line.me/v2/profile',
+      },
     }),
   ],
   pages: {
