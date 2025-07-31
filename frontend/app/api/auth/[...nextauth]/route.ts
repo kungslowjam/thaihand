@@ -38,30 +38,6 @@ const handler = NextAuth({
     LineProvider({
       clientId: process.env.LINE_CLIENT_ID!,
       clientSecret: process.env.LINE_CLIENT_SECRET!,
-      authorization: {
-        url: 'https://access.line.me/oauth2/v2.1/authorize',
-        params: {
-          scope: 'openid profile',
-          response_type: 'code',
-        },
-      },
-      token: {
-        url: 'https://api.line.me/oauth2/v2.1/token',
-      },
-      userinfo: {
-        url: 'https://api.line.me/v2/profile',
-      },
-      profile(profile) {
-        return {
-          id: profile.sub,
-          name: profile.name,
-          email: profile.email,
-          image: profile.picture,
-        };
-      },
-      httpOptions: {
-        timeout: 30000, // เพิ่ม timeout เป็น 30 วินาที
-      },
     }),
   ],
   pages: {
@@ -69,7 +45,7 @@ const handler = NextAuth({
     error: '/api/auth/error',
   },
   secret: process.env.NEXTAUTH_SECRET,
-  debug: true, // เปิด debug เพื่อดู error
+  debug: process.env.NODE_ENV === 'development', // เปิด debug เฉพาะใน development
   session: {
     strategy: "jwt",
     maxAge: 30 * 24 * 60 * 60, // 30 วัน
@@ -95,10 +71,18 @@ const handler = NextAuth({
           expiresAt: account.expires_at
         });
         
+        // ตรวจสอบว่ามี access_token หรือไม่
         if (!account.access_token) {
           console.log('LINE OAUTH ERROR - No access token');
           return false;
         }
+        
+        // ตรวจสอบว่า user มีข้อมูลครบหรือไม่
+        if (!user || !user.id) {
+          console.log('LINE OAUTH ERROR - No user data');
+          return false;
+        }
+        
         console.log('LINE OAUTH SUCCESS - Access token received');
         return true;
       }
