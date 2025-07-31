@@ -88,7 +88,7 @@ const handler = NextAuth({
         };
       },
       httpOptions: {
-        timeout: 60000,
+        timeout: 120000, // เพิ่ม timeout เป็น 120 วินาที
         headers: {
           'User-Agent': 'Mozilla/5.0 (compatible; ThaiHand/1.0)',
         },
