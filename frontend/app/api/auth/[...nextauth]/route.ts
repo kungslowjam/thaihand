@@ -60,7 +60,7 @@ const handler = NextAuth({
         };
       },
       httpOptions: {
-        timeout: 30000, // เพิ่มเป็น 30 วินาที
+        timeout: 60000,
         headers: {
           'User-Agent': 'Mozilla/5.0 (compatible; ThaiHand/1.0)',
         },
@@ -72,12 +72,11 @@ const handler = NextAuth({
     error: '/api/auth/error',
   },
   secret: process.env.NEXTAUTH_SECRET,
-  debug: process.env.NODE_ENV === 'development', // ปิด debug ใน production
+  debug: process.env.NODE_ENV === 'development',
   session: {
     strategy: "jwt",
     maxAge: 30 * 24 * 60 * 60, // 30 วัน
   },
-  // เพิ่ม error handling
   events: {
     async signIn({ user, account, profile, isNewUser }) {
       console.log('EVENT: signIn', { user: user?.id, provider: account?.provider, isNewUser });

@@ -32,6 +32,18 @@ function AuthErrorContent() {
         return 'เกิดข้อผิดพลาดในการเข้าสู่ระบบ OAuth';
       case 'OAUTH_V1_LEGACY_USER_ID_ERROR':
         return 'เกิดข้อผิดพลาดกับ legacy user ID';
+      case 'OAuthSignin':
+        return 'เกิดข้อผิดพลาดในการเริ่มต้น OAuth กรุณาตรวจสอบ LINE Client ID และ Secret';
+      case 'OAuthCallback':
+        return 'เกิดข้อผิดพลาดในการ callback OAuth กรุณาลองใหม่อีกครั้ง';
+      case 'OAuthCreateAccount':
+        return 'เกิดข้อผิดพลาดในการสร้างบัญชี OAuth';
+      case 'OAuthAccountLink':
+        return 'เกิดข้อผิดพลาดในการเชื่อมต่อบัญชี OAuth';
+      case 'EmailCreateAccount':
+        return 'เกิดข้อผิดพลาดในการสร้างบัญชีด้วยอีเมล';
+      case 'Callback':
+        return 'เกิดข้อผิดพลาดในการ callback';
       default:
         return 'เกิดข้อผิดพลาดที่ไม่ทราบสาเหตุ กรุณาลองใหม่อีกครั้ง';
     }
