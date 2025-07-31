@@ -66,17 +66,11 @@ const handler = NextAuth({
     LineProvider({
       clientId: process.env.LINE_CLIENT_ID!,
       clientSecret: process.env.LINE_CLIENT_SECRET!,
-      httpOptions: {
-        timeout: 60000, // กลับไปใช้ 60 วินาที
-        headers: {
-          'User-Agent': 'Mozilla/5.0 (compatible; ThaiHand/1.0)',
-        },
-      },
     }),
   ],
   pages: {
     signIn: '/login',
-    error: '/api/auth/error',
+    error: '/login',
   },
   secret: process.env.NEXTAUTH_SECRET,
   debug: true, // เปิด debug เพื่อดู error
@@ -102,20 +96,16 @@ const handler = NextAuth({
       // เพิ่ม error handling สำหรับ LINE OAuth
       if (account?.provider === 'line') {
         console.log('LINE OAUTH DEBUG - Processing LINE signin');
-        try {
-          if (!account.access_token) {
-            console.error('LINE OAUTH ERROR - No access token received');
-            // ถ้าไม่มี access token ให้ redirect ไปหน้า login ด้วย error
-            return '/login?error=line_oauth_error&message=เกิดข้อผิดพลาดในการเชื่อมต่อกับ LINE กรุณาลองใหม่อีกครั้ง';
-          }
-          console.log('LINE OAUTH SUCCESS - Access token received');
-          
-          // ถ้าได้ access token แล้ว ให้ login สำเร็จ
-          return true;
-        } catch (error) {
-          console.error('LINE OAUTH ERROR - Exception during signin:', error);
-          return '/login?error=line_oauth_error&message=เกิดข้อผิดพลาดในการเชื่อมต่อกับ LINE กรุณาลองใหม่อีกครั้ง';
+        
+        // ถ้าไม่มี account หรือ access_token แสดงว่าเกิด error
+        if (!account || !account.access_token) {
+          console.error('LINE OAUTH ERROR - No account or access token received');
+          console.error('LINE OAUTH ERROR - Account:', account);
+          return false;
         }
+        
+        console.log('LINE OAUTH SUCCESS - Access token received');
+        return true;
       }
       
       return true;
