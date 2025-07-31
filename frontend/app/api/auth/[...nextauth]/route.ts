@@ -66,8 +66,29 @@ const handler = NextAuth({
     LineProvider({
       clientId: process.env.LINE_CLIENT_ID!,
       clientSecret: process.env.LINE_CLIENT_SECRET!,
+      authorization: {
+        url: 'https://access.line.me/oauth2/v2.1/authorize',
+        params: {
+          scope: 'openid profile',
+          response_type: 'code',
+        },
+      },
+      token: {
+        url: 'https://api.line.me/oauth2/v2.1/token',
+      },
+      userinfo: {
+        url: 'https://api.line.me/v2/profile',
+      },
+      profile(profile) {
+        return {
+          id: profile.sub,
+          name: profile.name,
+          email: profile.email,
+          image: profile.picture,
+        };
+      },
       httpOptions: {
-        timeout: 30000,
+        timeout: 60000,
         headers: {
           'User-Agent': 'Mozilla/5.0 (compatible; ThaiHand/1.0)',
         },

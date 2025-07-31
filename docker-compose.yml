@@ -80,6 +80,9 @@ services:
     networks:
       - thaihand_network
     restart: unless-stopped
+    dns:
+      - 8.8.8.8
+      - 8.8.4.4
 
   # Nginx Reverse Proxy
   nginx:
