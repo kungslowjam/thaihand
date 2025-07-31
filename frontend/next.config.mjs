@@ -35,7 +35,6 @@ const nextConfig = {
   compress: true,
   poweredByHeader: false,
   // CSS handling
-  cssModules: false,
   sassOptions: {},
   // Static file handling
   assetPrefix: '',
