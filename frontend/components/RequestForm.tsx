@@ -40,6 +40,8 @@ async function getCityListByCountry(alpha2: string) {
 async function uploadImageToSupabase(file: File) {
   try {
     console.log('uploading file to supabase:', file);
+    console.log('supabaseUrl:', supabaseUrl);
+    console.log('supabaseKey length:', supabaseKey?.length);
     
     // Check if Supabase is properly configured
     if (!supabaseUrl || supabaseUrl === 'https://placeholder.supabase.co') {
@@ -49,18 +51,25 @@ async function uploadImageToSupabase(file: File) {
     
     const fileExt = file.name.split('.').pop();
     const fileName = `${Date.now()}-${Math.random().toString(36).substring(2, 8)}.${fileExt}`;
+    console.log('fileName:', fileName);
+    
+    console.log('Starting Supabase upload...');
     const { data, error } = await supabase.storage
       .from('request-images')
       .upload(fileName, file);
     console.log('upload result', { data, error });
+    
     if (error) {
       console.error('Supabase upload error:', error.message, error);
       throw error;
     }
+    
+    console.log('Getting public URL...');
     const { data: publicUrlData } = supabase
       .storage
       .from('request-images')
       .getPublicUrl(fileName);
+    console.log('publicUrlData:', publicUrlData);
     return publicUrlData.publicUrl;
   } catch (error) {
     console.error('Error uploading image to Supabase:', error);
