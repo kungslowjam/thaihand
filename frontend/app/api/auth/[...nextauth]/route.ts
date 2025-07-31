@@ -99,6 +99,8 @@ const handler = NextAuth({
             return false;
           }
           console.log('LINE OAUTH SUCCESS - Access token received');
+          
+          // ถ้าได้ access token แล้ว ให้ login สำเร็จ
           return true;
         } catch (error) {
           console.error('LINE OAUTH ERROR - Exception during signin:', error);
@@ -111,6 +113,12 @@ const handler = NextAuth({
     async redirect({ url, baseUrl }) {
       console.log('REDIRECT CALLBACK:', { url, baseUrl });
       console.log('LINE OAUTH DEBUG - Redirect URL:', url);
+      
+      // ถ้าเป็น LINE OAuth และได้ access token แล้ว ให้ redirect ไป dashboard ทันที
+      if (url.includes('access.line.me') || url.includes('line.me')) {
+        console.log('LINE OAUTH DEBUG - Redirecting to dashboard after successful login');
+        return `${baseUrl}/dashboard`;
+      }
       
       // ป้องกัน infinite redirect loop
       if (url.includes('login?callbackUrl=') && url.includes('login%3FcallbackUrl%3D')) {

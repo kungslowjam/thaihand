@@ -64,21 +64,13 @@ function LoginForm() {
         
         const result = await signIn("line", { 
           callbackUrl: "/dashboard",
-          redirect: false 
+          redirect: true // เปลี่ยนเป็น true เพื่อให้ redirect อัตโนมัติ
         });
         
-        if (result?.error) {
-          console.log('LINE LOGIN ERROR:', result.error);
-          if (retryCount < maxRetries - 1) {
-            retryCount++;
-            await new Promise(resolve => setTimeout(resolve, 2000)); // รอ 2 วินาที
-            continue;
-          }
-          setError('เกิดข้อผิดพลาดในการเชื่อมต่อกับ LINE กรุณาลองใหม่อีกครั้ง');
-        } else {
-          console.log('LINE LOGIN SUCCESS');
-          break;
-        }
+        // ถ้า redirect: true แล้ว จะไม่มาถึงบรรทัดนี้
+        console.log('LINE LOGIN SUCCESS');
+        break;
+        
       } catch (error) {
         console.log('LINE LOGIN EXCEPTION:', error);
         if (retryCount < maxRetries - 1) {
