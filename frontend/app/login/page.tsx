@@ -58,18 +58,21 @@ function LoginForm() {
     try {
       console.log('LINE LOGIN - Starting LINE OAuth');
       
-      // ใช้ redirect: true เพื่อให้ NextAuth จัดการ redirect เอง
-      await signIn("line", { 
+      // เพิ่ม timeout 15 วินาที
+      const timeoutPromise = new Promise((_, reject) => {
+        setTimeout(() => reject(new Error('Timeout')), 15000);
+      });
+      
+      const signInPromise = signIn("line", { 
         callbackUrl: "/dashboard",
         redirect: true 
       });
       
-      // ถ้า redirect: true แล้ว จะไม่มาถึงบรรทัดนี้
-      console.log('LINE LOGIN - Should have redirected');
+      await Promise.race([signInPromise, timeoutPromise]);
       
     } catch (error) {
       console.error("LINE login failed:", error);
-      setError("เกิดข้อผิดพลาดในการเชื่อมต่อ กรุณาลองใหม่อีกครั้ง");
+      setError("ไม่สามารถเชื่อมต่อกับ LINE ได้ กรุณาลองใหม่อีกครั้ง");
       setIsLoading(false);
     }
   };
