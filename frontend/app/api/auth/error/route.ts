@@ -40,12 +40,9 @@ export async function POST(request: NextRequest) {
   
   console.log('NextAuth Error POST:', body);
   
-  // Return error response
-  return NextResponse.json(
-    { 
-      error: 'Authentication error',
-      message: 'An authentication error occurred'
-    },
-    { status: 400 }
-  );
+  // Redirect to login page with error message
+  const loginUrl = new URL('/login', request.url);
+  loginUrl.searchParams.set('error', 'oauth_error');
+  loginUrl.searchParams.set('message', 'เกิดข้อผิดพลาดในการเข้าสู่ระบบ กรุณาลองใหม่อีกครั้ง');
+  return NextResponse.redirect(loginUrl);
 }

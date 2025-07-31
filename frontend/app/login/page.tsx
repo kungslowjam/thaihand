@@ -55,20 +55,42 @@ function LoginForm() {
     setIsLoading(true);
     setError(null);
     
-    try {
-      const result = await signIn("line", { 
-        callbackUrl: "/dashboard",
-        redirect: false 
-      });
-      
-      if (result?.error) {
-        setError('เกิดข้อผิดพลาดในการเชื่อมต่อกับ LINE กรุณาลองใหม่อีกครั้ง');
+    let retryCount = 0;
+    const maxRetries = 3;
+    
+    while (retryCount < maxRetries) {
+      try {
+        console.log(`LINE LOGIN ATTEMPT ${retryCount + 1}/${maxRetries}`);
+        
+        const result = await signIn("line", { 
+          callbackUrl: "/dashboard",
+          redirect: false 
+        });
+        
+        if (result?.error) {
+          console.log('LINE LOGIN ERROR:', result.error);
+          if (retryCount < maxRetries - 1) {
+            retryCount++;
+            await new Promise(resolve => setTimeout(resolve, 2000)); // รอ 2 วินาที
+            continue;
+          }
+          setError('เกิดข้อผิดพลาดในการเชื่อมต่อกับ LINE กรุณาลองใหม่อีกครั้ง');
+        } else {
+          console.log('LINE LOGIN SUCCESS');
+          break;
+        }
+      } catch (error) {
+        console.log('LINE LOGIN EXCEPTION:', error);
+        if (retryCount < maxRetries - 1) {
+          retryCount++;
+          await new Promise(resolve => setTimeout(resolve, 2000));
+          continue;
+        }
+        setError('เกิดข้อผิดพลาดในการเชื่อมต่อ กรุณาลองใหม่อีกครั้ง');
       }
-    } catch (error) {
-      setError('เกิดข้อผิดพลาดในการเชื่อมต่อ กรุณาลองใหม่อีกครั้ง');
-    } finally {
-      setIsLoading(false);
     }
+    
+    setIsLoading(false);
   }
 
   const handleGoogleLogin = () => {

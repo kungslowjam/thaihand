@@ -82,6 +82,7 @@ const handler = NextAuth({
   debug: true, // เปิด debug เพื่อดู error
   session: {
     strategy: "jwt",
+    maxAge: 30 * 24 * 60 * 60, // 30 วัน
   },
   callbacks: {
     async signIn({ user, account, profile, email, credentials }) {
@@ -126,6 +127,9 @@ const handler = NextAuth({
     },
     async session({ session, token, user }) {
       console.log('SESSION CALLBACK: token =', token, 'session =', session);
+      console.log('SESSION DEBUG - Token provider:', token?.provider);
+      console.log('SESSION DEBUG - Token accessToken:', token?.accessToken ? 'EXISTS' : 'MISSING');
+      
       // เพิ่ม image จาก token (Google จะส่ง url รูปมาใน token)
       if (token && session.user) {
         session.user.image = token.picture || session.user.image;
@@ -141,6 +145,13 @@ const handler = NextAuth({
       }
       // แนบ provider เสมอ
       session.provider = token?.provider || null;
+      
+      console.log('SESSION DEBUG - Final session:', {
+        user: session.user?.name,
+        provider: session.provider,
+        hasAccessToken: !!session.accessToken
+      });
+      
       return session;
     },
     async jwt({ token, account, profile }) {
