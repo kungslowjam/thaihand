@@ -67,9 +67,15 @@ const handler = NextAuth({
       clientId: process.env.LINE_CLIENT_ID!,
       clientSecret: process.env.LINE_CLIENT_SECRET!,
       httpOptions: {
-        timeout: 60000, // 60 seconds timeout
+        timeout: 120000, // เพิ่ม timeout เป็น 120 วินาที
         headers: {
           'User-Agent': 'Mozilla/5.0 (compatible; ThaiHand/1.0)',
+        },
+      },
+      authorization: {
+        params: {
+          scope: 'openid profile',
+          response_type: 'code',
         },
       },
     }),
@@ -86,10 +92,30 @@ const handler = NextAuth({
   callbacks: {
     async signIn({ user, account, profile, email, credentials }) {
       console.log('SIGNIN CALLBACK:', { user, account, profile, email, credentials });
+      console.log('LINE OAUTH DEBUG - Account:', account);
+      console.log('LINE OAUTH DEBUG - Profile:', profile);
+      
+      // เพิ่ม error handling สำหรับ LINE OAuth
+      if (account?.provider === 'line') {
+        console.log('LINE OAUTH DEBUG - Processing LINE signin');
+        if (!account.access_token) {
+          console.error('LINE OAUTH ERROR - No access token received');
+          return false;
+        }
+      }
+      
       return true;
     },
     async redirect({ url, baseUrl }) {
       console.log('REDIRECT CALLBACK:', { url, baseUrl });
+      console.log('LINE OAUTH DEBUG - Redirect URL:', url);
+      
+      // ป้องกัน infinite redirect loop
+      if (url.includes('login?callbackUrl=') && url.includes('login%3FcallbackUrl%3D')) {
+        console.log('LINE OAUTH DEBUG - Detected redirect loop, redirecting to home');
+        return baseUrl;
+      }
+      
       return url.startsWith(baseUrl) ? url : baseUrl;
     },
     async session({ session, token, user }) {
