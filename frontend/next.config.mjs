@@ -12,7 +12,7 @@ const nextConfig = {
       { protocol: 'https', hostname: 'profile.line-scdn.net', port: '', pathname: '/**', },
       { protocol: 'https', hostname: 'abhprxkswysntmerxklb.supabase.co', port: '', pathname: '/**', },
     ],
-    unoptimized: false, // เปลี่ยนกลับเป็น false
+    unoptimized: true, // เปลี่ยนเป็น true เพื่อปิด Image Optimization
     formats: ['image/webp', 'image/avif'],
     deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
