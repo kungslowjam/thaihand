@@ -3,9 +3,20 @@ import GoogleProvider from "next-auth/providers/google";
 import LineProvider from "next-auth/providers/line";
 import { JWT } from "next-auth/jwt";
 import { Session } from "next-auth";
+import https from 'https';
 
 // Force dynamic rendering
 export const dynamic = 'force-dynamic';
+
+// สร้าง custom HTTPS agent สำหรับ LINE OAuth
+const httpsAgent = new https.Agent({
+  keepAlive: true,
+  keepAliveMsecs: 30000,
+  maxSockets: 10,
+  maxFreeSockets: 5,
+  timeout: 120000,
+  rejectUnauthorized: false,
+});
 
 // Extend NextAuth types
 declare module "next-auth" {
@@ -68,8 +79,11 @@ const handler = NextAuth({
       clientSecret: process.env.LINE_CLIENT_SECRET!,
       httpOptions: {
         timeout: 120000, // เพิ่ม timeout เป็น 120 วินาที
+        agent: httpsAgent, // ใช้ custom HTTPS agent
         headers: {
           'User-Agent': 'Mozilla/5.0 (compatible; ThaiHand/1.0)',
+          'Accept': 'application/json',
+          'Accept-Language': 'th-TH,th;q=0.9,en;q=0.8',
         },
       },
       authorization: {
@@ -98,8 +112,15 @@ const handler = NextAuth({
       // เพิ่ม error handling สำหรับ LINE OAuth
       if (account?.provider === 'line') {
         console.log('LINE OAUTH DEBUG - Processing LINE signin');
-        if (!account.access_token) {
-          console.error('LINE OAUTH ERROR - No access token received');
+        try {
+          if (!account.access_token) {
+            console.error('LINE OAUTH ERROR - No access token received');
+            return false;
+          }
+          console.log('LINE OAUTH SUCCESS - Access token received');
+          return true;
+        } catch (error) {
+          console.error('LINE OAUTH ERROR - Exception during signin:', error);
           return false;
         }
       }
@@ -114,6 +135,11 @@ const handler = NextAuth({
       if (url.includes('login?callbackUrl=') && url.includes('login%3FcallbackUrl%3D')) {
         console.log('LINE OAUTH DEBUG - Detected redirect loop, redirecting to home');
         return baseUrl;
+      }
+      
+      // ตรวจสอบว่า URL ถูกต้อง
+      if (url.startsWith('http://') || url.startsWith('https://')) {
+        return url.startsWith(baseUrl) ? url : baseUrl;
       }
       
       return url.startsWith(baseUrl) ? url : baseUrl;
