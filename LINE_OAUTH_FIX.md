@@ -4,6 +4,7 @@
 - LINE OAuth timeout error หลังจาก 15 วินาที
 - การเชื่อมต่อกับ LINE API มีปัญหา
 - Environment variables อาจไม่ถูกตั้งค่าถูกต้อง
+- Build error เนื่องจาก useSearchParams() ไม่ได้ถูก wrap ใน Suspense boundary
 
 ## การแก้ไขที่ทำ
 
@@ -22,6 +23,7 @@
 - สร้างหน้าแสดงข้อผิดพลาดที่เข้าใจง่าย
 - แสดงข้อความภาษาไทย
 - มีปุ่มกลับไปหน้า login และหน้าหลัก
+- **แก้ไขปัญหา Suspense boundary** โดย wrap useSearchParams ใน Suspense
 
 ## วิธีใช้งาน
 
@@ -79,7 +81,12 @@ docker-compose exec frontend ping api.line.me
 1. ตรวจสอบ DNS settings ใน docker-compose.yml
 2. ตรวจสอบ extra_hosts configuration
 
+### ถ้ามีปัญหา Build Error
+1. ตรวจสอบว่า useSearchParams ถูก wrap ใน Suspense boundary
+2. ตรวจสอบว่า error page ถูกสร้างอย่างถูกต้อง
+
 ## หมายเหตุ
 - การตั้งค่า `NODE_TLS_REJECT_UNAUTHORIZED=0` อาจทำให้ไม่ปลอดภัย ควรใช้เฉพาะใน development หรือเมื่อจำเป็น
 - ควรตรวจสอบ LINE Developer Console ว่าการตั้งค่า OAuth ถูกต้อง
-- ควรตรวจสอบ Callback URL ว่าเป็น `https://thaihand.shop/api/auth/callback/line` 
+- ควรตรวจสอบ Callback URL ว่าเป็น `https://thaihand.shop/api/auth/callback/line`
+- **สำคัญ**: useSearchParams() ต้องถูก wrap ใน Suspense boundary ใน Next.js 14 
