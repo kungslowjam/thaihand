@@ -88,21 +88,13 @@ const handler = NextAuth({
   },
   callbacks: {
     async signIn({ user, account, profile, email, credentials }) {
-      console.log('SIGNIN CALLBACK:', { user, account, profile, email, credentials });
-      console.log('LINE OAUTH DEBUG - Account:', account);
-      console.log('LINE OAUTH DEBUG - Profile:', profile);
+      console.log('SIGNIN CALLBACK - User:', user?.id, 'Provider:', account?.provider);
       
-      // เพิ่ม error handling สำหรับ LINE OAuth
       if (account?.provider === 'line') {
-        console.log('LINE OAUTH DEBUG - Processing LINE signin');
-        
-        // ถ้าไม่มี account หรือ access_token แสดงว่าเกิด error
-        if (!account || !account.access_token) {
-          console.error('LINE OAUTH ERROR - No account or access token received');
-          console.error('LINE OAUTH ERROR - Account:', account);
+        if (!account.access_token) {
+          console.log('LINE OAUTH ERROR - No access token');
           return false;
         }
-        
         console.log('LINE OAUTH SUCCESS - Access token received');
         return true;
       }
@@ -110,27 +102,28 @@ const handler = NextAuth({
       return true;
     },
     async redirect({ url, baseUrl }) {
-      console.log('REDIRECT CALLBACK:', { url, baseUrl });
-      console.log('LINE OAUTH DEBUG - Redirect URL:', url);
+      console.log('REDIRECT CALLBACK - URL:', url, 'Base URL:', baseUrl);
       
-      // ถ้าเป็น LINE OAuth และได้ access token แล้ว ให้ redirect ไป dashboard ทันที
-      if (url.includes('access.line.me') || url.includes('line.me')) {
-        console.log('LINE OAUTH DEBUG - Redirecting to dashboard after successful login');
-        return `${baseUrl}/dashboard`;
+      // ถ้าเป็น LINE OAuth callback ให้ไป dashboard
+      if (url.startsWith(baseUrl + '/api/auth/callback/line')) {
+        console.log('LINE OAUTH CALLBACK - Redirecting to dashboard');
+        return baseUrl + '/dashboard';
       }
       
-      // ป้องกัน infinite redirect loop
-      if (url.includes('login?callbackUrl=') && url.includes('login%3FcallbackUrl%3D')) {
-        console.log('LINE OAUTH DEBUG - Detected redirect loop, redirecting to home');
-        return baseUrl;
+      // ถ้าเป็น LINE OAuth signin ให้ไป LINE
+      if (url.startsWith(baseUrl + '/api/auth/signin/line')) {
+        console.log('LINE OAUTH SIGNIN - Allowing LINE redirect');
+        return url;
       }
       
-      // ตรวจสอบว่า URL ถูกต้อง
-      if (url.startsWith('http://') || url.startsWith('https://')) {
-        return url.startsWith(baseUrl) ? url : baseUrl;
+      // อื่นๆ ให้ไป dashboard
+      if (url.startsWith(baseUrl)) {
+        console.log('INTERNAL URL - Redirecting to dashboard');
+        return baseUrl + '/dashboard';
       }
       
-      return url.startsWith(baseUrl) ? url : baseUrl;
+      console.log('EXTERNAL URL - Allowing redirect');
+      return url;
     },
     async session({ session, token, user }) {
       console.log('SESSION CALLBACK: token =', token, 'session =', session);

@@ -56,25 +56,20 @@ function LoginForm() {
     setError('');
     
     try {
-      // ลอง LINE login
-      const result = await signIn("line", { redirect: false });
+      console.log('LINE LOGIN - Starting LINE OAuth');
       
-      if (result?.error) {
-        console.error("LINE login error:", result.error);
-        setError("ไม่สามารถเชื่อมต่อกับ LINE ได้ กรุณาลองใหม่อีกครั้ง");
-        setIsLoading(false);
-        return;
-      }
+      // ใช้ redirect: true เพื่อให้ NextAuth จัดการ redirect เอง
+      await signIn("line", { 
+        callbackUrl: "/dashboard",
+        redirect: true 
+      });
       
-      // ถ้าสำเร็จ redirect ไป dashboard
-      if (result?.ok) {
-        window.location.href = "/dashboard";
-      }
+      // ถ้า redirect: true แล้ว จะไม่มาถึงบรรทัดนี้
+      console.log('LINE LOGIN - Should have redirected');
       
     } catch (error) {
       console.error("LINE login failed:", error);
       setError("เกิดข้อผิดพลาดในการเชื่อมต่อ กรุณาลองใหม่อีกครั้ง");
-    } finally {
       setIsLoading(false);
     }
   };
