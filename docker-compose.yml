@@ -89,8 +89,10 @@ services:
       - "access.line.me:104.28.211.79"
       - "api.line.me:104.28.211.79"
       - "line.me:104.28.211.79"
-      - "access.line.me:104.28.211.80"
-      - "api.line.me:104.28.211.80"
+    sysctls:
+      - net.ipv4.tcp_keepalive_time=60
+      - net.ipv4.tcp_keepalive_intvl=10
+      - net.ipv4.tcp_keepalive_probes=6
 
   # Nginx Reverse Proxy
   nginx:
