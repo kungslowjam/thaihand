@@ -49,8 +49,8 @@ RUN npm run build
 FROM base AS runner
 WORKDIR /app
 
-# ติดตั้ง CA certificates
-RUN apk add --no-cache ca-certificates
+# Install CA certificates and network tools
+RUN apk add --no-cache ca-certificates curl iputils
 
 # เพิ่ม DNS configuration
 RUN echo "nameserver 8.8.8.8" > /etc/resolv.conf && \
