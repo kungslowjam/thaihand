@@ -17,10 +17,19 @@ import { useBackendToken } from "@/lib/useBackendToken";
 
 // Dynamic Supabase client creation
 function createSupabaseClient() {
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  // ใช้ environment variables ถ้ามี หรือ fallback ไป hardcoded values
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://abhprxkswysntmerxklb.supabase.co';
+  const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFiaHByeGtzd3lzbnRtZXJ4a2xiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE0NTc2ODAsImV4cCI6MjA2NzAzMzY4MH0.MLRoT_AH5V9XrSFo7eDbqS8K76LTU69nxYUQqn9tIhk';
   
-  if (!supabaseUrl || !supabaseKey || supabaseUrl === 'https://placeholder.supabase.co') {
+  console.log('Creating Supabase client with:', { 
+    supabaseUrl, 
+    supabaseKeyLength: supabaseKey?.length,
+    hasEnvUrl: !!process.env.NEXT_PUBLIC_SUPABASE_URL,
+    hasEnvKey: !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  });
+  
+  if (!supabaseUrl || !supabaseKey) {
+    console.error('Supabase configuration missing');
     return null;
   }
   

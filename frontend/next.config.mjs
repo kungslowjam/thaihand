@@ -7,6 +7,16 @@ const nextConfig = {
       "abhprxkswysntmerxklb.supabase.co",
       // เพิ่ม domain อื่นๆ ที่ต้องการโหลดรูปได้ที่นี่
     ],
+    remotePatterns: [
+      { protocol: 'https', hostname: 'lh3.googleusercontent.com', port: '', pathname: '/**', },
+      { protocol: 'https', hostname: 'profile.line-scdn.net', port: '', pathname: '/**', },
+      { protocol: 'https', hostname: 'abhprxkswysntmerxklb.supabase.co', port: '', pathname: '/**', },
+    ],
+    unoptimized: false, // เปลี่ยนกลับเป็น false
+    formats: ['image/webp', 'image/avif'],
+    deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
+    imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
+    minimumCacheTTL: 60,
   },
   output: 'standalone',
   experimental: {
