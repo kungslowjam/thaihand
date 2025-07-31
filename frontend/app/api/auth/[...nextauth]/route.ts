@@ -90,6 +90,14 @@ const handler = NextAuth({
       console.log('SIGNIN CALLBACK - User:', user?.id, 'Provider:', account?.provider);
       
       if (account?.provider === 'line') {
+        console.log('LINE OAUTH - Account details:', {
+          provider: account.provider,
+          type: account.type,
+          hasAccessToken: !!account.access_token,
+          hasRefreshToken: !!account.refresh_token,
+          expiresAt: account.expires_at
+        });
+        
         if (!account.access_token) {
           console.log('LINE OAUTH ERROR - No access token');
           return false;
