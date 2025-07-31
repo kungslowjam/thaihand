@@ -66,6 +66,11 @@ services:
       - NEXT_PUBLIC_API_URL=https://thaihand.shop/api
       - NEXT_PUBLIC_BACKEND_URL=https://thaihand.shop
       - NEXTAUTH_URL=https://thaihand.shop
+      - NEXTAUTH_SECRET=${NEXTAUTH_SECRET}
+      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
+      - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
+      - LINE_CLIENT_ID=${LINE_CLIENT_ID}
+      - LINE_CLIENT_SECRET=${LINE_CLIENT_SECRET}
     ports:
       - "3000:3000"
     depends_on:
