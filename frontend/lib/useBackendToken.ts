@@ -28,10 +28,12 @@ export function useBackendToken() {
           return res.json();
         })
         .then(data => {
+          console.log("Backend response:", data); // Debug log
           if (data.accessToken) {
             setBackendToken(data.accessToken);
-            console.log("Backend token obtained successfully");
+            console.log("Backend token obtained successfully:", data.accessToken.substring(0, 20) + "...");
           } else {
+            console.error("No access token in response:", data);
             throw new Error("No access token in response");
           }
         })
