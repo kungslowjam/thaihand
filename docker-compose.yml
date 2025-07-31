@@ -72,7 +72,6 @@ services:
       - LINE_CLIENT_ID=${LINE_CLIENT_ID}
       - LINE_CLIENT_SECRET=${LINE_CLIENT_SECRET}
       - NODE_OPTIONS=--max-http-header-size=8192
-      - NODE_TLS_REJECT_UNAUTHORIZED=0
       - NODE_EXTRA_CA_CERTS=/etc/ssl/certs/ca-certificates.crt
     ports:
       - "3000:3000"
