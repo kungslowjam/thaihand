@@ -60,7 +60,7 @@ const handler = NextAuth({
         };
       },
       httpOptions: {
-        timeout: 15000, // ลดเหลือ 15 วินาที
+        timeout: 30000, // เพิ่มเป็น 30 วินาที
         headers: {
           'User-Agent': 'Mozilla/5.0 (compatible; ThaiHand/1.0)',
         },
@@ -72,7 +72,7 @@ const handler = NextAuth({
     error: '/api/auth/error',
   },
   secret: process.env.NEXTAUTH_SECRET,
-  debug: true, // เปิด debug เพื่อดู error
+  debug: process.env.NODE_ENV === 'development', // ปิด debug ใน production
   session: {
     strategy: "jwt",
     maxAge: 30 * 24 * 60 * 60, // 30 วัน
@@ -80,10 +80,10 @@ const handler = NextAuth({
   // เพิ่ม error handling
   events: {
     async signIn({ user, account, profile, isNewUser }) {
-      console.log('EVENT: signIn', { user, account, profile, isNewUser });
+      console.log('EVENT: signIn', { user: user?.id, provider: account?.provider, isNewUser });
     },
     async signOut({ session, token }) {
-      console.log('EVENT: signOut', { session, token });
+      console.log('EVENT: signOut', { session: session?.user?.name, provider: token?.provider });
     },
   },
   callbacks: {
@@ -126,23 +126,21 @@ const handler = NextAuth({
       return url;
     },
     async session({ session, token, user }) {
-      console.log('SESSION CALLBACK: token =', token, 'session =', session);
-      console.log('SESSION DEBUG - Token provider:', token?.provider);
-      console.log('SESSION DEBUG - Token accessToken:', token?.accessToken ? 'EXISTS' : 'MISSING');
+      console.log('SESSION CALLBACK: token =', token?.provider, 'session =', session?.user?.name);
       
       // เพิ่ม image จาก token (Google จะส่ง url รูปมาใน token)
       if (token && session.user) {
         session.user.image = token.picture || session.user.image;
         session.user.id = token.sub || token.id || session.user.id;
       }
-      // เพิ่ม log ตรวจสอบ accessToken
-      console.log('SESSION CALLBACK: token.accessToken =', token && token.accessToken);
+      
       // เพิ่ม accessToken และ provider เข้า session
       if (token && token.accessToken) {
         session.accessToken = token.accessToken;
       } else {
         session.accessToken = null;
       }
+      
       // แนบ provider เสมอ
       session.provider = token?.provider || null;
       
@@ -155,7 +153,8 @@ const handler = NextAuth({
       return session;
     },
     async jwt({ token, account, profile }) {
-      console.log('JWT CALLBACK: account =', account, 'token =', token);
+      console.log('JWT CALLBACK: account =', account?.provider, 'token =', token?.provider);
+      
       // ดึง url รูปจาก profile (Google)
       if (profile && profile.sub) {
         token.sub = profile.sub;
@@ -166,18 +165,19 @@ const handler = NextAuth({
       if (profile && typeof profile === 'object' && 'picture' in profile) {
         token.picture = String(profile.picture);
       }
+      
       // ดึง accessToken และ provider จาก account (ตอน login)
       if (account && account.access_token) {
         token.accessToken = account.access_token;
       }
+      
       // แนบ provider เสมอ
       token.provider = account?.provider || token.provider || null;
-      // เพิ่ม log ตรวจสอบ accessToken
-      console.log('JWT CALLBACK: token.accessToken =', token && token.accessToken, 'provider =', token && token.provider);
+      
+      console.log('JWT CALLBACK: token.accessToken =', !!token.accessToken, 'provider =', token.provider);
       return token;
     },
   },
-  // สามารถเพิ่ม options อื่น ๆ ได้ เช่น callbacks, session ฯลฯ
 });
 
 export { handler as GET, handler as POST }; 
