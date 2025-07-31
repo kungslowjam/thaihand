@@ -58,9 +58,9 @@ function LoginForm() {
     try {
       console.log('LINE LOGIN - Starting LINE OAuth');
       
-      // เพิ่ม timeout 15 วินาที
+      // เพิ่ม timeout เป็น 30 วินาที
       const timeoutPromise = new Promise((_, reject) => {
-        setTimeout(() => reject(new Error('Timeout')), 15000);
+        setTimeout(() => reject(new Error('Timeout')), 30000);
       });
       
       const signInPromise = signIn("line", { 
