@@ -66,6 +66,19 @@ const handler = NextAuth({
     LineProvider({
       clientId: process.env.LINE_CLIENT_ID!,
       clientSecret: process.env.LINE_CLIENT_SECRET!,
+      authorization: {
+        url: 'https://access.line.me/oauth2/v2.1/authorize',
+        params: {
+          scope: 'profile openid',
+          response_type: 'code',
+        },
+      },
+      token: {
+        url: 'https://api.line.me/oauth2/v2.1/token',
+      },
+      userinfo: {
+        url: 'https://api.line.me/v2/profile',
+      },
     }),
   ],
   pages: {
@@ -78,6 +91,14 @@ const handler = NextAuth({
     strategy: "jwt",
   },
   callbacks: {
+    async signIn({ user, account, profile, email, credentials }) {
+      console.log('SIGNIN CALLBACK:', { user, account, profile, email, credentials });
+      return true;
+    },
+    async redirect({ url, baseUrl }) {
+      console.log('REDIRECT CALLBACK:', { url, baseUrl });
+      return url.startsWith(baseUrl) ? url : baseUrl;
+    },
     async session({ session, token, user }) {
       console.log('SESSION CALLBACK: token =', token, 'session =', session);
       // เพิ่ม image จาก token (Google จะส่ง url รูปมาใน token)
