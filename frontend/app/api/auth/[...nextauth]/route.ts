@@ -3,20 +3,9 @@ import GoogleProvider from "next-auth/providers/google";
 import LineProvider from "next-auth/providers/line";
 import { JWT } from "next-auth/jwt";
 import { Session } from "next-auth";
-import https from 'https';
 
 // Force dynamic rendering
 export const dynamic = 'force-dynamic';
-
-// สร้าง custom HTTPS agent สำหรับ LINE OAuth
-const httpsAgent = new https.Agent({
-  keepAlive: true,
-  keepAliveMsecs: 30000,
-  maxSockets: 10,
-  maxFreeSockets: 5,
-  timeout: 120000,
-  rejectUnauthorized: false,
-});
 
 // Extend NextAuth types
 declare module "next-auth" {
@@ -78,18 +67,9 @@ const handler = NextAuth({
       clientId: process.env.LINE_CLIENT_ID!,
       clientSecret: process.env.LINE_CLIENT_SECRET!,
       httpOptions: {
-        timeout: 120000, // เพิ่ม timeout เป็น 120 วินาที
-        agent: httpsAgent, // ใช้ custom HTTPS agent
+        timeout: 60000, // กลับไปใช้ 60 วินาที
         headers: {
           'User-Agent': 'Mozilla/5.0 (compatible; ThaiHand/1.0)',
-          'Accept': 'application/json',
-          'Accept-Language': 'th-TH,th;q=0.9,en;q=0.8',
-        },
-      },
-      authorization: {
-        params: {
-          scope: 'openid profile',
-          response_type: 'code',
         },
       },
     }),

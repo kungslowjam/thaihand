@@ -49,6 +49,9 @@ RUN npm run build
 FROM base AS runner
 WORKDIR /app
 
+# ติดตั้ง CA certificates
+RUN apk add --no-cache ca-certificates
+
 ENV NODE_ENV production
 ENV NEXT_TELEMETRY_DISABLED 1
 
