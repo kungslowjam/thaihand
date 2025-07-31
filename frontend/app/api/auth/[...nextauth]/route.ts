@@ -66,32 +66,17 @@ const handler = NextAuth({
     LineProvider({
       clientId: process.env.LINE_CLIENT_ID!,
       clientSecret: process.env.LINE_CLIENT_SECRET!,
-      authorization: {
-        url: 'https://access.line.me/oauth2/v2.1/authorize',
-        params: {
-          scope: 'openid profile',
-          response_type: 'code',
+      httpOptions: {
+        timeout: 30000,
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (compatible; ThaiHand/1.0)',
         },
-      },
-      token: {
-        url: 'https://api.line.me/oauth2/v2.1/token',
-      },
-      userinfo: {
-        url: 'https://api.line.me/v2/profile',
-      },
-      profile(profile) {
-        return {
-          id: profile.sub,
-          name: profile.name,
-          email: profile.email,
-          image: profile.picture,
-        };
       },
     }),
   ],
   pages: {
     signIn: '/login',
-    error: '/login',
+    error: '/api/auth/error',
   },
   secret: process.env.NEXTAUTH_SECRET,
   debug: true, // เปิด debug เพื่อดู error
