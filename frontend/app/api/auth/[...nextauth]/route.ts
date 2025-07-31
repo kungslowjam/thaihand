@@ -38,7 +38,30 @@ const handler = NextAuth({
     LineProvider({
       clientId: process.env.LINE_CLIENT_ID!,
       clientSecret: process.env.LINE_CLIENT_SECRET!,
-      // ใช้การตั้งค่าเริ่มต้นของ NextAuth สำหรับ LINE
+      authorization: {
+        url: 'https://access.line.me/oauth2/v2.1/authorize',
+        params: {
+          scope: 'openid profile',
+          response_type: 'code',
+        },
+      },
+      token: {
+        url: 'https://api.line.me/oauth2/v2.1/token',
+      },
+      userinfo: {
+        url: 'https://api.line.me/v2/profile',
+      },
+      profile(profile) {
+        return {
+          id: profile.sub,
+          name: profile.name,
+          email: profile.email,
+          image: profile.picture,
+        };
+      },
+      httpOptions: {
+        timeout: 30000, // เพิ่ม timeout เป็น 30 วินาที
+      },
     }),
   ],
   pages: {
@@ -46,7 +69,7 @@ const handler = NextAuth({
     error: '/api/auth/error',
   },
   secret: process.env.NEXTAUTH_SECRET,
-  debug: process.env.NODE_ENV === 'development',
+  debug: true, // เปิด debug เพื่อดู error
   session: {
     strategy: "jwt",
     maxAge: 30 * 24 * 60 * 60, // 30 วัน
