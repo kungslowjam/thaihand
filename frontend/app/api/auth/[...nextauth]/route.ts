@@ -58,6 +58,8 @@ if (process.env.LINE_CLIENT_ID && process.env.LINE_CLIENT_SECRET) {
 // ตรวจสอบว่ามี providers หรือไม่
 if (providers.length === 0) {
   console.error('No OAuth providers configured. Please check environment variables.');
+} else {
+  console.log('OAuth providers configured:', providers.map(p => p.id));
 }
 
 // Extend NextAuth types
@@ -89,7 +91,7 @@ const handler = NextAuth({
     error: '/login',
   },
   secret: process.env.NEXTAUTH_SECRET,
-  debug: process.env.NODE_ENV === 'development',
+  debug: true, // เปิด debug เพื่อดู logs
   session: {
     strategy: "jwt",
     maxAge: 30 * 24 * 60 * 60, // 30 วัน

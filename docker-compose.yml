@@ -73,10 +73,12 @@ services:
       - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
       - LINE_CLIENT_ID=${LINE_CLIENT_ID}
       - LINE_CLIENT_SECRET=${LINE_CLIENT_SECRET}
+      - NEXT_PUBLIC_LINE_CLIENT_ID=${LINE_CLIENT_ID}
+      - NEXT_PUBLIC_GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
       - NODE_OPTIONS=--max-http-header-size=8192 --max-old-space-size=4096 --dns-result-order=ipv4first
       - NODE_TLS_REJECT_UNAUTHORIZED=0
       - NODE_EXTRA_CA_CERTS=/etc/ssl/certs/ca-certificates.crt
-              - NEXTAUTH_DEBUG=false
+      - NEXTAUTH_DEBUG=false
     ports:
       - "3000:3000"
     depends_on:
@@ -89,16 +91,6 @@ services:
       - 8.8.4.4
       - 1.1.1.1
       - 208.67.222.222
-    extra_hosts:
-      - "access.line.me:104.28.211.79"
-      - "api.line.me:104.28.211.79"
-      - "line.me:104.28.211.79"
-      - "access.line.me:104.28.211.80"
-      - "api.line.me:104.28.211.80"
-      - "line.me:104.28.211.80"
-      - "access.line.me:104.28.211.81"
-      - "api.line.me:104.28.211.81"
-      - "line.me:104.28.211.81"
     ulimits:
       nofile:
         soft: 65536

@@ -51,11 +51,24 @@ export default function NotificationDropdown() {
   // Long polling แจ้งเตือน (เฉพาะรอบหลังจาก fetch initial)
   useEffect(() => {
     let cancelled = false;
+    
+    // รอให้ session พร้อมก่อน
+    if (!session || session.status === "loading") {
+      return;
+    }
+    
     // รองรับ Line login ที่ไม่มี email แต่มี pseudo-email
     let email = session?.user?.email;
     if (!email && session?.provider === 'line' && session?.user?.id) {
       email = `${session.user.id}@line`; // สร้าง pseudo-email สำหรับ Line
     }
+    
+    // ตรวจสอบว่า email พร้อมหรือไม่
+    if (!email) {
+      console.log("[DEBUG] No email available for longpoll");
+      return;
+    }
+    
     console.log("[DEBUG] userEmail for longpoll:", email);
     
     async function poll() {
