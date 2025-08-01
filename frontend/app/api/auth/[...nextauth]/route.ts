@@ -24,7 +24,6 @@ const missingEnvVars = Object.entries(requiredEnvVars)
 
 if (missingEnvVars.length > 0) {
   console.error('Missing environment variables:', missingEnvVars);
-  console.error('Available env vars:', Object.keys(process.env).filter(key => key.includes('CLIENT')));
 }
 
 // สร้าง providers array ตาม environment variables ที่มี
@@ -91,7 +90,7 @@ const handler = NextAuth({
     error: '/login',
   },
   secret: process.env.NEXTAUTH_SECRET,
-  debug: true, // เปิด debug เพื่อดู logs
+  debug: false, // ปิด debug เพื่อความเร็ว
   session: {
     strategy: "jwt",
     maxAge: 30 * 24 * 60 * 60, // 30 วัน
