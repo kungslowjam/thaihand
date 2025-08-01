@@ -181,6 +181,20 @@ def read_offers(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
             rates = json.loads(offer.rates) if offer.rates else []
         except Exception:
             rates = []
+        
+        # คำนวณน้ำหนักที่ใช้แล้วจาก requests ที่เชื่อมกับ offer นี้
+        requests_for_offer = db.query(models.Request).filter(models.Request.offer_id == offer.id).all()
+        used_weight = len(requests_for_offer)  # ใช้จำนวน requests เป็นตัวแทนน้ำหนักที่ใช้แล้ว
+        
+        # กำหนด maxWeight จาก rates หรือใช้ค่าเริ่มต้น
+        max_weight = 10  # ค่าเริ่มต้น
+        if rates and len(rates) > 0:
+            # ถ้า rates มีข้อมูล ให้ใช้ค่าสูงสุดจาก rates
+            try:
+                max_weight = max(float(rate.get('weight', '0').replace('kg', '')) for rate in rates if rate.get('weight'))
+            except:
+                max_weight = 10
+        
         result.append({
             "id": offer.id,
             "routeFrom": offer.route_from,
@@ -199,6 +213,8 @@ def read_offers(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
             "user_id": offer.user_id,
             "user_name": user.username if user else None,
             "user_email": user.email if user else None,
+            "maxWeight": max_weight,
+            "usedWeight": used_weight,
         })
     return result
 

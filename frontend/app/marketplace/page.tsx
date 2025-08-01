@@ -261,9 +261,9 @@ export default function MarketplacePage() {
                 <p className="text-gray-400 mb-4">ยังไม่มีรอบเดินทางรับหิ้วในขณะนี้</p>
               </div>
             ) : paginatedOffers.map((offer: any) => {
-              // สมมุติ maxWeight = 10, usedWeight = 4 (mock)
-              const maxWeight = 10;
-              const usedWeight = 4;
+              // ใช้ข้อมูลจริงจาก offer object
+              const maxWeight = offer?.maxWeight || 10; // fallback ถ้าไม่มีข้อมูล
+              const usedWeight = offer?.usedWeight || 0;
               const remainingWeight = maxWeight - usedWeight;
               return (
                 <div key={offer.id} className="bg-white/90 rounded-3xl shadow-2xl border-0 p-6 flex flex-col w-full max-w-[320px] mx-auto transition-transform hover:scale-105 hover:shadow-[0_8px_32px_rgba(80,80,200,0.15)] duration-200">
@@ -295,6 +295,20 @@ export default function MarketplacePage() {
                     <div className="flex items-center gap-2"><span className="text-blue-400">📍</span> <span>จุดนัดรับ: {offer.pickupPlace || "-"}</span></div>
                     <div className="flex items-center gap-2"><span className="text-green-400">📞</span> <span>ติดต่อ: {offer.contact || "-"}</span></div>
                     <div className="flex items-center gap-2"><span className="text-yellow-400">📝</span> <span>หมายเหตุ: {offer.description || "-"}</span></div>
+                  </div>
+                  {/* น้ำหนักคงเหลือ */}
+                  <div className="mb-3">
+                    <div className="flex justify-between items-center mb-1 text-xs font-medium">
+                      <span>น้ำหนักที่รับแล้ว</span>
+                      <span>{usedWeight} / {maxWeight} กก.</span>
+                    </div>
+                    <Progress value={Math.min((usedWeight / maxWeight) * 100, 100)} className="h-4 bg-gray-200" />
+                    <div className="flex justify-between items-center mt-1 text-xs">
+                      <span className="text-gray-500 font-semibold">เหลือ {remainingWeight.toFixed(2)} กก.</span>
+                    </div>
+                    {usedWeight > maxWeight && (
+                      <div className="text-xs text-red-500 mt-1 font-semibold">น้ำหนักเกินลิมิต!</div>
+                    )}
                   </div>
                   <button
                     className="mt-auto w-full bg-gradient-to-r from-blue-500 to-pink-500 text-white font-bold py-2.5 rounded-2xl shadow-lg text-base hover:scale-105 transition"
