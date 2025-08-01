@@ -44,7 +44,7 @@ const handler = NextAuth({
         },
       },
       httpOptions: {
-        timeout: 10000, // เพิ่ม timeout เป็น 10 วินาที
+        timeout: 30000, // เพิ่ม timeout เป็น 30 วินาที
       },
     }),
   ],
