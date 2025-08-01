@@ -38,28 +38,6 @@ const handler = NextAuth({
     LineProvider({
       clientId: process.env.LINE_CLIENT_ID || '',
       clientSecret: process.env.LINE_CLIENT_SECRET || '',
-      authorization: {
-        params: {
-          scope: 'profile openid email',
-        },
-      },
-      httpOptions: {
-        timeout: 30000, // เพิ่ม timeout เป็น 30 วินาที
-        headers: {
-          'User-Agent': 'ThaiHand/1.0',
-        },
-      },
-      profile(profile) {
-        return {
-          id: profile.sub,
-          name: profile.name,
-          email: profile.email,
-          image: profile.picture,
-        }
-      },
-      client: {
-        token_endpoint_auth_method: 'client_secret_post',
-      },
     }),
   ],
   pages: {
