@@ -43,6 +43,9 @@ const handler = NextAuth({
           scope: 'profile openid email',
         },
       },
+      httpOptions: {
+        timeout: 10000, // เพิ่ม timeout เป็น 10 วินาที
+      },
     }),
   ],
   pages: {
