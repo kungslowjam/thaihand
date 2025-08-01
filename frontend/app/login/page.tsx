@@ -48,6 +48,14 @@ function LoginForm() {
       setError(messageParam || 'เกิดข้อผิดพลาดในการเข้าสู่ระบบ กรุณาลองใหม่อีกครั้ง');
     } else if (errorParam === 'unknown_error') {
       setError(messageParam || 'เกิดข้อผิดพลาดที่ไม่ทราบสาเหตุ');
+    } else if (errorParam === 'OAuthSignin') {
+      setError('เกิดข้อผิดพลาดในการเชื่อมต่อกับ LINE กรุณาตรวจสอบการตั้งค่าและลองใหม่อีกครั้ง');
+    } else if (errorParam === 'Configuration') {
+      setError('เกิดข้อผิดพลาดในการตั้งค่า OAuth กรุณาตรวจสอบการตั้งค่า LINE Client ID และ Secret');
+    } else if (errorParam === 'AccessDenied') {
+      setError('การเข้าสู่ระบบถูกปฏิเสธ กรุณาลองใหม่อีกครั้ง');
+    } else if (errorParam === 'Verification') {
+      setError('เกิดข้อผิดพลาดในการยืนยันตัวตน กรุณาลองใหม่อีกครั้ง');
     }
   }, [searchParams]);
 
@@ -58,11 +66,30 @@ function LoginForm() {
     try {
       console.log('LINE LOGIN - Starting LINE OAuth');
       
-      // ใช้ redirect แทน Promise.race เพื่อหลีกเลี่ยง timeout
-      signIn("line", { 
+      // ตรวจสอบ environment variables
+      if (!process.env.NEXT_PUBLIC_LINE_CLIENT_ID) {
+        console.error('LINE CLIENT ID not found');
+        setError('เกิดข้อผิดพลาดในการตั้งค่า LINE กรุณาตรวจสอบการตั้งค่า');
+        setIsLoading(false);
+        return;
+      }
+      
+      // ใช้ signIn พร้อม error handling
+      const result = await signIn("line", { 
         callbackUrl: "/dashboard",
-        redirect: true 
+        redirect: false 
       });
+      
+      console.log('LINE LOGIN - Result:', result);
+      
+      if (result?.error) {
+        console.error('LINE login error:', result.error);
+        setError(`เกิดข้อผิดพลาดในการเข้าสู่ระบบ: ${result.error}`);
+        setIsLoading(false);
+      } else if (result?.url) {
+        // ถ้าสำเร็จให้ redirect
+        window.location.href = result.url;
+      }
       
     } catch (error) {
       console.error("LINE login failed:", error);

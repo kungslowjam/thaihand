@@ -38,20 +38,31 @@ const handler = NextAuth({
     LineProvider({
       clientId: process.env.LINE_CLIENT_ID || '',
       clientSecret: process.env.LINE_CLIENT_SECRET || '',
+      authorization: {
+        params: {
+          scope: 'profile openid email',
+        },
+      },
     }),
   ],
   pages: {
     signIn: '/login',
+    error: '/login',
   },
   secret: process.env.NEXTAUTH_SECRET,
-  debug: false, // ปิด debug ใน production
+  debug: process.env.NODE_ENV === 'development',
   session: {
     strategy: "jwt",
     maxAge: 30 * 24 * 60 * 60, // 30 วัน
   },
   events: {
     async signIn({ user, account, profile, isNewUser }) {
-      console.log('EVENT: signIn', { user: user?.id, provider: account?.provider, isNewUser });
+      console.log('EVENT: signIn', { 
+        user: user?.id, 
+        provider: account?.provider, 
+        isNewUser,
+        hasAccessToken: !!account?.access_token 
+      });
     },
     async signOut({ session, token }) {
       console.log('EVENT: signOut', { session: session?.user?.name, provider: token?.provider });
@@ -61,13 +72,13 @@ const handler = NextAuth({
     async signIn({ user, account, profile, email, credentials }) {
       console.log('SIGNIN CALLBACK - User:', user?.id, 'Provider:', account?.provider);
       
-      // ตรวจสอบ environment variables
-      if (!process.env.LINE_CLIENT_ID || !process.env.LINE_CLIENT_SECRET) {
-        console.log('LINE OAUTH ERROR - Missing environment variables');
-        return false;
-      }
-      
+      // ตรวจสอบ environment variables สำหรับ LINE
       if (account?.provider === 'line') {
+        if (!process.env.LINE_CLIENT_ID || !process.env.LINE_CLIENT_SECRET) {
+          console.log('LINE OAUTH ERROR - Missing environment variables');
+          return false;
+        }
+        
         console.log('LINE OAUTH - Account details:', {
           provider: account.provider,
           type: account.type,
@@ -109,10 +120,16 @@ const handler = NextAuth({
         return url;
       }
       
-      // ถ้าเป็น error ให้ไป login
+      // ถ้าเป็น error ให้ไป login พร้อม error message
       if (url.includes('error=OAuthSignin')) {
-        console.log('OAUTH ERROR - Redirecting to login');
-        return baseUrl + '/login';
+        console.log('OAUTH ERROR - Redirecting to login with error');
+        return baseUrl + '/login?error=line_oauth_error&message=เกิดข้อผิดพลาดในการเชื่อมต่อกับ LINE';
+      }
+      
+      // ถ้าเป็น OAuth error อื่นๆ
+      if (url.includes('error=')) {
+        console.log('OAUTH ERROR - Redirecting to login with generic error');
+        return baseUrl + '/login?error=oauth_error&message=เกิดข้อผิดพลาดในการเข้าสู่ระบบ';
       }
       
       // อื่นๆ ให้ไป dashboard
