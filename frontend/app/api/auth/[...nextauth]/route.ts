@@ -27,6 +27,39 @@ if (missingEnvVars.length > 0) {
   console.error('Available env vars:', Object.keys(process.env).filter(key => key.includes('CLIENT')));
 }
 
+// สร้าง providers array ตาม environment variables ที่มี
+const providers = [];
+
+// เพิ่ม Google provider ถ้ามี environment variables
+if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
+  providers.push(
+    GoogleProvider({
+      clientId: process.env.GOOGLE_CLIENT_ID,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+    })
+  );
+}
+
+// เพิ่ม LINE provider ถ้ามี environment variables
+if (process.env.LINE_CLIENT_ID && process.env.LINE_CLIENT_SECRET) {
+  providers.push(
+    LineProvider({
+      clientId: process.env.LINE_CLIENT_ID,
+      clientSecret: process.env.LINE_CLIENT_SECRET,
+      authorization: {
+        params: {
+          scope: 'profile openid email',
+        },
+      },
+    })
+  );
+}
+
+// ตรวจสอบว่ามี providers หรือไม่
+if (providers.length === 0) {
+  console.error('No OAuth providers configured. Please check environment variables.');
+}
+
 // Extend NextAuth types
 declare module "next-auth" {
   interface Session {
@@ -50,21 +83,7 @@ declare module "next-auth/jwt" {
 }
 
 const handler = NextAuth({
-  providers: [
-    GoogleProvider({
-      clientId: process.env.GOOGLE_CLIENT_ID!,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
-    }),
-    LineProvider({
-      clientId: process.env.LINE_CLIENT_ID!,
-      clientSecret: process.env.LINE_CLIENT_SECRET!,
-      authorization: {
-        params: {
-          scope: 'profile openid email',
-        },
-      },
-    }),
-  ],
+  providers: providers,
   pages: {
     signIn: '/login',
     error: '/login',

@@ -74,6 +74,8 @@ function LoginForm() {
         return;
       }
       
+      console.log('LINE_CLIENT_ID:', process.env.NEXT_PUBLIC_LINE_CLIENT_ID);
+      
       // ใช้ redirect แทน Promise.race เพื่อหลีกเลี่ยง timeout
       signIn("line", { 
         callbackUrl: "/dashboard",
