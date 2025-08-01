@@ -36,8 +36,8 @@ const handler = NextAuth({
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
     }),
     LineProvider({
-      clientId: process.env.LINE_CLIENT_ID!,
-      clientSecret: process.env.LINE_CLIENT_SECRET!,
+      clientId: process.env.LINE_CLIENT_ID || '',
+      clientSecret: process.env.LINE_CLIENT_SECRET || '',
     }),
   ],
   pages: {
@@ -61,17 +61,41 @@ const handler = NextAuth({
     async signIn({ user, account, profile, email, credentials }) {
       console.log('SIGNIN CALLBACK - User:', user?.id, 'Provider:', account?.provider);
       
-      // ตรวจสอบ environment variables สำหรับทั้ง Google และ Line
-      if (account?.provider === 'google') {
-        if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET) {
-          console.log('GOOGLE OAUTH ERROR - Missing environment variables');
-          return false;
-        }
-      }
-      
+      // ตรวจสอบ environment variables สำหรับ LINE
       if (account?.provider === 'line') {
         if (!process.env.LINE_CLIENT_ID || !process.env.LINE_CLIENT_SECRET) {
           console.log('LINE OAUTH ERROR - Missing environment variables');
+          return false;
+        }
+        
+        console.log('LINE OAUTH - Account details:', {
+          provider: account.provider,
+          type: account.type,
+          hasAccessToken: !!account.access_token,
+          hasRefreshToken: !!account.refresh_token,
+          expiresAt: account.expires_at
+        });
+        
+        // ตรวจสอบว่ามี access_token หรือไม่
+        if (!account.access_token) {
+          console.log('LINE OAUTH ERROR - No access token');
+          return false;
+        }
+        
+        // ตรวจสอบว่า user มีข้อมูลครบหรือไม่
+        if (!user || !user.id) {
+          console.log('LINE OAUTH ERROR - No user data');
+          return false;
+        }
+        
+        console.log('LINE OAUTH SUCCESS - Access token received');
+        return true;
+      }
+      
+      // ตรวจสอบ environment variables สำหรับ Google
+      if (account?.provider === 'google') {
+        if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET) {
+          console.log('GOOGLE OAUTH ERROR - Missing environment variables');
           return false;
         }
       }
