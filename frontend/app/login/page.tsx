@@ -46,6 +46,10 @@ function LoginForm() {
       setError(messageParam || 'เกิดข้อผิดพลาดในการเชื่อมต่อกับ LINE กรุณาลองใหม่อีกครั้ง');
     } else if (errorParam === 'oauth_error') {
       setError(messageParam || 'เกิดข้อผิดพลาดในการเข้าสู่ระบบ กรุณาลองใหม่อีกครั้ง');
+    } else if (errorParam === 'OAuthSignin') {
+      setError('เกิดข้อผิดพลาดในการตั้งค่า OAuth กรุณาตรวจสอบการตั้งค่า');
+    } else if (errorParam === 'Configuration') {
+      setError('เกิดข้อผิดพลาดในการตั้งค่า OAuth กรุณาตรวจสอบ environment variables');
     } else if (errorParam === 'unknown_error') {
       setError(messageParam || 'เกิดข้อผิดพลาดที่ไม่ทราบสาเหตุ');
     }
