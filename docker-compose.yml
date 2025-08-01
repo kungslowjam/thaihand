@@ -102,7 +102,6 @@ services:
       - "access.line.me:104.28.211.82"
       - "api.line.me:104.28.211.82"
       - "line.me:104.28.211.82"
-    network_mode: bridge
 
   # Nginx Reverse Proxy
   nginx:
