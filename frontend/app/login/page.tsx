@@ -46,16 +46,12 @@ function LoginForm() {
       setError(messageParam || 'เกิดข้อผิดพลาดในการเชื่อมต่อกับ LINE กรุณาลองใหม่อีกครั้ง');
     } else if (errorParam === 'oauth_error') {
       setError(messageParam || 'เกิดข้อผิดพลาดในการเข้าสู่ระบบ กรุณาลองใหม่อีกครั้ง');
+    } else if (errorParam === 'OAuthSignin') {
+      setError('เกิดข้อผิดพลาดในการตั้งค่า OAuth กรุณาตรวจสอบการตั้งค่า');
+    } else if (errorParam === 'Configuration') {
+      setError('เกิดข้อผิดพลาดในการตั้งค่า OAuth กรุณาตรวจสอบ environment variables');
     } else if (errorParam === 'unknown_error') {
       setError(messageParam || 'เกิดข้อผิดพลาดที่ไม่ทราบสาเหตุ');
-    } else if (errorParam === 'OAuthSignin') {
-      setError('เกิดข้อผิดพลาดในการเชื่อมต่อกับ LINE กรุณาตรวจสอบการตั้งค่าและลองใหม่อีกครั้ง');
-    } else if (errorParam === 'Configuration') {
-      setError('เกิดข้อผิดพลาดในการตั้งค่า OAuth กรุณาตรวจสอบการตั้งค่า LINE Client ID และ Secret');
-    } else if (errorParam === 'AccessDenied') {
-      setError('การเข้าสู่ระบบถูกปฏิเสธ กรุณาลองใหม่อีกครั้ง');
-    } else if (errorParam === 'Verification') {
-      setError('เกิดข้อผิดพลาดในการยืนยันตัวตน กรุณาลองใหม่อีกครั้ง');
     }
   }, [searchParams]);
 
@@ -66,7 +62,7 @@ function LoginForm() {
     try {
       console.log('LINE LOGIN - Starting LINE OAuth');
       
-      // ใช้ signIn พร้อม redirect: true เพื่อให้ LINE OAuth ทำงานได้
+      // ใช้ redirect แทน Promise.race เพื่อหลีกเลี่ยง timeout
       signIn("line", { 
         callbackUrl: "/dashboard",
         redirect: true 

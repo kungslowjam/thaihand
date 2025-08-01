@@ -74,7 +74,6 @@ services:
       - NODE_OPTIONS=--max-http-header-size=8192 --max-old-space-size=4096 --dns-result-order=ipv4first
       - NODE_TLS_REJECT_UNAUTHORIZED=0
       - NODE_EXTRA_CA_CERTS=/etc/ssl/certs/ca-certificates.crt
-      - NEXT_PUBLIC_LINE_CLIENT_ID=${LINE_CLIENT_ID}
     ports:
       - "3000:3000"
     depends_on:
@@ -83,25 +82,13 @@ services:
       - thaihand_network
     restart: unless-stopped
     dns:
-      - 1.1.1.1
-      - 1.0.0.1
       - 8.8.8.8
       - 8.8.4.4
-      - 208.67.222.222
-      - 9.9.9.9
+      - 1.1.1.1
     extra_hosts:
       - "access.line.me:104.28.211.79"
       - "api.line.me:104.28.211.79"
       - "line.me:104.28.211.79"
-      - "access.line.me:104.28.211.80"
-      - "api.line.me:104.28.211.80"
-      - "line.me:104.28.211.80"
-      - "access.line.me:104.28.211.81"
-      - "api.line.me:104.28.211.81"
-      - "line.me:104.28.211.81"
-      - "access.line.me:104.28.211.82"
-      - "api.line.me:104.28.211.82"
-      - "line.me:104.28.211.82"
 
   # Nginx Reverse Proxy
   nginx:

@@ -42,22 +42,16 @@ const handler = NextAuth({
   ],
   pages: {
     signIn: '/login',
-    error: '/login',
   },
   secret: process.env.NEXTAUTH_SECRET,
-  debug: process.env.NODE_ENV === 'development',
+  debug: false, // ปิด debug ใน production
   session: {
     strategy: "jwt",
     maxAge: 30 * 24 * 60 * 60, // 30 วัน
   },
   events: {
     async signIn({ user, account, profile, isNewUser }) {
-      console.log('EVENT: signIn', { 
-        user: user?.id, 
-        provider: account?.provider, 
-        isNewUser,
-        hasAccessToken: !!account?.access_token 
-      });
+      console.log('EVENT: signIn', { user: user?.id, provider: account?.provider, isNewUser });
     },
     async signOut({ session, token }) {
       console.log('EVENT: signOut', { session: session?.user?.name, provider: token?.provider });
@@ -98,42 +92,38 @@ const handler = NextAuth({
         return true;
       }
       
+      // ตรวจสอบ environment variables สำหรับ Google
+      if (account?.provider === 'google') {
+        if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET) {
+          console.log('GOOGLE OAUTH ERROR - Missing environment variables');
+          return false;
+        }
+      }
+      
       return true;
     },
     async redirect({ url, baseUrl }) {
       console.log('REDIRECT CALLBACK - URL:', url, 'Base URL:', baseUrl);
       
-      // ถ้าเป็น LINE OAuth callback ให้ไป dashboard
-      if (url.startsWith(baseUrl + '/api/auth/callback/line')) {
-        console.log('LINE OAUTH CALLBACK - Redirecting to dashboard');
+      // จัดการ OAuth errors
+      if (url.includes('error=OAuthSignin') || url.includes('error=Configuration')) {
+        console.log('OAUTH ERROR - Redirecting to login with error');
+        return baseUrl + '/login?error=oauth_error';
+      }
+      
+      // ถ้าเป็น OAuth callback ให้ไป dashboard
+      if (url.includes('/api/auth/callback/')) {
+        console.log('OAUTH CALLBACK - Redirecting to dashboard');
         return baseUrl + '/dashboard';
       }
       
-      // ถ้าเป็น LINE OAuth signin ให้ไป LINE
-      if (url.startsWith(baseUrl + '/api/auth/signin/line')) {
-        console.log('LINE OAUTH SIGNIN - Allowing LINE redirect');
+      // ถ้าเป็น OAuth signin ให้อนุญาต
+      if (url.includes('/api/auth/signin/')) {
+        console.log('OAUTH SIGNIN - Allowing OAuth redirect');
         return url;
       }
       
-      // ถ้าเป็น error ให้ไป login พร้อม error message
-      if (url.includes('error=OAuthSignin')) {
-        console.log('OAUTH ERROR - Redirecting to login with error');
-        return baseUrl + '/login?error=line_oauth_error&message=เกิดข้อผิดพลาดในการเชื่อมต่อกับ LINE กรุณาลองใหม่อีกครั้ง';
-      }
-      
-      // ถ้าเป็น OAuth error อื่นๆ
-      if (url.includes('error=')) {
-        console.log('OAUTH ERROR - Redirecting to login with generic error');
-        return baseUrl + '/login?error=oauth_error&message=เกิดข้อผิดพลาดในการเข้าสู่ระบบ';
-      }
-      
-      // ถ้าเป็น callback URL ที่มี error
-      if (url.includes('callbackUrl') && url.includes('error=')) {
-        console.log('CALLBACK ERROR - Redirecting to login with error');
-        return baseUrl + '/login?error=line_oauth_error&message=เกิดข้อผิดพลาดในการเชื่อมต่อกับ LINE กรุณาลองใหม่อีกครั้ง';
-      }
-      
-      // อื่นๆ ให้ไป dashboard
+      // ถ้าเป็น internal URL ให้ไป dashboard
       if (url.startsWith(baseUrl)) {
         console.log('INTERNAL URL - Redirecting to dashboard');
         return baseUrl + '/dashboard';
