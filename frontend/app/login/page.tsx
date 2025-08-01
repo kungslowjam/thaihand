@@ -66,14 +66,6 @@ function LoginForm() {
     try {
       console.log('LINE LOGIN - Starting LINE OAuth');
       
-      // ตรวจสอบ environment variables
-      if (!process.env.NEXT_PUBLIC_LINE_CLIENT_ID) {
-        console.error('LINE CLIENT ID not found');
-        setError('เกิดข้อผิดพลาดในการตั้งค่า LINE กรุณาตรวจสอบการตั้งค่า');
-        setIsLoading(false);
-        return;
-      }
-      
       // ใช้ signIn พร้อม error handling
       const result = await signIn("line", { 
         callbackUrl: "/dashboard",
@@ -84,11 +76,25 @@ function LoginForm() {
       
       if (result?.error) {
         console.error('LINE login error:', result.error);
-        setError(`เกิดข้อผิดพลาดในการเข้าสู่ระบบ: ${result.error}`);
+        
+        // แสดงข้อความ error ที่เหมาะสม
+        if (result.error === 'Configuration') {
+          setError('เกิดข้อผิดพลาดในการตั้งค่า LINE กรุณาตรวจสอบ LINE_CLIENT_ID และ LINE_CLIENT_SECRET');
+        } else if (result.error === 'OAuthSignin') {
+          setError('เกิดข้อผิดพลาดในการเชื่อมต่อกับ LINE กรุณาตรวจสอบการตั้งค่า');
+        } else if (result.error === 'AccessDenied') {
+          setError('การเข้าสู่ระบบถูกปฏิเสธ กรุณาลองใหม่อีกครั้ง');
+        } else {
+          setError(`เกิดข้อผิดพลาดในการเข้าสู่ระบบ: ${result.error}`);
+        }
         setIsLoading(false);
       } else if (result?.url) {
         // ถ้าสำเร็จให้ redirect
         window.location.href = result.url;
+      } else {
+        // ถ้าไม่มี error และไม่มี url ให้ลองใหม่
+        setError('เกิดข้อผิดพลาดที่ไม่ทราบสาเหตุ กรุณาลองใหม่อีกครั้ง');
+        setIsLoading(false);
       }
       
     } catch (error) {
