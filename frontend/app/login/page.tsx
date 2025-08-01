@@ -50,6 +50,10 @@ function LoginForm() {
       setError('เกิดข้อผิดพลาดในการตั้งค่า OAuth กรุณาตรวจสอบการตั้งค่า');
     } else if (errorParam === 'Configuration') {
       setError('เกิดข้อผิดพลาดในการตั้งค่า OAuth กรุณาตรวจสอบ environment variables');
+    } else if (errorParam === 'AccessDenied') {
+      setError('การเข้าสู่ระบบถูกปฏิเสธ กรุณาลองใหม่อีกครั้ง');
+    } else if (errorParam === 'Verification') {
+      setError('เกิดข้อผิดพลาดในการยืนยันตัวตน กรุณาลองใหม่อีกครั้ง');
     } else if (errorParam === 'unknown_error') {
       setError(messageParam || 'เกิดข้อผิดพลาดที่ไม่ทราบสาเหตุ');
     }

@@ -38,13 +38,18 @@ const handler = NextAuth({
     LineProvider({
       clientId: process.env.LINE_CLIENT_ID!,
       clientSecret: process.env.LINE_CLIENT_SECRET!,
+      authorization: {
+        params: {
+          scope: 'profile openid email',
+        },
+      },
     }),
   ],
   pages: {
     signIn: '/login',
   },
   secret: process.env.NEXTAUTH_SECRET,
-  debug: false, // ปิด debug ใน production
+  debug: process.env.NODE_ENV === 'development',
   session: {
     strategy: "jwt",
     maxAge: 30 * 24 * 60 * 60, // 30 วัน
@@ -61,7 +66,7 @@ const handler = NextAuth({
     async signIn({ user, account, profile, email, credentials }) {
       console.log('SIGNIN CALLBACK - User:', user?.id, 'Provider:', account?.provider);
       
-      // ตรวจสอบ environment variables สำหรับทั้ง Google และ LINE
+      // ตรวจสอบ environment variables
       if (account?.provider === 'google') {
         if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET) {
           console.log('GOOGLE OAUTH ERROR - Missing environment variables');
@@ -76,21 +81,26 @@ const handler = NextAuth({
           return false;
         }
         console.log('LINE OAUTH SUCCESS - Environment variables OK');
+        
+        // สำหรับ LINE OAuth ให้ยืดหยุ่นมากขึ้น
+        if (!user || !user.id) {
+          console.log('LINE OAUTH - Creating user from profile data');
+          // สร้าง user ID จาก LINE profile
+          if (profile && profile.sub) {
+            user.id = profile.sub;
+          } else if (account.providerAccountId) {
+            user.id = account.providerAccountId;
+          }
+        }
       }
       
-      // ตรวจสอบว่ามี access_token หรือไม่
-      if (account && !account.access_token) {
+      // ตรวจสอบว่ามี access_token หรือไม่ (ยืดหยุ่นสำหรับ LINE)
+      if (account && !account.access_token && account.provider !== 'line') {
         console.log(`${account.provider?.toUpperCase()} OAUTH ERROR - No access token`);
         return false;
       }
       
-      // ตรวจสอบว่า user มีข้อมูลครบหรือไม่
-      if (!user || !user.id) {
-        console.log(`${account?.provider?.toUpperCase()} OAUTH ERROR - No user data`);
-        return false;
-      }
-      
-      console.log(`${account?.provider?.toUpperCase()} OAUTH SUCCESS - Access token received`);
+      console.log(`${account?.provider?.toUpperCase()} OAUTH SUCCESS - Authentication successful`);
       return true;
     },
     async redirect({ url, baseUrl }) {
