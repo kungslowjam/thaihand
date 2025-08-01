@@ -74,6 +74,8 @@ services:
       - NODE_OPTIONS=--max-http-header-size=8192 --max-old-space-size=4096 --dns-result-order=ipv4first
       - NODE_TLS_REJECT_UNAUTHORIZED=0
       - NODE_EXTRA_CA_CERTS=/etc/ssl/certs/ca-certificates.crt
+      - NEXTAUTH_TIMEOUT=30000
+      - NEXTAUTH_HTTP_TIMEOUT=30000
     ports:
       - "3000:3000"
     depends_on:
@@ -89,6 +91,13 @@ services:
       - "access.line.me:104.28.211.79"
       - "api.line.me:104.28.211.79"
       - "line.me:104.28.211.79"
+      - "access.line.me:104.28.211.80"
+      - "api.line.me:104.28.211.80"
+      - "line.me:104.28.211.80"
+    ulimits:
+      nofile:
+        soft: 65536
+        hard: 65536
 
   # Nginx Reverse Proxy
   nginx:
