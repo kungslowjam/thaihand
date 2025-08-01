@@ -42,6 +42,7 @@ const handler = NextAuth({
   ],
   pages: {
     signIn: '/login',
+    error: '/api/auth/error',
   },
   secret: process.env.NEXTAUTH_SECRET,
   debug: false, // ปิด debug ใน production

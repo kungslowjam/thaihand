@@ -1,90 +1,113 @@
-"use client"
+'use client';
 
-import { useSearchParams } from "next/navigation"
-import { Button } from "@/components/ui/button"
-import { ThaiHandLogo } from "@/components/thai-hand-logo"
-import Link from "next/link"
-import { Suspense } from "react"
+import { useSearchParams } from 'next/navigation';
+import { Suspense } from 'react';
+import Link from 'next/link';
 
-function AuthErrorContent() {
-  const searchParams = useSearchParams()
-  const error = searchParams.get('error')
-  const message = searchParams.get('message')
-
-  const getErrorMessage = () => {
+function ErrorContent() {
+  const searchParams = useSearchParams();
+  const error = searchParams.get('error');
+  
+  const getErrorMessage = (error: string | null) => {
     switch (error) {
       case 'OAuthSignin':
-        return 'เกิดข้อผิดพลาดในการเริ่มต้น OAuth กรุณาตรวจสอบ LINE Client ID และ Secret'
+        return 'เกิดข้อผิดพลาดในการเริ่มต้น OAuth กรุณาตรวจสอบ LINE Client ID และ Secret';
       case 'OAuthCallback':
-        return 'เกิดข้อผิดพลาดในการ callback กรุณาลองใหม่อีกครั้ง'
+        return 'เกิดข้อผิดพลาดในการ callback OAuth กรุณาลองใหม่อีกครั้ง';
       case 'OAuthCreateAccount':
-        return 'เกิดข้อผิดพลาดในการสร้างบัญชี'
-      case 'EmailCreateAccount':
-        return 'เกิดข้อผิดพลาดในการสร้างบัญชีด้วยอีเมล'
-      case 'Callback':
-        return 'เกิดข้อผิดพลาดในการ callback'
+        return 'เกิดข้อผิดพลาดในการสร้างบัญชี OAuth';
       case 'OAuthAccountNotLinked':
-        return 'บัญชีนี้เชื่อมต่อกับ provider อื่นแล้ว'
+        return 'บัญชีนี้เชื่อมต่อกับ provider อื่นอยู่แล้ว';
+      case 'EmailCreateAccount':
+        return 'เกิดข้อผิดพลาดในการสร้างบัญชีด้วยอีเมล';
+      case 'Callback':
+        return 'เกิดข้อผิดพลาดในการ callback';
+      case 'OAuthSignin':
+        return 'เกิดข้อผิดพลาดในการเริ่มต้น OAuth';
       case 'EmailSignin':
-        return 'เกิดข้อผิดพลาดในการเข้าสู่ระบบด้วยอีเมล'
+        return 'เกิดข้อผิดพลาดในการเข้าสู่ระบบด้วยอีเมล';
       case 'CredentialsSignin':
-        return 'เกิดข้อผิดพลาดในการเข้าสู่ระบบด้วย credentials'
+        return 'เกิดข้อผิดพลาดในการเข้าสู่ระบบด้วย credentials';
       case 'SessionRequired':
-        return 'กรุณาเข้าสู่ระบบก่อน'
+        return 'กรุณาเข้าสู่ระบบก่อน';
+      case 'Default':
       default:
-        return message || 'เกิดข้อผิดพลาดที่ไม่ทราบสาเหตุ'
+        return 'เกิดข้อผิดพลาดที่ไม่ทราบสาเหตุ กรุณาลองใหม่อีกครั้ง';
     }
-  }
+  };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-100 via-white to-blue-200">
-      <div className="w-full max-w-lg p-6">
-        <div className="rounded-3xl shadow-2xl bg-white/70 backdrop-blur-md px-8 py-10 flex flex-col items-center border border-white/40">
-          <div className="mb-8 flex flex-col items-center">
-            <ThaiHandLogo className="h-14 w-14 mb-2 drop-shadow" />
-            <span className="text-4xl font-extrabold text-gray-900 tracking-tight">ฝากซื้อไทย</span>
-          </div>
-          
-          <div className="text-center mb-8">
-            <h1 className="text-2xl font-bold text-red-600 mb-4">เกิดข้อผิดพลาด</h1>
-            <p className="text-gray-700 mb-4">{getErrorMessage()}</p>
-            <p className="text-sm text-gray-500">รหัสข้อผิดพลาด: {error}</p>
-          </div>
+    <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+      <div className="sm:mx-auto sm:w-full sm:max-w-md">
+        <div className="text-center">
+          <h2 className="text-3xl font-bold text-gray-900 mb-2">
+            ❌ เกิดข้อผิดพลาด
+          </h2>
+          <p className="text-sm text-gray-600">
+            ไม่สามารถเข้าสู่ระบบได้
+          </p>
+        </div>
+      </div>
 
-          <div className="flex flex-col gap-4 w-full">
-            <Link href="/login">
-              <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white">
-                กลับไปหน้าเข้าสู่ระบบ
-              </Button>
-            </Link>
+      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
+        <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
+          <div className="text-center">
+            <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100 mb-4">
+              <svg className="h-6 w-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+              </svg>
+            </div>
             
-            <Link href="/">
-              <Button variant="outline" className="w-full">
+            <h3 className="text-lg font-medium text-gray-900 mb-2">
+              ข้อผิดพลาดในการเข้าสู่ระบบ
+            </h3>
+            
+            <p className="text-sm text-gray-600 mb-6">
+              {getErrorMessage(error)}
+            </p>
+
+            <div className="space-y-3">
+              <Link
+                href="/login"
+                className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              >
+                ลองเข้าสู่ระบบใหม่
+              </Link>
+              
+              <Link
+                href="/"
+                className="w-full flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              >
                 กลับหน้าหลัก
-              </Button>
-            </Link>
+              </Link>
+            </div>
+
+            {error && (
+              <div className="mt-6 p-3 bg-gray-50 rounded-md">
+                <p className="text-xs text-gray-500">
+                  รหัสข้อผิดพลาด: <code className="bg-gray-200 px-1 rounded">{error}</code>
+                </p>
+              </div>
+            )}
           </div>
         </div>
       </div>
     </div>
-  )
+  );
 }
 
-function LoadingFallback() {
+export default function ErrorPage() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-100 via-white to-blue-200">
-      <div className="text-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
-        <p className="text-gray-600">กำลังโหลด...</p>
+    <Suspense fallback={
+      <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+        <div className="text-center">
+          <h2 className="text-3xl font-bold text-gray-900 mb-2">
+            กำลังโหลด...
+          </h2>
+        </div>
       </div>
-    </div>
-  )
-}
-
-export default function AuthErrorPage() {
-  return (
-    <Suspense fallback={<LoadingFallback />}>
-      <AuthErrorContent />
+    }>
+      <ErrorContent />
     </Suspense>
-  )
+  );
 } 
