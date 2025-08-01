@@ -45,6 +45,17 @@ const handler = NextAuth({
       },
       httpOptions: {
         timeout: 30000, // เพิ่ม timeout เป็น 30 วินาที
+        headers: {
+          'User-Agent': 'ThaiHand/1.0',
+        },
+      },
+      profile(profile) {
+        return {
+          id: profile.sub,
+          name: profile.name,
+          email: profile.email,
+          image: profile.picture,
+        }
       },
     }),
   ],
@@ -126,13 +137,19 @@ const handler = NextAuth({
       // ถ้าเป็น error ให้ไป login พร้อม error message
       if (url.includes('error=OAuthSignin')) {
         console.log('OAUTH ERROR - Redirecting to login with error');
-        return baseUrl + '/login?error=line_oauth_error&message=เกิดข้อผิดพลาดในการเชื่อมต่อกับ LINE';
+        return baseUrl + '/login?error=line_oauth_error&message=เกิดข้อผิดพลาดในการเชื่อมต่อกับ LINE กรุณาลองใหม่อีกครั้ง';
       }
       
       // ถ้าเป็น OAuth error อื่นๆ
       if (url.includes('error=')) {
         console.log('OAUTH ERROR - Redirecting to login with generic error');
         return baseUrl + '/login?error=oauth_error&message=เกิดข้อผิดพลาดในการเข้าสู่ระบบ';
+      }
+      
+      // ถ้าเป็น callback URL ที่มี error
+      if (url.includes('callbackUrl') && url.includes('error=')) {
+        console.log('CALLBACK ERROR - Redirecting to login with error');
+        return baseUrl + '/login?error=line_oauth_error&message=เกิดข้อผิดพลาดในการเชื่อมต่อกับ LINE กรุณาลองใหม่อีกครั้ง';
       }
       
       // อื่นๆ ให้ไป dashboard
