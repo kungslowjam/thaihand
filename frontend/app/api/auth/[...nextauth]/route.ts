@@ -57,6 +57,9 @@ const handler = NextAuth({
           image: profile.picture,
         }
       },
+      client: {
+        token_endpoint_auth_method: 'client_secret_post',
+      },
     }),
   ],
   pages: {
