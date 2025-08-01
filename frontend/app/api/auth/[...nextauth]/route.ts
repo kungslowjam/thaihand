@@ -36,8 +36,8 @@ const handler = NextAuth({
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
     }),
     LineProvider({
-      clientId: process.env.LINE_CLIENT_ID || '',
-      clientSecret: process.env.LINE_CLIENT_SECRET || '',
+      clientId: process.env.LINE_CLIENT_ID!,
+      clientSecret: process.env.LINE_CLIENT_SECRET!,
     }),
   ],
   pages: {
@@ -61,35 +61,19 @@ const handler = NextAuth({
     async signIn({ user, account, profile, email, credentials }) {
       console.log('SIGNIN CALLBACK - User:', user?.id, 'Provider:', account?.provider);
       
-      // ตรวจสอบ environment variables
-      if (!process.env.LINE_CLIENT_ID || !process.env.LINE_CLIENT_SECRET) {
-        console.log('LINE OAUTH ERROR - Missing environment variables');
-        return false;
+      // ตรวจสอบ environment variables สำหรับทั้ง Google และ Line
+      if (account?.provider === 'google') {
+        if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET) {
+          console.log('GOOGLE OAUTH ERROR - Missing environment variables');
+          return false;
+        }
       }
       
       if (account?.provider === 'line') {
-        console.log('LINE OAUTH - Account details:', {
-          provider: account.provider,
-          type: account.type,
-          hasAccessToken: !!account.access_token,
-          hasRefreshToken: !!account.refresh_token,
-          expiresAt: account.expires_at
-        });
-        
-        // ตรวจสอบว่ามี access_token หรือไม่
-        if (!account.access_token) {
-          console.log('LINE OAUTH ERROR - No access token');
+        if (!process.env.LINE_CLIENT_ID || !process.env.LINE_CLIENT_SECRET) {
+          console.log('LINE OAUTH ERROR - Missing environment variables');
           return false;
         }
-        
-        // ตรวจสอบว่า user มีข้อมูลครบหรือไม่
-        if (!user || !user.id) {
-          console.log('LINE OAUTH ERROR - No user data');
-          return false;
-        }
-        
-        console.log('LINE OAUTH SUCCESS - Access token received');
-        return true;
       }
       
       return true;
@@ -97,25 +81,25 @@ const handler = NextAuth({
     async redirect({ url, baseUrl }) {
       console.log('REDIRECT CALLBACK - URL:', url, 'Base URL:', baseUrl);
       
-      // ถ้าเป็น LINE OAuth callback ให้ไป dashboard
-      if (url.startsWith(baseUrl + '/api/auth/callback/line')) {
-        console.log('LINE OAUTH CALLBACK - Redirecting to dashboard');
+      // จัดการ OAuth errors
+      if (url.includes('error=OAuthSignin') || url.includes('error=Configuration')) {
+        console.log('OAUTH ERROR - Redirecting to login with error');
+        return baseUrl + '/login?error=oauth_error';
+      }
+      
+      // ถ้าเป็น OAuth callback ให้ไป dashboard
+      if (url.includes('/api/auth/callback/')) {
+        console.log('OAUTH CALLBACK - Redirecting to dashboard');
         return baseUrl + '/dashboard';
       }
       
-      // ถ้าเป็น LINE OAuth signin ให้ไป LINE
-      if (url.startsWith(baseUrl + '/api/auth/signin/line')) {
-        console.log('LINE OAUTH SIGNIN - Allowing LINE redirect');
+      // ถ้าเป็น OAuth signin ให้อนุญาต
+      if (url.includes('/api/auth/signin/')) {
+        console.log('OAUTH SIGNIN - Allowing OAuth redirect');
         return url;
       }
       
-      // ถ้าเป็น error ให้ไป login
-      if (url.includes('error=OAuthSignin')) {
-        console.log('OAUTH ERROR - Redirecting to login');
-        return baseUrl + '/login';
-      }
-      
-      // อื่นๆ ให้ไป dashboard
+      // ถ้าเป็น internal URL ให้ไป dashboard
       if (url.startsWith(baseUrl)) {
         console.log('INTERNAL URL - Redirecting to dashboard');
         return baseUrl + '/dashboard';
