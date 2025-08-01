@@ -66,36 +66,11 @@ function LoginForm() {
     try {
       console.log('LINE LOGIN - Starting LINE OAuth');
       
-      // ใช้ signIn พร้อม error handling
-      const result = await signIn("line", { 
+      // ใช้ signIn พร้อม redirect: true เพื่อให้ LINE OAuth ทำงานได้
+      signIn("line", { 
         callbackUrl: "/dashboard",
-        redirect: false 
+        redirect: true 
       });
-      
-      console.log('LINE LOGIN - Result:', result);
-      
-      if (result?.error) {
-        console.error('LINE login error:', result.error);
-        
-        // แสดงข้อความ error ที่เหมาะสม
-        if (result.error === 'Configuration') {
-          setError('เกิดข้อผิดพลาดในการตั้งค่า LINE กรุณาตรวจสอบ LINE_CLIENT_ID และ LINE_CLIENT_SECRET');
-        } else if (result.error === 'OAuthSignin') {
-          setError('เกิดข้อผิดพลาดในการเชื่อมต่อกับ LINE กรุณาตรวจสอบการตั้งค่า');
-        } else if (result.error === 'AccessDenied') {
-          setError('การเข้าสู่ระบบถูกปฏิเสธ กรุณาลองใหม่อีกครั้ง');
-        } else {
-          setError(`เกิดข้อผิดพลาดในการเข้าสู่ระบบ: ${result.error}`);
-        }
-        setIsLoading(false);
-      } else if (result?.url) {
-        // ถ้าสำเร็จให้ redirect
-        window.location.href = result.url;
-      } else {
-        // ถ้าไม่มี error และไม่มี url ให้ลองใหม่
-        setError('เกิดข้อผิดพลาดที่ไม่ทราบสาเหตุ กรุณาลองใหม่อีกครั้ง');
-        setIsLoading(false);
-      }
       
     } catch (error) {
       console.error("LINE login failed:", error);
