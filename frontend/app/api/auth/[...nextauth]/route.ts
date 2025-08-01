@@ -7,6 +7,26 @@ import { Session } from "next-auth";
 // Force dynamic rendering
 export const dynamic = 'force-dynamic';
 
+// ตรวจสอบ environment variables
+const requiredEnvVars = {
+  NEXTAUTH_URL: process.env.NEXTAUTH_URL,
+  NEXTAUTH_SECRET: process.env.NEXTAUTH_SECRET,
+  LINE_CLIENT_ID: process.env.LINE_CLIENT_ID,
+  LINE_CLIENT_SECRET: process.env.LINE_CLIENT_SECRET,
+  GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID,
+  GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET,
+};
+
+// ตรวจสอบว่า environment variables ครบหรือไม่
+const missingEnvVars = Object.entries(requiredEnvVars)
+  .filter(([key, value]) => !value)
+  .map(([key]) => key);
+
+if (missingEnvVars.length > 0) {
+  console.error('Missing environment variables:', missingEnvVars);
+  console.error('Available env vars:', Object.keys(process.env).filter(key => key.includes('CLIENT')));
+}
+
 // Extend NextAuth types
 declare module "next-auth" {
   interface Session {
@@ -47,6 +67,7 @@ const handler = NextAuth({
   ],
   pages: {
     signIn: '/login',
+    error: '/login',
   },
   secret: process.env.NEXTAUTH_SECRET,
   debug: process.env.NODE_ENV === 'development',
@@ -90,7 +111,17 @@ const handler = NextAuth({
             user.id = profile.sub;
           } else if (account.providerAccountId) {
             user.id = account.providerAccountId;
+          } else if (profile && (profile as any).id) {
+            user.id = (profile as any).id;
           }
+        }
+        
+        // ตรวจสอบว่า user มีข้อมูลพื้นฐาน
+        if (!user.name && profile && profile.name) {
+          user.name = profile.name;
+        }
+        if (!user.image && profile && (profile as any).picture) {
+          user.image = (profile as any).picture;
         }
       }
       

@@ -58,6 +58,8 @@ services:
         - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
         - LINE_CLIENT_ID=${LINE_CLIENT_ID}
         - LINE_CLIENT_SECRET=${LINE_CLIENT_SECRET}
+        - NEXT_PUBLIC_LINE_CLIENT_ID=${LINE_CLIENT_ID}
+        - NEXT_PUBLIC_GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
     container_name: thaihand_frontend
     env_file:
       - .env

@@ -47,7 +47,7 @@ function LoginForm() {
     } else if (errorParam === 'oauth_error') {
       setError(messageParam || 'เกิดข้อผิดพลาดในการเข้าสู่ระบบ กรุณาลองใหม่อีกครั้ง');
     } else if (errorParam === 'OAuthSignin') {
-      setError('เกิดข้อผิดพลาดในการตั้งค่า OAuth กรุณาตรวจสอบการตั้งค่า');
+      setError('เกิดข้อผิดพลาดในการตั้งค่า OAuth กรุณาตรวจสอบ LINE_CLIENT_ID และ LINE_CLIENT_SECRET ในไฟล์ .env');
     } else if (errorParam === 'Configuration') {
       setError('เกิดข้อผิดพลาดในการตั้งค่า OAuth กรุณาตรวจสอบ environment variables');
     } else if (errorParam === 'AccessDenied') {
@@ -65,6 +65,14 @@ function LoginForm() {
     
     try {
       console.log('LINE LOGIN - Starting LINE OAuth');
+      
+      // ตรวจสอบ environment variables
+      if (!process.env.NEXT_PUBLIC_LINE_CLIENT_ID) {
+        console.error('NEXT_PUBLIC_LINE_CLIENT_ID not found in environment');
+        setError('เกิดข้อผิดพลาดในการตั้งค่า LINE OAuth กรุณาตรวจสอบ environment variables');
+        setIsLoading(false);
+        return;
+      }
       
       // ใช้ redirect แทน Promise.race เพื่อหลีกเลี่ยง timeout
       signIn("line", { 
