@@ -18,6 +18,11 @@ const providers = [
   LineProvider({
     clientId: process.env.LINE_CLIENT_ID!,
     clientSecret: process.env.LINE_CLIENT_SECRET!,
+    authorization: {
+      params: {
+        scope: 'profile openid email',
+      },
+    },
   }),
 ];
 
@@ -57,14 +62,47 @@ const handler = NextAuth({
   callbacks: {
     async signIn({ user, account, profile, email, credentials }) {
       console.log('SIGNIN CALLBACK - User:', user?.id, 'Provider:', account?.provider);
+      
+      // สำหรับ LINE OAuth ให้ยืดหยุ่นมากขึ้น
+      if (account?.provider === 'line') {
+        // ตรวจสอบว่า user มีข้อมูลครบหรือไม่
+        if (!user || !user.id) {
+          console.log('LINE OAUTH - Creating user from profile data');
+          if (profile && profile.sub) {
+            user.id = profile.sub;
+          } else if (account.providerAccountId) {
+            user.id = account.providerAccountId;
+          }
+        }
+        
+        // ตรวจสอบว่า user มีข้อมูลพื้นฐาน
+        if (!user.name && profile && profile.name) {
+          user.name = profile.name;
+        }
+        if (!user.image && profile && (profile as any).picture) {
+          user.image = (profile as any).picture;
+        }
+      }
+      
       return true;
     },
     async redirect({ url, baseUrl }) {
       console.log('REDIRECT CALLBACK - URL:', url, 'Base URL:', baseUrl);
       
+      // ตรวจสอบว่า URL เป็น localhost หรือไม่
+      if (url.includes('localhost')) {
+        console.log('REDIRECT FIX - Replacing localhost with production URL');
+        url = url.replace('localhost', 'thaihand.shop');
+      }
+      
       // ถ้าเป็น OAuth callback ให้ไป dashboard
       if (url.includes('/api/auth/callback/')) {
         return baseUrl + '/dashboard';
+      }
+      
+      // ถ้าเป็น error ให้ไป login
+      if (url.includes('error=')) {
+        return baseUrl + '/login?error=OAuthSignin';
       }
       
       // ถ้าเป็น internal URL ให้ไป dashboard
