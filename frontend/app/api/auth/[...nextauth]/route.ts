@@ -46,6 +46,11 @@ if (process.env.LINE_CLIENT_ID && process.env.LINE_CLIENT_SECRET) {
     LineProvider({
       clientId: process.env.LINE_CLIENT_ID,
       clientSecret: process.env.LINE_CLIENT_SECRET,
+      authorization: {
+        params: {
+          scope: 'profile openid email',
+        },
+      },
     })
   );
 }
@@ -53,11 +58,6 @@ if (process.env.LINE_CLIENT_ID && process.env.LINE_CLIENT_SECRET) {
 // ตรวจสอบว่ามี providers หรือไม่
 if (providers.length === 0) {
   console.error('No OAuth providers configured. Please check environment variables.');
-  console.error('Environment variables status:');
-  console.error('LINE_CLIENT_ID:', process.env.LINE_CLIENT_ID ? 'SET' : 'MISSING');
-  console.error('LINE_CLIENT_SECRET:', process.env.LINE_CLIENT_SECRET ? 'SET' : 'MISSING');
-  console.error('GOOGLE_CLIENT_ID:', process.env.GOOGLE_CLIENT_ID ? 'SET' : 'MISSING');
-  console.error('GOOGLE_CLIENT_SECRET:', process.env.GOOGLE_CLIENT_SECRET ? 'SET' : 'MISSING');
 } else {
   console.log('OAuth providers configured:', providers.map(p => p.id));
 }

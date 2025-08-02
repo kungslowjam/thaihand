@@ -71,9 +71,6 @@ function LoginForm() {
     
     try {
       console.log('LINE LOGIN - Starting LINE OAuth');
-      console.log('Environment variables:');
-      console.log('NEXT_PUBLIC_LINE_CLIENT_ID:', process.env.NEXT_PUBLIC_LINE_CLIENT_ID);
-      console.log('NEXTAUTH_URL:', process.env.NEXTAUTH_URL);
       
       // ตรวจสอบ environment variables
       if (!process.env.NEXT_PUBLIC_LINE_CLIENT_ID) {
@@ -83,15 +80,13 @@ function LoginForm() {
         return;
       }
       
-      console.log('Calling signIn("line")...');
+      console.log('LINE_CLIENT_ID:', process.env.NEXT_PUBLIC_LINE_CLIENT_ID);
       
       // ใช้ redirect แทน Promise.race เพื่อหลีกเลี่ยง timeout
-      const result = await signIn("line", { 
+      signIn("line", { 
         callbackUrl: "/dashboard",
         redirect: true 
       });
-      
-      console.log('signIn result:', result);
       
     } catch (error) {
       console.error("LINE login failed:", error);
