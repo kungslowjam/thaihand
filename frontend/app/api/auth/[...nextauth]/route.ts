@@ -59,6 +59,7 @@ const handler = NextAuth({
     strategy: "jwt",
     maxAge: 30 * 24 * 60 * 60, // 30 วัน
   },
+  useSecureCookies: process.env.NODE_ENV === 'production',
   callbacks: {
     async signIn({ user, account, profile, email, credentials }) {
       console.log('SIGNIN CALLBACK - User:', user?.id, 'Provider:', account?.provider);
@@ -89,7 +90,11 @@ const handler = NextAuth({
     async redirect({ url, baseUrl }) {
       console.log('REDIRECT CALLBACK - URL:', url, 'Base URL:', baseUrl);
       
-      // ตรวจสอบว่า URL เป็น localhost หรือไม่
+      // ตรวจสอบและแก้ไข localhost URLs
+      if (url.includes('localhost:3000')) {
+        console.log('REDIRECT FIX - Replacing localhost:3000 with production URL');
+        url = url.replace('localhost:3000', 'thaihand.shop');
+      }
       if (url.includes('localhost')) {
         console.log('REDIRECT FIX - Replacing localhost with production URL');
         url = url.replace('localhost', 'thaihand.shop');
@@ -97,19 +102,23 @@ const handler = NextAuth({
       
       // ถ้าเป็น OAuth callback ให้ไป dashboard
       if (url.includes('/api/auth/callback/')) {
+        console.log('OAUTH CALLBACK - Redirecting to dashboard');
         return baseUrl + '/dashboard';
       }
       
       // ถ้าเป็น error ให้ไป login
       if (url.includes('error=')) {
+        console.log('ERROR REDIRECT - Going to login page');
         return baseUrl + '/login?error=OAuthSignin';
       }
       
       // ถ้าเป็น internal URL ให้ไป dashboard
       if (url.startsWith(baseUrl)) {
+        console.log('INTERNAL URL - Redirecting to dashboard');
         return baseUrl + '/dashboard';
       }
       
+      console.log('EXTERNAL URL - Allowing redirect to:', url);
       return url;
     },
     async session({ session, token, user }) {
