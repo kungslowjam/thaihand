@@ -10,39 +10,8 @@ import { useRouter, useParams } from 'next/navigation';
 import RequestDetailModal from '../../../../components/RequestDetailModal';
 import { ConfirmModal } from '../../../../components/ConfirmModal';
 import { useBackendToken } from "@/lib/useBackendToken";
-import { ShoppingBag } from 'lucide-react';
+import { ShoppingBag, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
-
-// mock data ตัวอย่าง
-const mockRequests = [
-  {
-    id: 1,
-    user: 'สมชาย',
-    product: 'iPhone 15 Pro',
-    status: 'รออนุมัติ',
-    weight: '0.5 กก.',
-    note: 'สีดำ',
-    createdAt: '2024-06-01',
-  },
-  {
-    id: 2,
-    user: 'Aom',
-    product: 'ขนมญี่ปุ่น',
-    status: 'อนุมัติ',
-    weight: '1 กก.',
-    note: '-',
-    createdAt: '2024-06-02',
-  },
-  {
-    id: 3,
-    user: 'John',
-    product: 'รองเท้า Adidas',
-    status: 'ปฏิเสธ',
-    weight: '0.8 กก.',
-    note: 'ขอไซส์ 42',
-    createdAt: '2024-06-03',
-  },
-];
 
 const statusOptions = ['ทั้งหมด', 'รออนุมัติ', 'อนุมัติ', 'ปฏิเสธ', 'สำเร็จ'];
 
@@ -58,12 +27,17 @@ export default function ManagementPage() {
   const [selected, setSelected] = useState<any>(null);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [rejectTarget, setRejectTarget] = useState<any>(null);
-  const backendToken = useBackendToken();
+  const { backendToken, loading: tokenLoading } = useBackendToken();
 
   // สรุปสถิติ
   const totalRequests = requests.length;
   const totalWeight = requests.reduce((sum, r) => sum + (parseFloat(r.weight) || 0), 0);
-  // TODO: เพิ่มรายได้รวมถ้ามีข้อมูล budget
+  const totalEarnings = requests.reduce((sum, r) => {
+    if (r.status === 'อนุมัติ' || r.status === 'สำเร็จ') {
+      return sum + (parseInt(r.budget) || 0);
+    }
+    return sum;
+  }, 0);
 
   // Header summary (mock route info)
   const routeSummary = {
@@ -73,61 +47,102 @@ export default function ManagementPage() {
     closeDate: requests[0]?.close_date || requests[0]?.deadline || "-",
     totalWeight: requests.reduce((sum, r) => sum + (parseFloat(r.weight) || 0), 0),
     totalRequests: requests.length,
+    totalEarnings: totalEarnings,
   };
 
   // Approve/Reject
   const handleApprove = async (requestId: number) => {
-    if (!backendToken) return;
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || '/api'}/requests/${requestId}/status`, {
-      method: "PATCH",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${backendToken}`
-      },
-      body: JSON.stringify({ status: "อนุมัติ" })
-    });
-    if (res.ok) {
-      fetchRequests();
+    if (!backendToken) {
+      toast.error('กรุณาเข้าสู่ระบบใหม่');
+      return;
     }
-  };
-  const handleReject = async (requestId: number) => {
-    if (!backendToken) return;
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || '/api'}/requests/${requestId}/status`, {
-      method: "PATCH",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${backendToken}`
-      },
-      body: JSON.stringify({ status: "ปฏิเสธ" })
-    });
-    if (res.ok) {
-      fetchRequests();
-    }
-  };
-  // ฟังก์ชันโหลดข้อมูลใหม่
-  const fetchRequests = () => {
-    if (!routeId || !backendToken) return;
-    setLoading(true);
-    fetch(`${process.env.NEXT_PUBLIC_API_URL || '/api'}/offers/${routeId}/requests`, {
-      headers: {
-        "Authorization": `Bearer ${backendToken}`
+
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || '/api'}/requests/${requestId}/status`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${backendToken}`
+        },
+        body: JSON.stringify({ status: "อนุมัติ" })
+      });
+      
+      if (res.ok) {
+        toast.success('อนุมัติคำขอสำเร็จ!');
+        fetchRequests();
+      } else {
+        const errorData = await res.json();
+        throw new Error(errorData.detail || 'เกิดข้อผิดพลาดในการอนุมัติ');
       }
-    })
-      .then(res => res.json())
-      .then(data => {
-        console.log('DATA FROM BACKEND', data); // debug field จริง
-        const mapped = data.map((item: any) => ({
-          ...item,
-          product: item.product || item.title,
-          user: item.user?.name || item.user || item.user_name || "-",
-          weight: item.weight || item.amount || item.qty || "-",
-          note: item.note || item.description || item.remark || "-",
-          createdAt: item.createdAt || item.created_at || item.date || "-",
-          status: item.status || item.state || "-",
-        }));
-        setRequests(mapped);
-      })
-      .finally(() => setLoading(false));
+    } catch (error: any) {
+      console.error('Error approving request:', error);
+      toast.error(error.message || 'เกิดข้อผิดพลาดในการอนุมัติ');
+    }
+  };
+
+  const handleReject = async (requestId: number) => {
+    if (!backendToken) {
+      toast.error('กรุณาเข้าสู่ระบบใหม่');
+      return;
+    }
+
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || '/api'}/requests/${requestId}/status`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${backendToken}`
+        },
+        body: JSON.stringify({ status: "ปฏิเสธ" })
+      });
+      
+      if (res.ok) {
+        toast.success('ปฏิเสธคำขอสำเร็จ!');
+        fetchRequests();
+      } else {
+        const errorData = await res.json();
+        throw new Error(errorData.detail || 'เกิดข้อผิดพลาดในการปฏิเสธ');
+      }
+    } catch (error: any) {
+      console.error('Error rejecting request:', error);
+      toast.error(error.message || 'เกิดข้อผิดพลาดในการปฏิเสธ');
+    }
+  };
+
+  // ฟังก์ชันโหลดข้อมูลใหม่
+  const fetchRequests = async () => {
+    if (!routeId || !backendToken) return;
+    
+    try {
+      setLoading(true);
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || '/api'}/offers/${routeId}/requests`, {
+        headers: {
+          "Authorization": `Bearer ${backendToken}`
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error('ไม่สามารถดึงข้อมูลได้');
+      }
+
+      const data = await response.json();
+      const mapped = data.map((item: any) => ({
+        ...item,
+        product: item.product || item.title,
+        user: item.user?.name || item.user || item.user_name || "-",
+        weight: item.weight || item.amount || item.qty || "-",
+        note: item.note || item.description || item.remark || "-",
+        createdAt: item.createdAt || item.created_at || item.date || "-",
+        status: item.status || item.state || "รออนุมัติ",
+        budget: item.budget || 0,
+      }));
+      setRequests(mapped);
+    } catch (error: any) {
+      console.error('Error fetching requests:', error);
+      toast.error('ไม่สามารถดึงข้อมูลได้');
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -141,6 +156,17 @@ export default function ManagementPage() {
     const matchSearch = (req.product || req.title || '').includes(search) || (req.user || '').includes(search) || (req.note || req.description || '').includes(search);
     return matchStatus && matchSearch;
   });
+
+  if (tokenLoading) {
+    return (
+      <div className="max-w-5xl mx-auto py-8 px-4 flex items-center justify-center">
+        <div className="flex items-center gap-2">
+          <Loader2 className="h-6 w-6 animate-spin" />
+          <span>กำลังโหลด...</span>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-5xl mx-auto py-8 px-4">
@@ -166,6 +192,10 @@ export default function ManagementPage() {
           <div className="text-xs text-gray-400">น้ำหนักรวม</div>
           <div className="font-bold">{routeSummary.totalWeight} กก.</div>
         </div>
+        <div className="bg-white rounded-xl shadow px-6 py-3 flex flex-col items-center min-w-[120px]">
+          <div className="text-xs text-gray-400">รายได้รวม</div>
+          <div className="font-bold text-green-600">฿{routeSummary.totalEarnings.toLocaleString()}</div>
+        </div>
       </div>
       {/* Filter/Search */}
       <div className="flex flex-wrap gap-2 mb-4 items-center">
@@ -180,7 +210,9 @@ export default function ManagementPage() {
             <option key={opt} value={opt}>{opt}</option>
           ))}
         </Select>
-        <Button variant="outline" size="sm" onClick={fetchRequests}>รีเฟรช</Button>
+        <Button variant="outline" size="sm" onClick={fetchRequests} disabled={loading}>
+          {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : 'รีเฟรช'}
+        </Button>
       </div>
       {/* Table/List */}
       <div className="overflow-x-auto bg-white rounded-xl shadow">
@@ -190,6 +222,7 @@ export default function ManagementPage() {
               <th className="px-4 py-2 text-left">สินค้า</th>
               <th className="px-4 py-2 text-left">ผู้ฝาก</th>
               <th className="px-4 py-2 text-center">น้ำหนัก</th>
+              <th className="px-4 py-2 text-center">งบประมาณ</th>
               <th className="px-4 py-2 text-center">สถานะ</th>
               <th className="px-4 py-2 text-center">วันที่</th>
               <th className="px-4 py-2 text-center">Action</th>
@@ -197,13 +230,22 @@ export default function ManagementPage() {
           </thead>
           <tbody>
             {filtered.length === 0 && !loading && (
-              <tr><td colSpan={6} className="text-center text-gray-400 py-8">ไม่พบคำขอ</td></tr>
+              <tr><td colSpan={7} className="text-center text-gray-400 py-8">ไม่พบคำขอ</td></tr>
+            )}
+            {loading && (
+              <tr><td colSpan={7} className="text-center py-8">
+                <div className="flex items-center justify-center gap-2">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <span>กำลังโหลด...</span>
+                </div>
+              </td></tr>
             )}
             {filtered.map(req => (
               <tr key={req.id} className="border-b hover:bg-gray-50 transition">
                 <td className="px-4 py-2 font-semibold">{req.product || req.title}</td>
                 <td className="px-4 py-2">{req.user}</td>
                 <td className="px-4 py-2 text-center">{req.weight || '-'}</td>
+                <td className="px-4 py-2 text-center">฿{req.budget?.toLocaleString() || '-'}</td>
                 <td className="px-4 py-2 text-center">
                   <Badge className={
                     req.status === 'รออนุมัติ' ? 'bg-yellow-100 text-yellow-700 border border-yellow-200' :
@@ -229,7 +271,7 @@ export default function ManagementPage() {
         open={confirmOpen}
         title="ยืนยันการปฏิเสธคำขอ"
         description={rejectTarget ? `คุณต้องการปฏิเสธคำขอฝากหิ้วสินค้า ${rejectTarget.product || rejectTarget.title} ของ ${rejectTarget.user} ใช่หรือไม่?` : ''}
-        onConfirm={() => { handleReject(rejectTarget.id); setConfirmOpen(false); setRejectTarget(null); toast.success('ปฏิเสธคำขอสำเร็จ!'); }}
+        onConfirm={() => { handleReject(rejectTarget.id); setConfirmOpen(false); setRejectTarget(null); }}
         onCancel={() => { setConfirmOpen(false); setRejectTarget(null); }}
       />
     </div>

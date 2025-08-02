@@ -12,6 +12,8 @@ import { useSession, signOut } from "next-auth/react";
 import { RequestForm } from "@/components/RequestForm";
 import { OfferForm } from "@/components/OfferForm";
 import { useBackendToken } from "@/lib/useBackendToken";
+import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
 // Force dynamic rendering
 export const dynamic = 'force-dynamic';
@@ -20,11 +22,51 @@ export default function CreateRequestPage() {
   const { data: session } = useSession();
   const [mode, setMode] = useState<'request' | 'offer'>('request');
   const { backendToken, loading, error } = useBackendToken();
+  const router = useRouter();
 
-  function handleRequestSubmit(data: any) {
-    // TODO: ส่งข้อมูลไป backend หรือแสดง success
-    // ตัวอย่าง: console.log('request', data)
+  async function handleRequestSubmit(data: any) {
+    if (!backendToken) {
+      toast.error('กรุณาเข้าสู่ระบบใหม่');
+      return;
+    }
+
+    try {
+      const payload = {
+        title: data.title,
+        from_location: data.fromLocation,
+        to_location: data.toLocation,
+        deadline: data.deadline,
+        budget: parseInt(data.budget),
+        description: data.description,
+        image: data.image || null,
+        urgent: data.urgent ? "true" : "false",
+        offer_id: data.offer_id || null,
+        source: "marketplace",
+      };
+
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || '/api'}/requests`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${backendToken}`
+        },
+        body: JSON.stringify(payload)
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.detail || 'เกิดข้อผิดพลาดในการสร้างคำขอ');
+      }
+
+      const result = await response.json();
+      toast.success("สร้างคำขอฝากหิ้วสำเร็จ!");
+      router.push("/dashboard");
+    } catch (error: any) {
+      console.error('Error creating request:', error);
+      toast.error(error.message || 'เกิดข้อผิดพลาดในการสร้างคำขอ');
+    }
   }
+
   function handleOfferSubmit(data: any) {
     const payload = {
       route_from: data.routeFrom,
@@ -55,11 +97,11 @@ export default function CreateRequestPage() {
         return res.json();
       })
       .then(result => {
-        alert("โพสต์รอบเดินทางรับหิ้วสำเร็จ!");
-        // ตัวอย่าง: window.location.href = "/dashboard";
+        toast.success("โพสต์รอบเดินทางรับหิ้วสำเร็จ!");
+        router.push("/dashboard");
       })
       .catch(err => {
-        alert("เกิดข้อผิดพลาด: " + err.message);
+        toast.error("เกิดข้อผิดพลาด: " + err.message);
       });
   }
 

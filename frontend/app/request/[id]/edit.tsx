@@ -10,34 +10,76 @@ import { Textarea } from "@/components/ui/textarea";
 import { ShoppingBag, MapPin, Clock, DollarSign, Loader2, Image as ImageIcon, X } from "lucide-react";
 import { useSession, signOut } from "next-auth/react";
 import { RequestForm } from "@/components/RequestForm";
+import { useBackendToken } from "@/lib/useBackendToken";
+import { toast } from "sonner";
 
 export default function EditRequestPage() {
   const { id } = useParams();
   const router = useRouter();
   const { data: session } = useSession();
-  // mock fetch data
+  const { backendToken, loading: tokenLoading } = useBackendToken();
+  
   const [form, setForm] = useState({
-    title: "ขนมญี่ปุ่น",
-    fromLocation: "Tokyo",
-    toLocation: "Bangkok",
-    deadline: "2024-07-20",
-    budget: "1000",
-    description: "ฝากซื้อขนมญี่ปุ่น",
+    title: "",
+    fromLocation: "",
+    toLocation: "",
+    deadline: "",
+    budget: "",
+    description: "",
     urgent: false,
     imageFile: null as File | null,
   });
   const [imagePreview, setImagePreview] = useState<string>("");
   const [errors, setErrors] = useState<any>({});
   const [submitting, setSubmitting] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [success, setSuccess] = useState(false);
   const [showDelete, setShowDelete] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // ดึงข้อมูล Request จาก backend
   useEffect(() => {
-    // TODO: fetch ข้อมูลจริงด้วย id แล้ว setForm
-    // setImagePreview(...)
-  }, [id]);
+    if (!id || !backendToken) return;
+    
+    const fetchRequest = async () => {
+      try {
+        setLoading(true);
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || '/api'}/requests/${id}`, {
+          headers: {
+            "Authorization": `Bearer ${backendToken}`
+          }
+        });
+        
+        if (!response.ok) {
+          throw new Error('ไม่สามารถดึงข้อมูลได้');
+        }
+        
+        const data = await response.json();
+        setForm({
+          title: data.title || "",
+          fromLocation: data.from_location || "",
+          toLocation: data.to_location || "",
+          deadline: data.deadline || "",
+          budget: data.budget?.toString() || "",
+          description: data.description || "",
+          urgent: data.urgent === "true",
+          imageFile: null,
+        });
+        
+        if (data.image) {
+          setImagePreview(data.image);
+        }
+      } catch (error) {
+        console.error('Error fetching request:', error);
+        toast.error('ไม่สามารถดึงข้อมูลได้');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchRequest();
+  }, [id, backendToken]);
 
   function validate() {
     const errs: any = {};
@@ -66,19 +108,101 @@ export default function EditRequestPage() {
       setForm(f => ({ ...f, imageFile: null }));
     }
   }
+  
   function handleRemoveImage() {
     setImagePreview("");
     setForm(f => ({ ...f, imageFile: null }));
     if (fileInputRef.current) fileInputRef.current.value = "";
   }
 
-  function handleSubmit(data: any) {
-    // TODO: ส่งข้อมูลไป backend หรือแสดง success
-    // ตัวอย่าง: console.log('edit request', data)
+  async function handleSubmit(data: any) {
+    const validationErrors = validate();
+    if (Object.keys(validationErrors).length > 0) {
+      setErrors(validationErrors);
+      return;
+    }
+
+    if (!backendToken) {
+      toast.error('กรุณาเข้าสู่ระบบใหม่');
+      return;
+    }
+
+    setSubmitting(true);
+    try {
+      const payload = {
+        title: data.title,
+        from_location: data.fromLocation,
+        to_location: data.toLocation,
+        deadline: data.deadline,
+        budget: parseInt(data.budget),
+        description: data.description,
+        image: data.image || imagePreview,
+        urgent: data.urgent ? "true" : "false",
+      };
+
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || '/api'}/requests/${id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${backendToken}`
+        },
+        body: JSON.stringify(payload)
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.detail || 'เกิดข้อผิดพลาดในการอัปเดตข้อมูล');
+      }
+
+      toast.success('อัปเดตข้อมูลสำเร็จ!');
+      router.push('/dashboard');
+    } catch (error: any) {
+      console.error('Error updating request:', error);
+      toast.error(error.message || 'เกิดข้อผิดพลาดในการอัปเดตข้อมูล');
+    } finally {
+      setSubmitting(false);
+    }
   }
-  function handleDelete() {
-    // TODO: ลบข้อมูลและ redirect
-    router.push("/dashboard");
+
+  async function handleDelete() {
+    if (!backendToken) {
+      toast.error('กรุณาเข้าสู่ระบบใหม่');
+      return;
+    }
+
+    setDeleting(true);
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || '/api'}/requests/${id}`, {
+        method: "DELETE",
+        headers: {
+          "Authorization": `Bearer ${backendToken}`
+        }
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.detail || 'เกิดข้อผิดพลาดในการลบข้อมูล');
+      }
+
+      toast.success('ลบข้อมูลสำเร็จ!');
+      router.push("/dashboard");
+    } catch (error: any) {
+      console.error('Error deleting request:', error);
+      toast.error(error.message || 'เกิดข้อผิดพลาดในการลบข้อมูล');
+    } finally {
+      setDeleting(false);
+    }
+  }
+
+  if (loading || tokenLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-white flex items-center justify-center">
+        <div className="flex items-center gap-2">
+          <Loader2 className="h-6 w-6 animate-spin" />
+          <span>กำลังโหลด...</span>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -89,6 +213,8 @@ export default function EditRequestPage() {
           initialData={form}
           onSubmit={handleSubmit}
           onDelete={handleDelete}
+          submitting={submitting}
+          deleting={deleting}
         />
       </div>
     </div>

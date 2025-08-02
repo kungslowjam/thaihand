@@ -1,6 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
-import { LogOut, ShoppingBag, CheckCircle, Star, KeyRound, Settings, Clock, Edit2, Trash2 } from "lucide-react";
+import { LogOut, ShoppingBag, CheckCircle, Star, KeyRound, Settings, Clock, Edit2, Trash2, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useSession, signOut } from "next-auth/react";
@@ -8,6 +8,8 @@ import Link from "next/link";
 import Image from "next/image";
 import { useUserStore } from '@/store/userStore';
 import { useNotificationStore } from '@/store/notificationStore';
+import { useBackendToken } from '@/lib/useBackendToken';
+import { toast } from 'sonner';
 
 export default function DashboardPage() {
   const { data: session } = useSession();
@@ -16,6 +18,16 @@ export default function DashboardPage() {
   const [tab, setTab] = useState<"requests" | "offers" | "activity">("requests");
   const [showDelete, setShowDelete] = useState<{ type: "request" | "offer"; id: number } | null>(null);
   const [deleting, setDeleting] = useState(false);
+  const { backendToken, loading: tokenLoading } = useBackendToken();
+  
+  // สถิติจาก backend
+  const [stats, setStats] = useState({
+    totalRequests: 0,
+    totalOffers: 0,
+    totalEarnings: 0,
+    rating: 5.0
+  });
+  const [loading, setLoading] = useState(true);
 
   // sync session กับ userStore
   useEffect(() => {
@@ -28,36 +40,113 @@ export default function DashboardPage() {
     }
   }, [session, setUser]);
 
-  console.log("session", session); // debug ดูค่า session
+  // ดึงข้อมูลสถิติจาก backend
+  useEffect(() => {
+    if (!backendToken || !session?.user?.email) return;
+
+    const fetchStats = async () => {
+      try {
+        setLoading(true);
+        
+        // ดึงข้อมูล requests และ offers ของผู้ใช้
+        const [requestsRes, offersRes] = await Promise.all([
+          fetch(`${process.env.NEXT_PUBLIC_API_URL || '/api'}/my-orders?email=${session.user.email}`, {
+            headers: { "Authorization": `Bearer ${backendToken}` }
+          }),
+          fetch(`${process.env.NEXT_PUBLIC_API_URL || '/api'}/my-carry-orders?email=${session.user.email}`, {
+            headers: { "Authorization": `Bearer ${backendToken}` }
+          })
+        ]);
+
+        const requests = requestsRes.ok ? await requestsRes.json() : [];
+        const offers = offersRes.ok ? await offersRes.json() : [];
+
+        // คำนวณรายได้รวมจาก requests ที่อนุมัติแล้ว
+        const totalEarnings = requests.reduce((sum: number, req: any) => {
+          if (req.status === 'อนุมัติ' || req.status === 'สำเร็จ') {
+            return sum + (parseInt(req.budget) || 0);
+          }
+          return sum;
+        }, 0);
+
+        setStats({
+          totalRequests: requests.length,
+          totalOffers: offers.length,
+          totalEarnings: totalEarnings,
+          rating: 5.0 // ยังไม่มีระบบ rating จริง
+        });
+      } catch (error) {
+        console.error('Error fetching stats:', error);
+        toast.error('ไม่สามารถดึงข้อมูลสถิติได้');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchStats();
+  }, [backendToken, session?.user?.email]);
+
   // mock delete handler
-  function handleDelete() {
+  async function handleDelete() {
+    if (!showDelete || !backendToken) return;
+    
     setDeleting(true);
-    setTimeout(() => {
+    try {
+      const endpoint = showDelete.type === 'request' ? 'requests' : 'offers';
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || '/api'}/${endpoint}/${showDelete.id}`, {
+        method: "DELETE",
+        headers: {
+          "Authorization": `Bearer ${backendToken}`
+        }
+      });
+
+      if (response.ok) {
+        toast.success('ลบข้อมูลสำเร็จ!');
+        // รีเฟรชข้อมูลสถิติ
+        window.location.reload();
+      } else {
+        const errorData = await response.json();
+        throw new Error(errorData.detail || 'เกิดข้อผิดพลาดในการลบข้อมูล');
+      }
+    } catch (error: any) {
+      console.error('Error deleting item:', error);
+      toast.error(error.message || 'เกิดข้อผิดพลาดในการลบข้อมูล');
+    } finally {
       setDeleting(false);
       setShowDelete(null);
-      // TODO: remove from state
-    }, 1000);
+    }
+  }
+
+  if (tokenLoading || loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-100 via-indigo-100 to-white flex items-center justify-center">
+        <div className="flex items-center gap-2">
+          <Loader2 className="h-6 w-6 animate-spin" />
+          <span>กำลังโหลด...</span>
+        </div>
+      </div>
+    );
   }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-100 via-indigo-100 to-white">
       <div className="container mx-auto px-4 py-10 max-w-2xl flex flex-col items-center">
-        {/* 1. เพิ่ม section สถิติ (mock) */}
+        {/* 1. เพิ่ม section สถิติ (ข้อมูลจริงจาก backend) */}
         <div className="w-full grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8 animate-fade-in">
           <div className="bg-white/70 rounded-2xl p-4 flex flex-col items-center shadow border border-white/30">
             <ShoppingBag className="h-6 w-6 text-blue-400 mb-1" />
-            <div className="text-xl font-bold text-gray-800">2</div>
+            <div className="text-xl font-bold text-gray-800">{stats.totalRequests}</div>
             <div className="text-xs text-gray-500">ฝากหิ้ว</div>
           </div>
           <div className="bg-white/70 rounded-2xl p-4 flex flex-col items-center shadow border border-white/30">
             <CheckCircle className="h-6 w-6 text-green-400 mb-1" />
-            <div className="text-xl font-bold text-gray-800">2</div>
+            <div className="text-xl font-bold text-gray-800">{stats.totalOffers}</div>
             <div className="text-xs text-gray-500">รับหิ้ว</div>
           </div>
           <div className="bg-white/70 rounded-2xl p-4 flex flex-col items-center shadow border border-white/30">
             <Star className="h-6 w-6 text-yellow-400 mb-1 animate-bounce" />
-            <div className="text-xl font-bold text-gray-800">5.0</div>
-            <div className="text-xs text-gray-500">รีวิว</div>
+            <div className="text-xl font-bold text-gray-800">฿{stats.totalEarnings.toLocaleString()}</div>
+            <div className="text-xs text-gray-500">รายได้รวม</div>
           </div>
         </div>
         {/* Profile Card ปรับตำแหน่งปุ่มและดีไซน์ใหม่ */}

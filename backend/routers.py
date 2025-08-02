@@ -171,6 +171,28 @@ def delete_request(request_id: int, db: Session = Depends(get_db), user=Depends(
         raise HTTPException(status_code=404, detail="Request not found")
     return {"ok": True}
 
+# เพิ่ม API สำหรับ approve/reject requests
+@router.patch("/requests/{request_id}/status")
+def update_request_status(request_id: int, status_update: dict, db: Session = Depends(get_db), user=Depends(verify_jwt_token)):
+    try:
+        new_status = status_update.get("status")
+        if new_status not in ["รออนุมัติ", "อนุมัติ", "ปฏิเสธ", "สำเร็จ"]:
+            raise HTTPException(status_code=400, detail="Invalid status")
+        
+        db_request = crud.get_request(db, request_id)
+        if db_request is None:
+            raise HTTPException(status_code=404, detail="Request not found")
+        
+        # อัปเดตสถานะ
+        db_request.status = new_status
+        db.commit()
+        db.refresh(db_request)
+        
+        return {"ok": True, "status": new_status}
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Error updating status: {str(e)}")
+
 @router.get("/offers")
 def read_offers(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     offers = crud.get_offers(db, skip=skip, limit=limit)

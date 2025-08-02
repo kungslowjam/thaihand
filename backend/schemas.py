@@ -33,6 +33,7 @@ class RequestBase(BaseModel):
     carrier_email: str | None = None
     carrier_phone: str | None = None
     carrier_image: str | None = None
+    status: str = "รออนุมัติ"
 
 class RequestCreate(BaseModel):
     title: str
@@ -48,6 +49,7 @@ class RequestCreate(BaseModel):
     carrier_email: str | None = None
     carrier_phone: str | None = None
     carrier_image: str | None = None
+    status: str = "รออนุมัติ"
 
 class RequestUpdate(BaseModel):
     title: str | None = None
@@ -63,6 +65,7 @@ class RequestUpdate(BaseModel):
     carrier_email: str | None = None
     carrier_phone: str | None = None
     carrier_image: str | None = None
+    status: str | None = None
 
 class RequestOut(RequestBase):
     id: int

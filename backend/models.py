@@ -27,6 +27,7 @@ class Request(Base):
     carrier_email = Column(String, nullable=True)
     carrier_phone = Column(String, nullable=True)
     carrier_image = Column(String, nullable=True)
+    status = Column(String, default="รออนุมัติ")  # เพิ่ม field status
 
 class Offer(Base):
     __tablename__ = "offers"
