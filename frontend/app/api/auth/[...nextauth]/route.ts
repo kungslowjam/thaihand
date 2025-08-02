@@ -31,6 +31,9 @@ const handler = NextAuth({
           scope: 'profile openid',
           prompt: 'consent'
         }
+      },
+      httpOptions: {
+        timeout: 30000, // 30 seconds timeout
       }
     }),
   ],
@@ -43,7 +46,18 @@ const handler = NextAuth({
     strategy: "jwt",
     maxAge: 30 * 24 * 60 * 60, // 30 วัน
   },
-  debug: process.env.NODE_ENV === 'development',
+  debug: process.env.NEXTAUTH_DEBUG === 'true',
+  logger: {
+    error(code, ...message) {
+      console.error(`[NextAuth][${code}]`, ...message);
+    },
+    warn(code, ...message) {
+      console.warn(`[NextAuth][${code}]`, ...message);
+    },
+    debug(code, ...message) {
+      console.log(`[NextAuth][${code}]`, ...message);
+    },
+  },
   callbacks: {
     async signIn({ user, account, profile }) {
       console.log('SignIn - Provider:', account?.provider, 'User:', user?.name);
@@ -51,6 +65,8 @@ const handler = NextAuth({
       // สำหรับ LINE OAuth ให้จัดการ error
       if (account?.provider === 'line') {
         try {
+          console.log('LINE OAuth - Processing user data');
+          
           // ตรวจสอบว่ามีข้อมูลครบหรือไม่
           if (!user.id && profile?.sub) {
             user.id = profile.sub;
@@ -64,6 +80,8 @@ const handler = NextAuth({
           if (!user.email && (profile as any)?.userId) {
             user.email = `${(profile as any).userId}@line.me`;
           }
+          
+          console.log('LINE OAuth - User data processed successfully');
         } catch (error) {
           console.error('LINE OAuth error:', error);
           return false;
@@ -77,16 +95,19 @@ const handler = NextAuth({
       
       // จัดการ error URLs
       if (url.includes('error=')) {
+        console.log('OAuth Error detected, redirecting to login');
         return `${baseUrl}/login?error=OAuthSignin&message=เกิดข้อผิดพลาดในการเข้าสู่ระบบ LINE`;
       }
       
       // ถ้าเป็น callback ให้ไป dashboard
       if (url.includes('/api/auth/callback/')) {
+        console.log('OAuth Callback detected, redirecting to dashboard');
         return `${baseUrl}/dashboard`;
       }
       
       // ถ้าเป็น internal URL ให้ไป dashboard
       if (url.startsWith(baseUrl)) {
+        console.log('Internal URL detected, redirecting to dashboard');
         return `${baseUrl}/dashboard`;
       }
       
