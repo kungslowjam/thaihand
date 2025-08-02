@@ -90,7 +90,7 @@ const handler = NextAuth({
     error: '/login',
   },
   secret: process.env.NEXTAUTH_SECRET,
-  debug: false, // ปิด debug เพื่อความเร็ว
+  debug: true, // เปิด debug เพื่อดู error
   session: {
     strategy: "jwt",
     maxAge: 30 * 24 * 60 * 60, // 30 วัน
@@ -146,7 +146,7 @@ const handler = NextAuth({
       }
       
       // ตรวจสอบว่ามี access_token หรือไม่ (ยืดหยุ่นสำหรับ LINE)
-      if (account && !account.access_token && account.provider !== 'line') {
+      if (account && !account.access_token && account.provider === 'google') {
         console.log(`${account.provider?.toUpperCase()} OAUTH ERROR - No access token`);
         return false;
       }
