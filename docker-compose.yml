@@ -81,6 +81,7 @@ services:
       - NEXTAUTH_DEBUG=true
       - NEXTAUTH_LOGGING=true
       - NEXT_PUBLIC_FORCE_DOMAIN=https://thaihand.shop
+      - NEXTAUTH_URL=https://thaihand.shop
     ports:
       - "3000:3000"
     depends_on:

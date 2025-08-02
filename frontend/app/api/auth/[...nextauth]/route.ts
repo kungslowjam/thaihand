@@ -41,6 +41,8 @@ const handler = NextAuth({
     error: '/login',
   },
   secret: process.env.NEXTAUTH_SECRET,
+
+
   session: {
     strategy: "jwt",
     maxAge: 30 * 24 * 60 * 60, // 30 วัน
@@ -65,35 +67,41 @@ const handler = NextAuth({
     async redirect({ url, baseUrl }) {
       console.log('Redirect - URL:', url, 'Base URL:', baseUrl);
       
-      // ใช้ dynamic base URL
-      const dynamicBaseUrl = getBaseUrl();
-      console.log('Dynamic Base URL:', dynamicBaseUrl);
+      // Force production URL เสมอ
+      const productionUrl = 'https://thaihand.shop';
+      console.log('Force Production URL:', productionUrl);
       
       // จัดการ error URLs
       if (url.includes('error=')) {
         console.log('OAuth Error detected, redirecting to login');
-        return `${dynamicBaseUrl}/login?error=OAuthSignin&message=เกิดข้อผิดพลาดในการเข้าสู่ระบบ`;
+        return `${productionUrl}/login?error=OAuthSignin&message=เกิดข้อผิดพลาดในการเข้าสู่ระบบ`;
       }
       
       // ถ้าเป็น callback ให้ไป dashboard
       if (url.includes('/api/auth/callback/')) {
         console.log('OAuth Callback detected, redirecting to dashboard');
-        return `${dynamicBaseUrl}/dashboard`;
+        return `${productionUrl}/dashboard`;
       }
       
       // ถ้าเป็น internal URL หรือ relative URL
-      if (url.startsWith('/') || url.startsWith(baseUrl) || url.startsWith(dynamicBaseUrl)) {
+      if (url.startsWith('/') || url.startsWith(baseUrl)) {
         console.log('Internal URL detected, redirecting to dashboard');
-        return `${dynamicBaseUrl}/dashboard`;
+        return `${productionUrl}/dashboard`;
       }
       
-      // ถ้าเป็น localhost หรือ production URL ให้ไป dashboard
-      if (url.includes('localhost:3000') || url.includes('thaihand.shop')) {
-        console.log('Domain URL detected, redirecting to dashboard');
-        return `${dynamicBaseUrl}/dashboard`;
+      // ถ้าเป็น localhost ให้ไป production
+      if (url.includes('localhost:3000')) {
+        console.log('Localhost detected, redirecting to production');
+        return `${productionUrl}/dashboard`;
       }
       
-      return `${dynamicBaseUrl}/dashboard`; // default fallback
+      // ถ้าเป็น production URL ให้ไป dashboard
+      if (url.includes('thaihand.shop')) {
+        console.log('Production URL detected, redirecting to dashboard');
+        return `${productionUrl}/dashboard`;
+      }
+      
+      return `${productionUrl}/dashboard`; // default fallback
     },
     async session({ session, token }) {
       // เพิ่ม user ID, provider และ accessToken เข้า session
