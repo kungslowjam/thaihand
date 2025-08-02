@@ -26,15 +26,6 @@ const handler = NextAuth({
     LineProvider({
       clientId: process.env.LINE_CLIENT_ID!,
       clientSecret: process.env.LINE_CLIENT_SECRET!,
-      authorization: {
-        params: {
-          scope: 'profile openid',
-          prompt: 'consent'
-        }
-      },
-      httpOptions: {
-        timeout: 30000, // 30 seconds timeout
-      }
     }),
   ],
   pages: {
