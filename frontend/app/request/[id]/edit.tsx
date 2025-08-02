@@ -1,21 +1,17 @@
 "use client";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { ShoppingBag, MapPin, Clock, DollarSign, Loader2, Image as ImageIcon, X } from "lucide-react";
-import { useSession, signOut } from "next-auth/react";
-import { RequestForm } from "@/components/RequestForm";
+import { useSession } from "next-auth/react";
 
 export default function EditRequestPage() {
   const { id } = useParams();
   const router = useRouter();
   const { data: session } = useSession();
-  // mock fetch data
+  
   const [form, setForm] = useState({
     title: "ขนมญี่ปุ่น",
     fromLocation: "Tokyo",
@@ -23,73 +19,96 @@ export default function EditRequestPage() {
     deadline: "2024-07-20",
     budget: "1000",
     description: "ฝากซื้อขนมญี่ปุ่น",
-    urgent: false,
-    imageFile: null as File | null,
   });
-  const [imagePreview, setImagePreview] = useState<string>("");
-  const [errors, setErrors] = useState<any>({});
-  const [submitting, setSubmitting] = useState(false);
-  const [success, setSuccess] = useState(false);
-  const [showDelete, setShowDelete] = useState(false);
-  const [deleting, setDeleting] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     // TODO: fetch ข้อมูลจริงด้วย id แล้ว setForm
-    // setImagePreview(...)
   }, [id]);
 
-  function validate() {
-    const errs: any = {};
-    if (!form.title) errs.title = "กรุณากรอกชื่อรายการ";
-    if (!form.fromLocation) errs.fromLocation = "กรุณากรอกประเทศต้นทาง";
-    if (!form.toLocation) errs.toLocation = "กรุณากรอกประเทศปลายทาง";
-    if (!form.deadline) errs.deadline = "กรุณาเลือกวันที่ต้องการรับของ";
-    if (!form.budget || isNaN(Number(form.budget))) errs.budget = "กรุณากรอกงบประมาณเป็นตัวเลข";
-    if (form.imageFile && !form.imageFile.type.startsWith("image/")) {
-      errs.imageFile = "กรุณาอัปโหลดไฟล์ภาพ (.jpg, .png, .webp)";
-    }
-    return errs;
-  }
-
-  function handleImageFileChange(e: any) {
-    const file = e.target.files?.[0];
-    if (file && file.type.startsWith("image/")) {
-      const reader = new FileReader();
-      reader.onload = (ev: any) => {
-        setImagePreview(ev.target.result);
-        setForm(f => ({ ...f, imageFile: file }));
-      };
-      reader.readAsDataURL(file);
-    } else {
-      setImagePreview("");
-      setForm(f => ({ ...f, imageFile: null }));
-    }
-  }
-  function handleRemoveImage() {
-    setImagePreview("");
-    setForm(f => ({ ...f, imageFile: null }));
-    if (fileInputRef.current) fileInputRef.current.value = "";
-  }
-
-  function handleSubmit(data: any) {
-    // TODO: ส่งข้อมูลไป backend หรือแสดง success
-    // ตัวอย่าง: console.log('edit request', data)
-  }
-  function handleDelete() {
-    // TODO: ลบข้อมูลและ redirect
+  function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    // TODO: ส่งข้อมูลไป backend
+    console.log('edit request', form);
     router.push("/dashboard");
   }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-white">
-      <div className="container mx-auto px-4 py-10 flex flex-col items-center">
-        <RequestForm
-          mode="edit"
-          initialData={form}
-          onSubmit={handleSubmit}
-          onDelete={handleDelete}
-        />
+      <div className="container mx-auto px-4 py-10 max-w-md">
+        <h1 className="text-2xl font-bold mb-6 text-center">แก้ไขรายการฝากหิ้ว</h1>
+        
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <Label htmlFor="title">ชื่อรายการ</Label>
+            <Input
+              id="title"
+              value={form.title}
+              onChange={(e) => setForm({...form, title: e.target.value})}
+              required
+            />
+          </div>
+          
+          <div>
+            <Label htmlFor="fromLocation">ประเทศต้นทาง</Label>
+            <Input
+              id="fromLocation"
+              value={form.fromLocation}
+              onChange={(e) => setForm({...form, fromLocation: e.target.value})}
+              required
+            />
+          </div>
+          
+          <div>
+            <Label htmlFor="toLocation">ประเทศปลายทาง</Label>
+            <Input
+              id="toLocation"
+              value={form.toLocation}
+              onChange={(e) => setForm({...form, toLocation: e.target.value})}
+              required
+            />
+          </div>
+          
+          <div>
+            <Label htmlFor="deadline">วันที่ต้องการรับของ</Label>
+            <Input
+              id="deadline"
+              type="date"
+              value={form.deadline}
+              onChange={(e) => setForm({...form, deadline: e.target.value})}
+              required
+            />
+          </div>
+          
+          <div>
+            <Label htmlFor="budget">งบประมาณ (บาท)</Label>
+            <Input
+              id="budget"
+              type="number"
+              value={form.budget}
+              onChange={(e) => setForm({...form, budget: e.target.value})}
+              required
+            />
+          </div>
+          
+          <div>
+            <Label htmlFor="description">รายละเอียด</Label>
+            <Textarea
+              id="description"
+              value={form.description}
+              onChange={(e) => setForm({...form, description: e.target.value})}
+              rows={3}
+            />
+          </div>
+          
+          <div className="flex gap-2">
+            <Button type="submit" className="flex-1">
+              บันทึกการแก้ไข
+            </Button>
+            <Button type="button" variant="outline" onClick={() => router.back()}>
+              ยกเลิก
+            </Button>
+          </div>
+        </form>
       </div>
     </div>
   );
