@@ -1,7 +1,5 @@
 import NextAuth from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
-import LineProvider from "next-auth/providers/line";
-import { handleLineLoginError, createLineUserProfile } from "@/lib/lineAuth";
 
 // Force dynamic rendering
 export const dynamic = 'force-dynamic';
@@ -28,19 +26,12 @@ const getBaseUrl = () => {
   return process.env.NEXTAUTH_URL || process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') || 'https://thaihand.shop';
 };
 
-// LINE Provider Configuration
-const lineProvider = LineProvider({
-  clientId: process.env.LINE_CLIENT_ID!,
-  clientSecret: process.env.LINE_CLIENT_SECRET!,
-});
-
 const handler = NextAuth({
   providers: [
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID!,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
     }),
-    lineProvider,
   ],
   pages: {
     signIn: '/login',
@@ -71,60 +62,19 @@ const handler = NextAuth({
       console.log('Environment - NEXTAUTH_URL:', process.env.NEXTAUTH_URL);
       console.log('Environment - NODE_ENV:', process.env.NODE_ENV);
       console.log('getBaseUrl():', getBaseUrl());
-      console.log('LINE_CLIENT_ID:', process.env.LINE_CLIENT_ID);
-      console.log('LINE_CLIENT_SECRET:', process.env.LINE_CLIENT_SECRET ? '***' : 'NOT_SET');
-      
-      // สำหรับ LINE OAuth ให้จัดการ error
-      if (account?.provider === 'line') {
-        try {
-          console.log('LINE OAuth - Processing user data');
-          
-          // ใช้ utility function เพื่อสร้าง user profile
-          const lineUserProfile = createLineUserProfile(profile as any);
-          
-          // อัปเดต user data
-          if (!user.id && lineUserProfile.id) {
-            user.id = lineUserProfile.id;
-          }
-          if (!user.name && lineUserProfile.name) {
-            user.name = lineUserProfile.name;
-          }
-          if (!user.image && lineUserProfile.image) {
-            user.image = lineUserProfile.image;
-          }
-          if (!user.email && lineUserProfile.email) {
-            user.email = lineUserProfile.email;
-          }
-          
-          console.log('LINE OAuth - User data processed successfully');
-          return true;
-        } catch (error) {
-          console.error('LINE OAuth error:', error);
-          const errorMessage = handleLineLoginError(error);
-          throw new Error(errorMessage);
-        }
-      }
       
       return true;
     },
     async redirect({ url, baseUrl }) {
       console.log('Redirect - URL:', url, 'Base URL:', baseUrl);
-      console.log('URL includes line.me:', url.includes('line.me'));
-      console.log('URL includes access.line.me:', url.includes('access.line.me'));
       console.log('Environment - NEXTAUTH_URL:', process.env.NEXTAUTH_URL);
       console.log('Environment - NODE_ENV:', process.env.NODE_ENV);
       console.log('getBaseUrl():', getBaseUrl());
       
-      // ถ้าเป็น LINE OAuth URL ให้ redirect ไป LINE
-      if (url.includes('access.line.me') || url.includes('line.me')) {
-        console.log('LINE OAuth URL detected, redirecting to LINE');
-        return url;
-      }
-      
       // จัดการ error URLs
       if (url.includes('error=')) {
         console.log('OAuth Error detected, redirecting to login');
-        return `${baseUrl}/login?error=OAuthSignin&message=เกิดข้อผิดพลาดในการเข้าสู่ระบบ LINE`;
+        return `${baseUrl}/login?error=OAuthSignin&message=เกิดข้อผิดพลาดในการเข้าสู่ระบบ`;
       }
       
       // ถ้าเป็น callback ให้ไป dashboard
