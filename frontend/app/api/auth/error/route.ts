@@ -25,6 +25,33 @@ export async function GET(request: NextRequest) {
     errorMessage = 'การตั้งค่า OAuth ไม่ถูกต้อง กรุณาตรวจสอบการตั้งค่า';
   } else if (error === 'AccessDenied') {
     errorMessage = 'การเข้าสู่ระบบถูกปฏิเสธ กรุณาลองใหม่อีกครั้ง';
+  } else if (error === 'invalid_client') {
+    errorMessage = 'Client ID หรือ Client Secret ไม่ถูกต้อง กรุณาตรวจสอบการตั้งค่า LINE OAuth';
+  } else if (error === 'invalid_grant') {
+    errorMessage = 'Authorization code ไม่ถูกต้องหรือหมดอายุ กรุณาลองใหม่อีกครั้ง';
+  } else if (error === 'invalid_request') {
+    errorMessage = 'คำขอไม่ถูกต้อง กรุณาลองใหม่อีกครั้ง';
+  } else if (error === 'invalid_scope') {
+    errorMessage = 'Scope ที่ขอไม่ถูกต้อง กรุณาตรวจสอบการตั้งค่า';
+  } else if (error === 'server_error') {
+    errorMessage = 'เกิดข้อผิดพลาดที่เซิร์ฟเวอร์ LINE กรุณาลองใหม่อีกครั้ง';
+  } else if (error === 'temporarily_unavailable') {
+    errorMessage = 'บริการ LINE OAuth ไม่พร้อมใช้งานชั่วคราว กรุณาลองใหม่อีกครั้ง';
+  } else if (error === 'unauthorized_client') {
+    errorMessage = 'Client ไม่ได้รับอนุญาตให้ใช้ LINE OAuth กรุณาตรวจสอบการตั้งค่า';
+  } else if (error === 'unsupported_grant_type') {
+    errorMessage = 'Grant type ไม่รองรับ กรุณาตรวจสอบการตั้งค่า';
+  } else if (error === 'unsupported_response_type') {
+    errorMessage = 'Response type ไม่รองรับ กรุณาตรวจสอบการตั้งค่า';
+  }
+
+  // เพิ่ม provider-specific error messages
+  if (provider === 'line') {
+    if (error === 'access_denied') {
+      errorMessage = 'คุณได้ปฏิเสธการเข้าสู่ระบบผ่าน LINE กรุณาลองใหม่อีกครั้ง';
+    } else if (error === 'invalid_redirect_uri') {
+      errorMessage = 'Redirect URI ไม่ถูกต้อง กรุณาตรวจสอบการตั้งค่า LINE OAuth';
+    }
   }
 
   // Redirect ไปยัง login page พร้อม error message
@@ -38,4 +65,8 @@ export async function GET(request: NextRequest) {
 
   console.log('Redirecting to login with error:', errorMessage);
   return NextResponse.redirect(loginUrl);
+}
+
+export async function POST(request: NextRequest) {
+  return GET(request);
 } 
