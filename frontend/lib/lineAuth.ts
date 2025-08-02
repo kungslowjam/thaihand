@@ -19,7 +19,7 @@ export interface LineTokenResponse {
  * ตรวจสอบว่า Line login ใช้งานได้หรือไม่
  */
 export const isLineLoginAvailable = (): boolean => {
-  return !!(process.env.NEXT_PUBLIC_LINE_CLIENT_ID && process.env.LINE_CLIENT_SECRET);
+  return !!(process.env.NEXT_PUBLIC_LINE_CLIENT_ID);
 };
 
 /**

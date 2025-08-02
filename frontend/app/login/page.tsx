@@ -50,8 +50,13 @@ function LoginForm() {
   }, [searchParams]);
 
   const handleLineLogin = async () => {
+    console.log('Line login button clicked');
+    console.log('isLineLoginAvailable:', isLineLoginAvailable());
+    console.log('NEXT_PUBLIC_LINE_CLIENT_ID:', process.env.NEXT_PUBLIC_LINE_CLIENT_ID);
+    
     // ตรวจสอบว่า Line login ใช้งานได้หรือไม่
     if (!isLineLoginAvailable()) {
+      console.log('Line login not available');
       setErrorMessage('การตั้งค่า LINE OAuth ไม่ถูกต้อง กรุณาติดต่อผู้ดูแลระบบ');
       return;
     }
