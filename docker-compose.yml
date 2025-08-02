@@ -75,11 +75,7 @@ services:
       - LINE_CLIENT_SECRET=${LINE_CLIENT_SECRET}
       - NEXT_PUBLIC_LINE_CLIENT_ID=${LINE_CLIENT_ID}
       - NEXT_PUBLIC_GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
-      - NODE_OPTIONS=--max-http-header-size=8192 --max-old-space-size=4096 --dns-result-order=ipv4first
-      - NODE_TLS_REJECT_UNAUTHORIZED=0
-      - NODE_EXTRA_CA_CERTS=/etc/ssl/certs/ca-certificates.crt
-      - NEXTAUTH_DEBUG=true
-      - NODE_TLS_CIPHER_SUITE=TLS_AES_128_GCM_SHA256:TLS_AES_256_GCM_SHA384:TLS_CHACHA20_POLY1305_SHA256
+      - NEXTAUTH_DEBUG=false
     ports:
       - "3000:3000"
     depends_on:
@@ -87,15 +83,6 @@ services:
     networks:
       - thaihand_network
     restart: unless-stopped
-    dns:
-      - 8.8.8.8
-      - 8.8.4.4
-      - 1.1.1.1
-      - 208.67.222.222
-    ulimits:
-      nofile:
-        soft: 65536
-        hard: 65536
 
   # Nginx Reverse Proxy
   nginx:
