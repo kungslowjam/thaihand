@@ -1,137 +1,135 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { useSession } from "next-auth/react";
+import { ShoppingBag, MapPin, Clock, DollarSign, Loader2, Image as ImageIcon, X, Plane } from "lucide-react";
+import { useSession, signOut } from "next-auth/react";
+import { OfferForm } from "@/components/OfferForm";
 
 export default function EditOfferPage() {
   const { id } = useParams();
   const router = useRouter();
   const { data: session } = useSession();
-  
+  // mock fetch data
   const [form, setForm] = useState({
     routeFrom: "Melbourne",
     routeTo: "Bangkok",
     flightDate: "2024-07-17",
     closeDate: "2024-07-15",
     deliveryDate: "2024-07-18",
+    rate: "0.5kg = 15 บาท, 1kg = 20 บาท",
+    rates: [
+      { weight: "0.5kg", price: "15" },
+      { weight: "1kg", price: "20" }
+    ],
     pickupPlace: "CBD, Melbourne Central",
+    itemTypes: ["วิตามิน", "Brandname"],
+    restrictions: ["ไม่รับของผิดกฎหมาย", "ไม่รับของแตกหักง่าย"],
     description: "หมายเหตุเพิ่มเติม",
     contact: "Line: yourlineid",
+    urgent: false,
+    imageFile: null as File | null,
   });
+  const [imagePreview, setImagePreview] = useState<string>("");
+  const [errors, setErrors] = useState<any>({});
+  const [submitting, setSubmitting] = useState(false);
+  const [success, setSuccess] = useState(false);
+  const [showDelete, setShowDelete] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
-  useEffect(() => {
-    // TODO: fetch ข้อมูลจริงด้วย id แล้ว setForm
-  }, [id]);
+  // ฟังก์ชัน rates
+  function handleRateChange(idx: number, field: 'weight' | 'price', value: string) {
+    setForm(f => {
+      const rates = [...f.rates];
+      rates[idx][field] = value;
+      return { ...f, rates };
+    });
+  }
+  function addRate() {
+    setForm(f => ({ ...f, rates: [...f.rates, { weight: "", price: "" }] }));
+  }
+  function removeRate(idx: number) {
+    setForm(f => ({ ...f, rates: f.rates.filter((_, i) => i !== idx) }));
+  }
 
-  function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    // TODO: ส่งข้อมูลไป backend
-    console.log('edit offer', form);
+  // multi-select
+  const itemTypeOptions = [
+    "วิตามิน", "Pandora", "เครื่องประดับ", "Brandname", "รองเท้า", "ของใช้", "อื่นๆ"
+  ];
+  function toggleItemType(type: string) {
+    setForm(f => f.itemTypes.includes(type)
+      ? { ...f, itemTypes: f.itemTypes.filter(t => t !== type) }
+      : { ...f, itemTypes: [...f.itemTypes, type] });
+  }
+  const restrictionOptions = [
+    "ไม่รับของผิดกฎหมาย", "ไม่รับของแตกหักง่าย", "ไม่รับของขนาดใหญ่", "ไม่รับของเสียภาษี/declare", "ขออนุญาตแกะของทุกชิ้น"
+  ];
+  function toggleRestriction(r: string) {
+    setForm(f => f.restrictions.includes(r)
+      ? { ...f, restrictions: f.restrictions.filter(t => t !== r) }
+      : { ...f, restrictions: [...f.restrictions, r] });
+  }
+
+  function validate() {
+    const errs: any = {};
+    if (!form.routeFrom) errs.routeFrom = "กรุณากรอกประเทศต้นทาง";
+    if (!form.routeTo) errs.routeTo = "กรุณากรอกประเทศปลายทาง";
+    if (!form.flightDate) errs.flightDate = "กรุณาเลือกวันบิน";
+    if (!form.closeDate) errs.closeDate = "กรุณาเลือกวันปิดรับของ";
+    if (!form.deliveryDate) errs.deliveryDate = "กรุณาเลือกวันส่งของ";
+    if (!form.rates.some(r => r.weight && r.price)) errs.rates = "กรุณากรอกเรตราคาอย่างน้อย 1 รายการ";
+    if (!form.pickupPlace) errs.pickupPlace = "กรุณากรอกจุดนัดรับ";
+    if (form.imageFile && !form.imageFile.type.startsWith("image/")) {
+      errs.imageFile = "กรุณาอัปโหลดไฟล์ภาพ (.jpg, .png, .webp)";
+    }
+    if (!form.contact) errs.contact = "กรุณากรอกช่องทางติดต่อ";
+    return errs;
+  }
+
+  function handleImageFileChange(e: any) {
+    const file = e.target.files?.[0];
+    if (file && file.type.startsWith("image/")) {
+      const reader = new FileReader();
+      reader.onload = (ev: any) => {
+        setImagePreview(ev.target.result);
+        setForm(f => ({ ...f, imageFile: file }));
+      };
+      reader.readAsDataURL(file);
+    } else {
+      setImagePreview("");
+      setForm(f => ({ ...f, imageFile: null }));
+    }
+  }
+  function handleRemoveImage() {
+    setImagePreview("");
+    setForm(f => ({ ...f, imageFile: null }));
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  }
+
+  function handleSubmit(data: any) {
+    // TODO: ส่งข้อมูลไป backend หรือแสดง success
+    // ตัวอย่าง: console.log('edit offer', data)
+  }
+  function handleDelete() {
+    // TODO: ลบข้อมูลและ redirect
     router.push("/dashboard");
   }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-white">
-      <div className="container mx-auto px-4 py-10 max-w-md">
-        <h1 className="text-2xl font-bold mb-6 text-center">แก้ไขรายการรับหิ้ว</h1>
-        
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <Label htmlFor="routeFrom">ประเทศต้นทาง</Label>
-            <Input
-              id="routeFrom"
-              value={form.routeFrom}
-              onChange={(e) => setForm({...form, routeFrom: e.target.value})}
-              required
-            />
-          </div>
-          
-          <div>
-            <Label htmlFor="routeTo">ประเทศปลายทาง</Label>
-            <Input
-              id="routeTo"
-              value={form.routeTo}
-              onChange={(e) => setForm({...form, routeTo: e.target.value})}
-              required
-            />
-          </div>
-          
-          <div>
-            <Label htmlFor="flightDate">วันบิน</Label>
-            <Input
-              id="flightDate"
-              type="date"
-              value={form.flightDate}
-              onChange={(e) => setForm({...form, flightDate: e.target.value})}
-              required
-            />
-          </div>
-          
-          <div>
-            <Label htmlFor="closeDate">วันปิดรับของ</Label>
-            <Input
-              id="closeDate"
-              type="date"
-              value={form.closeDate}
-              onChange={(e) => setForm({...form, closeDate: e.target.value})}
-              required
-            />
-          </div>
-          
-          <div>
-            <Label htmlFor="deliveryDate">วันส่งของ</Label>
-            <Input
-              id="deliveryDate"
-              type="date"
-              value={form.deliveryDate}
-              onChange={(e) => setForm({...form, deliveryDate: e.target.value})}
-              required
-            />
-          </div>
-          
-          <div>
-            <Label htmlFor="pickupPlace">จุดนัดรับ</Label>
-            <Input
-              id="pickupPlace"
-              value={form.pickupPlace}
-              onChange={(e) => setForm({...form, pickupPlace: e.target.value})}
-              required
-            />
-          </div>
-          
-          <div>
-            <Label htmlFor="contact">ช่องทางติดต่อ</Label>
-            <Input
-              id="contact"
-              value={form.contact}
-              onChange={(e) => setForm({...form, contact: e.target.value})}
-              required
-            />
-          </div>
-          
-          <div>
-            <Label htmlFor="description">หมายเหตุ</Label>
-            <Textarea
-              id="description"
-              value={form.description}
-              onChange={(e) => setForm({...form, description: e.target.value})}
-              rows={3}
-            />
-          </div>
-          
-          <div className="flex gap-2">
-            <Button type="submit" className="flex-1">
-              บันทึกการแก้ไข
-            </Button>
-            <Button type="button" variant="outline" onClick={() => router.back()}>
-              ยกเลิก
-            </Button>
-          </div>
-        </form>
+      <div className="container mx-auto px-4 py-10 flex flex-col items-center">
+        <OfferForm
+          mode="edit"
+          initialData={form}
+          onSubmit={handleSubmit}
+          onDelete={handleDelete}
+        />
       </div>
     </div>
   );
