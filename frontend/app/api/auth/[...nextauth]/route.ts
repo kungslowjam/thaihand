@@ -7,6 +7,8 @@ import { Session } from "next-auth";
 // Force dynamic rendering
 export const dynamic = 'force-dynamic';
 
+
+
 // สร้าง providers array
 const providers = [
   GoogleProvider({
@@ -16,6 +18,11 @@ const providers = [
   LineProvider({
     clientId: process.env.LINE_CLIENT_ID!,
     clientSecret: process.env.LINE_CLIENT_SECRET!,
+    authorization: {
+      params: {
+        scope: 'profile openid email',
+      },
+    },
   }),
 ];
 
@@ -53,30 +60,68 @@ const handler = NextAuth({
     maxAge: 30 * 24 * 60 * 60, // 30 วัน
   },
   useSecureCookies: process.env.NODE_ENV === 'production',
-  debug: false,
   callbacks: {
-    async signIn({ user, account, profile }) {
+    async signIn({ user, account, profile, email, credentials }) {
+      console.log('SIGNIN CALLBACK - User:', user?.id, 'Provider:', account?.provider);
+      
+      // สำหรับ LINE OAuth ให้ยืดหยุ่นมากขึ้น
+      if (account?.provider === 'line') {
+        // ตรวจสอบว่า user มีข้อมูลครบหรือไม่
+        if (!user || !user.id) {
+          console.log('LINE OAUTH - Creating user from profile data');
+          if (profile && profile.sub) {
+            user.id = profile.sub;
+          } else if (account.providerAccountId) {
+            user.id = account.providerAccountId;
+          }
+        }
+        
+        // ตรวจสอบว่า user มีข้อมูลพื้นฐาน
+        if (!user.name && profile && profile.name) {
+          user.name = profile.name;
+        }
+        if (!user.image && profile && (profile as any).picture) {
+          user.image = (profile as any).picture;
+        }
+      }
+      
       return true;
     },
     async redirect({ url, baseUrl }) {
+      console.log('REDIRECT CALLBACK - URL:', url, 'Base URL:', baseUrl);
+      
+      // ตรวจสอบและแก้ไข localhost URLs
+      if (url.includes('localhost:3000')) {
+        console.log('REDIRECT FIX - Replacing localhost:3000 with production URL');
+        url = url.replace('localhost:3000', 'thaihand.shop');
+      }
+      if (url.includes('localhost')) {
+        console.log('REDIRECT FIX - Replacing localhost with production URL');
+        url = url.replace('localhost', 'thaihand.shop');
+      }
+      
       // ถ้าเป็น OAuth callback ให้ไป dashboard
       if (url.includes('/api/auth/callback/')) {
+        console.log('OAUTH CALLBACK - Redirecting to dashboard');
         return baseUrl + '/dashboard';
       }
       
       // ถ้าเป็น error ให้ไป login
       if (url.includes('error=')) {
+        console.log('ERROR REDIRECT - Going to login page');
         return baseUrl + '/login?error=OAuthSignin';
       }
       
       // ถ้าเป็น internal URL ให้ไป dashboard
       if (url.startsWith(baseUrl)) {
+        console.log('INTERNAL URL - Redirecting to dashboard');
         return baseUrl + '/dashboard';
       }
       
+      console.log('EXTERNAL URL - Allowing redirect to:', url);
       return url;
     },
-    async session({ session, token }) {
+    async session({ session, token, user }) {
       if (token && session.user) {
         session.user.image = token.picture || session.user.image;
         session.user.id = token.sub || token.id || session.user.id;
