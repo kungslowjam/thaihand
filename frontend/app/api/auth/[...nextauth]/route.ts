@@ -35,8 +35,6 @@ const lineProvider = LineProvider({
     params: {
       scope: "profile openid",
       response_type: "code",
-      client_id: process.env.LINE_CLIENT_ID!,
-      state: "line_oauth_state",
     }
   },
   token: {
@@ -109,6 +107,8 @@ const handler = NextAuth({
       console.log('SignIn - Provider:', account?.provider, 'User:', user?.name);
       console.log('Account:', account);
       console.log('Profile:', profile);
+      console.log('Environment - NEXTAUTH_URL:', process.env.NEXTAUTH_URL);
+      console.log('Environment - NODE_ENV:', process.env.NODE_ENV);
       
       // สำหรับ LINE OAuth ให้จัดการ error
       if (account?.provider === 'line') {
