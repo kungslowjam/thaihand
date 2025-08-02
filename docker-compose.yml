@@ -51,6 +51,7 @@ services:
         - NEXT_PUBLIC_API_URL=https://thaihand.shop/api
         - NEXT_PUBLIC_BACKEND_URL=https://thaihand.shop
         - NEXTAUTH_URL=https://thaihand.shop
+        - NEXTAUTH_SECRET=${NEXTAUTH_SECRET}
         - NEXT_PUBLIC_SUPABASE_URL=https://abhprxkswysntmerxklb.supabase.co
         - NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFiaHByeGtzd3lzbnRtZXJ4a2xiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE0NTc2ODAsImV4cCI6MjA2NzAzMzY4MH0.MLRoT_AH5V9XrSFo7eDbqS8K76LTU69nxYUQqn9tIhk
         - NEXTAUTH_SECRET=${NEXTAUTH_SECRET}

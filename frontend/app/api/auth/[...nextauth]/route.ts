@@ -165,6 +165,12 @@ const handler = NextAuth({
         url = url.replace('localhost:3000', 'thaihand.shop');
       }
       
+      // ตรวจสอบว่า URL เป็น localhost หรือไม่ (อีกครั้ง)
+      if (url.includes('localhost')) {
+        console.log('REDIRECT FIX - Replacing any localhost with production URL');
+        url = url.replace('localhost', 'thaihand.shop');
+      }
+      
       // ถ้าเป็น OAuth callback ให้ไป dashboard (ทั้ง Google และ LINE)
       if (url.includes('/api/auth/callback/')) {
         console.log('OAUTH CALLBACK - Redirecting to dashboard');
@@ -175,6 +181,12 @@ const handler = NextAuth({
       if (url.includes('/api/auth/signin/')) {
         console.log('OAUTH SIGNIN - Allowing OAuth redirect');
         return url;
+      }
+      
+      // ถ้าเป็น error page ให้ไป login
+      if (url.includes('/login?error=')) {
+        console.log('ERROR REDIRECT - Going to login page');
+        return baseUrl + '/login?error=OAuthSignin';
       }
       
       // ถ้าเป็น internal URL ให้ไป dashboard
