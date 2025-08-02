@@ -9,7 +9,7 @@ export function useBackendToken() {
 
   useEffect(() => {
     const accessToken = (session as any)?.accessToken;
-    const provider = (session as any)?.user?.provider || (session as any)?.provider || "google";
+    const provider = (session as any)?.provider || "google";
     
     if (accessToken && !backendToken) {
       setLoading(true);

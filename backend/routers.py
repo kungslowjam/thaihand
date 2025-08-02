@@ -46,7 +46,7 @@ async def exchange_token(request: Request):
             user_id = user_info.get("userId")
             if not user_id:
                 return JSONResponse(status_code=401, content={"detail": "No userId in Line profile"})
-            user_email = f"{user_id}@line"  # ใช้ userId เป็น pseudo-email
+            user_email = f"{user_id}@line.me"  # ใช้ userId เป็น pseudo-email เหมือน frontend
         else:
             return JSONResponse(status_code=400, content={"detail": "Unknown provider"})
         if not user_email:
