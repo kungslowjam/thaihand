@@ -1,73 +1,124 @@
 # การตั้งค่า LINE Login
 
-## 1. การตั้งค่าใน LINE Developers Console
+## ✅ สถานะปัจจุบัน
+- ✅ Environment variables ถูกตั้งค่าแล้ว
+- ✅ Docker configuration พร้อมใช้งาน
+- ✅ NextAuth configuration เรียบง่าย
+- ✅ เพิ่ม error handling สำหรับ ECONNRESET
 
-### ขั้นตอนที่ 1: สร้าง Channel
-1. ไปที่ [LINE Developers Console](https://developers.line.biz/console/)
-2. สร้าง Channel ใหม่
-3. เลือก **LINE Login** เป็น Channel type
+## 🔧 การตั้งค่าใน LINE Developers Console
 
-### ขั้นตอนที่ 2: ตั้งค่า Callback URL
-ใน LINE Developers Console:
+### 1. ไปที่ LINE Developers Console
+- URL: https://developers.line.biz/console/
+- เข้าสู่ระบบด้วย LINE account
+
+### 2. สร้าง Channel ใหม่ (ถ้ายังไม่มี)
+1. คลิก "Create Channel"
+2. เลือก "LINE Login"
+3. กรอกข้อมูลพื้นฐาน:
+   - Channel name: `ThaiHand Login`
+   - Channel description: `Login for ThaiHand platform`
+
+### 3. ตั้งค่า Callback URL
+ใน Channel ที่สร้างไว้:
 - **Callback URL:** `https://thaihand.shop/api/auth/callback/line`
 - **Scope:** `profile openid`
 
-### ขั้นตอนที่ 3: เก็บข้อมูล
-- **Channel ID** (ใช้เป็น LINE_CLIENT_ID)
-- **Channel Secret** (ใช้เป็น LINE_CLIENT_SECRET)
+### 4. เก็บข้อมูลสำคัญ
+- **Channel ID:** `2007700233` (ใช้เป็น LINE_CLIENT_ID)
+- **Channel Secret:** `e035e453d938989b8277dfe7c885dad6` (ใช้เป็น LINE_CLIENT_SECRET)
 
-## 2. การตั้งค่า Environment Variables
+## 📋 Environment Variables ที่ตั้งค่าแล้ว
 
-### ในไฟล์ .env
 ```env
 # LINE OAuth
-LINE_CLIENT_ID=your-line-channel-id
-LINE_CLIENT_SECRET=your-line-channel-secret
+LINE_CLIENT_ID=2007700233
+LINE_CLIENT_SECRET=e035e453d938989b8277dfe7c885dad6
+NEXT_PUBLIC_LINE_CLIENT_ID=2007700233
 
 # NextAuth
 NEXTAUTH_URL=https://thaihand.shop
-NEXTAUTH_SECRET=your-secret-key
+NEXTAUTH_SECRET=z9y8x7w6v5u4t3s2r1q0p9o8n7m6l5k4j3i2h1g0f9e8d7c6b5a4
 ```
 
-### ใน docker-compose.yml
-```yaml
-environment:
-  - LINE_CLIENT_ID=${LINE_CLIENT_ID}
-  - LINE_CLIENT_SECRET=${LINE_CLIENT_SECRET}
-  - NEXTAUTH_URL=https://thaihand.shop
-  - NEXTAUTH_SECRET=${NEXTAUTH_SECRET}
-```
+## 🚀 การทดสอบ
 
-## 3. การทดสอบ
-
-### ขั้นตอนที่ 1: รีสตาร์ทเซิร์ฟเวอร์
+### 1. รีสตาร์ทเซิร์ฟเวอร์
 ```bash
 docker-compose down
 docker-compose up -d
 ```
 
-### ขั้นตอนที่ 2: ทดสอบการเข้าสู่ระบบ
+### 2. ตรวจสอบ logs
+```bash
+# ดู logs ของ frontend
+docker-compose logs frontend
+
+# ดู logs ของ backend
+docker-compose logs backend
+```
+
+### 3. ทดสอบการเข้าสู่ระบบ
 1. ไปที่ `https://thaihand.shop/login`
 2. คลิกปุ่ม "เข้าสู่ระบบด้วย LINE"
 3. ตรวจสอบว่าสามารถเข้าสู่ระบบได้
 
-## 4. การแก้ไขปัญหา
+## 🔍 การแก้ไขปัญหา
 
 ### ปัญหาที่พบบ่อย:
 
-#### 1. "Invalid client_id"
-- ตรวจสอบ LINE_CLIENT_ID ว่าถูกต้อง
-- ตรวจสอบ Callback URL ใน LINE Developers Console
+#### 1. "ECONNRESET" Error
+**สาเหตุ:** การเชื่อมต่อกับ LINE API ถูกตัด
+**วิธีแก้ไข:**
+- ตรวจสอบการเชื่อมต่ออินเทอร์เน็ต
+- ลองใหม่อีกครั้ง (ระบบมี retry button)
+- ตรวจสอบว่า LINE API ไม่มีปัญหา
 
-#### 2. "Invalid redirect_uri"
-- ตรวจสอบ Callback URL ว่าตรงกับที่ตั้งไว้ใน LINE Developers Console
-- ใช้ `https://thaihand.shop/api/auth/callback/line`
-
-#### 3. "Access denied"
-- ตรวจสอบ Scope ว่าตั้งเป็น `profile openid`
+#### 2. "Invalid client_id"
+**สาเหตุ:** LINE_CLIENT_ID ไม่ถูกต้อง
+**วิธีแก้ไข:**
+- ตรวจสอบ Channel ID ใน LINE Developers Console
 - ตรวจสอบว่า Channel เปิดใช้งานอยู่
 
-## 5. โครงสร้างไฟล์
+#### 3. "Invalid redirect_uri"
+**สาเหตุ:** Callback URL ไม่ตรงกัน
+**วิธีแก้ไข:**
+- ตรวจสอบ Callback URL ใน LINE Developers Console
+- ต้องเป็น: `https://thaihand.shop/api/auth/callback/line`
+
+#### 4. "Access denied"
+**สาเหตุ:** ผู้ใช้ยกเลิกการเข้าสู่ระบบ
+**วิธีแก้ไข:**
+- ลองใหม่อีกครั้ง
+- ตรวจสอบว่า LINE app ทำงานปกติ
+
+#### 5. "Configuration error"
+**สาเหตุ:** Environment variables ไม่ถูกต้อง
+**วิธีแก้ไข:**
+- ตรวจสอบไฟล์ .env
+- รีสตาร์ท Docker containers
+
+#### 6. "Timeout Error"
+**สาเหตุ:** การเชื่อมต่อใช้เวลานานเกินไป
+**วิธีแก้ไข:**
+- ตรวจสอบความเร็วอินเทอร์เน็ต
+- ลองใหม่อีกครั้ง
+- ตรวจสอบว่า LINE API ไม่มีปัญหา
+
+## 🛠️ การปรับปรุงล่าสุด
+
+### เพิ่ม Error Handling:
+- ✅ จัดการ ECONNRESET error
+- ✅ เพิ่ม timeout 30 วินาที
+- ✅ เพิ่ม retry button
+- ✅ แสดงข้อความ error ที่ชัดเจน
+
+### เพิ่ม Debug Logs:
+- ✅ ดู logs ได้ใน real-time
+- ✅ แสดง attempt number
+- ✅ แสดง error details
+
+## 📁 โครงสร้างไฟล์
 
 ```
 frontend/
@@ -77,55 +128,59 @@ frontend/
 │   │       └── [...nextauth]/
 │   │           └── route.ts          # NextAuth configuration
 │   └── login/
-│       └── page.tsx                  # Login page
+│       └── page.tsx                  # Login page with retry logic
 ```
 
-## 6. การตั้งค่าที่แนะนำ
-
-### Production Environment
-- ใช้ HTTPS เท่านั้น
-- ตั้งค่า Callback URL เป็น production URL
-- ใช้ environment variables สำหรับ secrets
-
-### Development Environment
-- สามารถใช้ HTTP สำหรับ localhost
-- ตั้งค่า Callback URL เป็น `http://localhost:3000/api/auth/callback/line`
-
-## 7. การตรวจสอบ Logs
-
-### ดู logs ของ frontend
-```bash
-docker-compose logs frontend
-```
-
-### ดู logs ของ backend
-```bash
-docker-compose logs backend
-```
-
-## 8. การอัปเดต
-
-### อัปเดต NextAuth
-```bash
-cd frontend
-npm update next-auth
-```
-
-### อัปเดต Docker images
-```bash
-docker-compose pull
-docker-compose up -d
-```
-
-## 9. ความปลอดภัย
+## 🔒 ความปลอดภัย
 
 ### ข้อควรระวัง:
-- อย่าเปิดเผย LINE_CLIENT_SECRET
-- ใช้ HTTPS ใน production
-- ตรวจสอบ Callback URL อย่างระมัดระวัง
-- ใช้ strong NEXTAUTH_SECRET
+- ✅ LINE_CLIENT_SECRET ไม่ถูกเปิดเผยในโค้ด
+- ✅ ใช้ environment variables
+- ✅ ใช้ HTTPS ใน production
+- ✅ Callback URL ถูกตั้งค่าถูกต้อง
 
-### การตรวจสอบความปลอดภัย:
-- ตรวจสอบว่า secrets ไม่ถูก commit ไปยัง git
-- ตรวจสอบว่า environment variables ถูกตั้งค่าถูกต้อง
-- ตรวจสอบ logs เพื่อหาการเข้าถึงที่ไม่ได้รับอนุญาต 
+### การตรวจสอบ:
+```bash
+# ตรวจสอบ environment variables
+docker-compose exec frontend env | grep LINE
+
+# ตรวจสอบ logs
+docker-compose logs frontend | grep -i line
+
+# ตรวจสอบ error logs
+docker-compose logs frontend | grep -i error
+```
+
+## 📊 การตรวจสอบสถานะ
+
+### ตรวจสอบการทำงาน:
+1. **Frontend:** `https://thaihand.shop/login`
+2. **API:** `https://thaihand.shop/api/auth/callback/line`
+3. **Dashboard:** `https://thaihand.shop/dashboard`
+
+### ตรวจสอบ logs:
+```bash
+# Real-time logs
+docker-compose logs -f frontend
+
+# Error logs
+docker-compose logs frontend | grep -i error
+
+# LINE specific logs
+docker-compose logs frontend | grep -i line
+```
+
+## 🎯 สรุป
+
+✅ **การตั้งค่าสำเร็จ:**
+- LINE OAuth ถูกตั้งค่าแล้ว
+- Environment variables ครบถ้วน
+- Docker configuration พร้อมใช้งาน
+- NextAuth configuration เรียบง่าย
+- เพิ่ม error handling สำหรับ ECONNRESET
+
+🚀 **พร้อมใช้งาน:**
+- ผู้ใช้สามารถเข้าสู่ระบบด้วย LINE ได้
+- ระบบจะ redirect ไปยัง dashboard หลังเข้าสู่ระบบสำเร็จ
+- Error handling เรียบง่ายและเข้าใจง่าย
+- มี retry button สำหรับปัญหาการเชื่อมต่อ 

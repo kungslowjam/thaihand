@@ -28,6 +28,7 @@ function ErrorDisplay({ error }: { error: string | null }) {
 function LoginForm() {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [retryCount, setRetryCount] = useState(0)
   const { data: session, status } = useSession();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -43,7 +44,17 @@ function LoginForm() {
     const messageParam = searchParams.get('message');
     
     if (errorParam) {
-      setError(messageParam || 'เกิดข้อผิดพลาดในการเข้าสู่ระบบ');
+      let errorMessage = 'เกิดข้อผิดพลาดในการเข้าสู่ระบบ';
+      
+      if (errorParam === 'OAuthSignin') {
+        errorMessage = messageParam || 'เกิดข้อผิดพลาดในการเชื่อมต่อกับ LINE กรุณาลองใหม่อีกครั้ง';
+      } else if (errorParam === 'ECONNRESET') {
+        errorMessage = 'การเชื่อมต่อถูกตัด กรุณาตรวจสอบการเชื่อมต่ออินเทอร์เน็ตและลองใหม่อีกครั้ง';
+      } else if (errorParam === 'timeout') {
+        errorMessage = 'การเชื่อมต่อใช้เวลานานเกินไป กรุณาลองใหม่อีกครั้ง';
+      }
+      
+      setError(errorMessage);
     }
   }, [searchParams]);
 
@@ -52,23 +63,55 @@ function LoginForm() {
     setError('');
     
     try {
-      const result = await signIn("line", { 
+      console.log('LINE LOGIN - Starting LINE OAuth (Attempt:', retryCount + 1, ')');
+      
+      // ใช้ timeout 30 วินาที
+      const timeoutPromise = new Promise((_, reject) => {
+        setTimeout(() => reject(new Error('timeout')), 30000);
+      });
+      
+      const signInPromise = signIn("line", { 
         callbackUrl: "/dashboard",
         redirect: false 
       });
       
+      const result = await Promise.race([signInPromise, timeoutPromise]) as any;
+      
       if (result?.error) {
-        setError('เกิดข้อผิดพลาดในการเข้าสู่ระบบ LINE');
+        console.error('LINE login error:', result.error);
+        
+        if (result.error.includes('ECONNRESET') || result.error.includes('ENOTFOUND')) {
+          setError('การเชื่อมต่อถูกตัด กรุณาตรวจสอบการเชื่อมต่ออินเทอร์เน็ตและลองใหม่อีกครั้ง');
+        } else if (result.error.includes('timeout')) {
+          setError('การเชื่อมต่อใช้เวลานานเกินไป กรุณาลองใหม่อีกครั้ง');
+        } else {
+          setError('เกิดข้อผิดพลาดในการเข้าสู่ระบบ LINE กรุณาลองใหม่อีกครั้ง');
+        }
+        
         setIsLoading(false);
       } else if (result?.ok) {
         router.push('/dashboard');
       }
       
-    } catch (error) {
+    } catch (error: any) {
       console.error("LINE login failed:", error);
-      setError("ไม่สามารถเชื่อมต่อกับ LINE ได้");
+      
+      if (error.message === 'timeout') {
+        setError('การเชื่อมต่อใช้เวลานานเกินไป กรุณาลองใหม่อีกครั้ง');
+      } else if (error.message.includes('ECONNRESET') || error.message.includes('ENOTFOUND')) {
+        setError('การเชื่อมต่อถูกตัด กรุณาตรวจสอบการเชื่อมต่ออินเทอร์เน็ตและลองใหม่อีกครั้ง');
+      } else {
+        setError('ไม่สามารถเชื่อมต่อกับ LINE ได้ กรุณาลองใหม่อีกครั้ง');
+      }
+      
       setIsLoading(false);
     }
+  };
+
+  const handleRetry = () => {
+    setRetryCount(prev => prev + 1);
+    setError(null);
+    handleLineLogin();
   };
 
   const handleGoogleLogin = () => {
@@ -88,6 +131,17 @@ function LoginForm() {
 
           {/* Error Display */}
           <ErrorDisplay error={error} />
+
+          {/* Retry Button */}
+          {error && retryCount > 0 && (
+            <Button
+              onClick={handleRetry}
+              variant="outline"
+              className="w-full mb-4 text-blue-600 border-blue-300 hover:bg-blue-50"
+            >
+              ลองใหม่อีกครั้ง (ครั้งที่ {retryCount + 1})
+            </Button>
+          )}
 
           <div className="flex flex-col gap-5 w-full">
             <Button
