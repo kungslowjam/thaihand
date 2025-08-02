@@ -58,8 +58,8 @@ services:
         - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
         - LINE_CLIENT_ID=${LINE_CLIENT_ID}
         - LINE_CLIENT_SECRET=${LINE_CLIENT_SECRET}
-        - NEXT_PUBLIC_LINE_CLIENT_ID=${LINE_CLIENT_ID}
-        - NEXT_PUBLIC_GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
+        - NEXT_PUBLIC_LINE_CLIENT_ID=2007700233
+        - NEXT_PUBLIC_GOOGLE_CLIENT_ID=570780773041-6h7v60llj41ml3pfvssjs45cadaa403t.apps.googleusercontent.com
     container_name: thaihand_frontend
     env_file:
       - .env
@@ -73,8 +73,8 @@ services:
       - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
       - LINE_CLIENT_ID=${LINE_CLIENT_ID}
       - LINE_CLIENT_SECRET=${LINE_CLIENT_SECRET}
-      - NEXT_PUBLIC_LINE_CLIENT_ID=${LINE_CLIENT_ID}
-      - NEXT_PUBLIC_GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
+      - NEXT_PUBLIC_LINE_CLIENT_ID=2007700233
+      - NEXT_PUBLIC_GOOGLE_CLIENT_ID=570780773041-6h7v60llj41ml3pfvssjs45cadaa403t.apps.googleusercontent.com
       - NODE_OPTIONS=--max-http-header-size=8192 --max-old-space-size=4096 --dns-result-order=ipv4first
       - NODE_TLS_REJECT_UNAUTHORIZED=0
       - NODE_EXTRA_CA_CERTS=/etc/ssl/certs/ca-certificates.crt
