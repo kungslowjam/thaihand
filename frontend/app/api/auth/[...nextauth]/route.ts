@@ -90,6 +90,7 @@ const handler = NextAuth({
     signIn: '/login',
     error: '/login',
   },
+  useSecureCookies: process.env.NODE_ENV === 'production',
   secret: process.env.NEXTAUTH_SECRET,
   debug: false, // ปิด debug ใน production
   session: {
@@ -157,6 +158,12 @@ const handler = NextAuth({
     },
     async redirect({ url, baseUrl }) {
       console.log('REDIRECT CALLBACK - URL:', url, 'Base URL:', baseUrl);
+      
+      // ตรวจสอบว่า URL เป็น localhost หรือไม่
+      if (url.includes('localhost:3000')) {
+        console.log('REDIRECT FIX - Replacing localhost with production URL');
+        url = url.replace('localhost:3000', 'thaihand.shop');
+      }
       
       // ถ้าเป็น OAuth callback ให้ไป dashboard (ทั้ง Google และ LINE)
       if (url.includes('/api/auth/callback/')) {
