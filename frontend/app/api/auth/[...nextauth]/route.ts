@@ -1,7 +1,5 @@
 import NextAuth from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
-import LineProvider from "next-auth/providers/line";
-import { handleLineLoginError, createLineUserProfile } from "@/lib/lineAuth";
 
 // Force dynamic rendering
 export const dynamic = 'force-dynamic';
@@ -26,62 +24,12 @@ const getBaseUrl = () => {
   return 'http://localhost:3000';
 };
 
-// LINE Provider Configuration
-const lineProvider = LineProvider({
-  clientId: process.env.LINE_CLIENT_ID!,
-  clientSecret: process.env.LINE_CLIENT_SECRET!,
-  authorization: {
-    url: "https://access.line.me/oauth2/v2.1/authorize",
-    params: {
-      scope: "profile openid",
-      response_type: "code",
-      client_id: process.env.LINE_CLIENT_ID!,
-      state: "line_oauth_state",
-    }
-  },
-  token: {
-    url: "https://api.line.me/oauth2/v2.1/token",
-  },
-  userinfo: {
-    url: "https://api.line.me/v2/profile",
-    async request({ tokens, provider }) {
-      console.log('LINE UserInfo Request - Tokens:', tokens);
-      
-      try {
-        const userInfoUrl = typeof provider.userinfo === 'string' ? provider.userinfo : provider.userinfo?.url;
-        if (!userInfoUrl) {
-          throw new Error('LINE UserInfo URL not found');
-        }
-        
-        const response = await fetch(userInfoUrl, {
-          headers: {
-            Authorization: `Bearer ${tokens.access_token}`,
-          },
-        });
-        
-        if (!response.ok) {
-          throw new Error(`LINE UserInfo failed: ${response.statusText}`);
-        }
-        
-        const userInfo = await response.json();
-        console.log('LINE UserInfo Response:', userInfo);
-        return userInfo;
-      } catch (error) {
-        console.error('LINE UserInfo Error:', error);
-        const errorMessage = handleLineLoginError(error);
-        throw new Error(errorMessage);
-      }
-    }
-  },
-});
-
 const handler = NextAuth({
   providers: [
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID!,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
     }),
-    lineProvider,
   ],
   pages: {
     signIn: '/login',
@@ -109,55 +57,15 @@ const handler = NextAuth({
       console.log('SignIn - Provider:', account?.provider, 'User:', user?.name);
       console.log('Account:', account);
       console.log('Profile:', profile);
-      
-      // สำหรับ LINE OAuth ให้จัดการ error
-      if (account?.provider === 'line') {
-        try {
-          console.log('LINE OAuth - Processing user data');
-          
-          // ใช้ utility function เพื่อสร้าง user profile
-          const lineUserProfile = createLineUserProfile(profile as any);
-          
-          // อัปเดต user data
-          if (!user.id && lineUserProfile.id) {
-            user.id = lineUserProfile.id;
-          }
-          if (!user.name && lineUserProfile.name) {
-            user.name = lineUserProfile.name;
-          }
-          if (!user.image && lineUserProfile.image) {
-            user.image = lineUserProfile.image;
-          }
-          if (!user.email && lineUserProfile.email) {
-            user.email = lineUserProfile.email;
-          }
-          
-          console.log('LINE OAuth - User data processed successfully');
-          return true;
-        } catch (error) {
-          console.error('LINE OAuth error:', error);
-          const errorMessage = handleLineLoginError(error);
-          throw new Error(errorMessage);
-        }
-      }
-      
       return true;
     },
     async redirect({ url, baseUrl }) {
       console.log('Redirect - URL:', url, 'Base URL:', baseUrl);
-      console.log('URL includes line.me:', url.includes('line.me'));
-      console.log('URL includes access.line.me:', url.includes('access.line.me'));
-      
-      // ถ้าเป็น LINE OAuth URL ให้ redirect ไป LINE
-      if (url.includes('access.line.me') || url.includes('line.me')) {
-        console.log('LINE OAuth URL detected, redirecting to LINE');
-        return url;
-      }
       
       // จัดการ error URLs
       if (url.includes('error=')) {
         console.log('OAuth Error detected, redirecting to login');
-        return `${baseUrl}/login?error=OAuthSignin&message=เกิดข้อผิดพลาดในการเข้าสู่ระบบ LINE`;
+        return `${baseUrl}/login?error=OAuthSignin&message=เกิดข้อผิดพลาดในการเข้าสู่ระบบ`;
       }
       
       // ถ้าเป็น callback ให้ไป dashboard
