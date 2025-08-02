@@ -159,14 +159,13 @@ function LoginForm() {
             <Button
               onClick={handleLineLogin}
               disabled={isLoading || !isLineLoginAvailable()}
-              variant="outline"
-              className={`w-full flex items-center justify-center border-2 border-gray-200 bg-white hover:bg-blue-50 text-gray-800 font-semibold text-lg py-4 rounded-xl shadow-sm hover:scale-105 transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed ${
-                loginProvider === 'line' && isLoading ? 'ring-2 ring-blue-500' : ''
+              className={`w-full flex items-center justify-center bg-[#00B900] hover:bg-[#009900] text-white font-semibold text-lg py-4 rounded-xl shadow-sm hover:scale-105 transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed ${
+                loginProvider === 'line' && isLoading ? 'ring-2 ring-green-500' : ''
               } ${!isLineLoginAvailable() ? 'opacity-50 cursor-not-allowed' : ''}`}
             >
               {loginProvider === 'line' && isLoading ? (
                 <div className="flex items-center">
-                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-600 mr-2"></div>
+                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
                   กำลังเข้าสู่ระบบ...
                 </div>
               ) : (
