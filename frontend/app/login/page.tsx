@@ -47,21 +47,37 @@ function LoginForm() {
   useEffect(() => {
     const errorParam = searchParams.get('error');
     const messageParam = searchParams.get('message');
+    const providerParam = searchParams.get('provider');
     
     if (errorParam === 'line_oauth_error') {
       setError(messageParam || 'เกิดข้อผิดพลาดในการเชื่อมต่อกับ LINE กรุณาลองใหม่อีกครั้ง');
     } else if (errorParam === 'oauth_error') {
       setError(messageParam || 'เกิดข้อผิดพลาดในการเข้าสู่ระบบ กรุณาลองใหม่อีกครั้ง');
     } else if (errorParam === 'OAuthSignin') {
-      setError('เกิดข้อผิดพลาดในการตั้งค่า OAuth กรุณาตรวจสอบ LINE_CLIENT_ID และ LINE_CLIENT_SECRET ในไฟล์ .env');
+      if (providerParam === 'line') {
+        setError(messageParam || 'เกิดข้อผิดพลาดในการตั้งค่า LINE OAuth กรุณาตรวจสอบ LINE_CLIENT_ID และ LINE_CLIENT_SECRET');
+      } else {
+        setError(messageParam || 'เกิดข้อผิดพลาดในการตั้งค่า OAuth กรุณาตรวจสอบ environment variables');
+      }
     } else if (errorParam === 'Configuration') {
-      setError('เกิดข้อผิดพลาดในการตั้งค่า OAuth กรุณาตรวจสอบ environment variables');
+      if (providerParam === 'line') {
+        setError(messageParam || 'การตั้งค่า LINE OAuth ไม่ถูกต้อง กรุณาตรวจสอบ LINE_CLIENT_ID และ LINE_CLIENT_SECRET');
+      } else {
+        setError(messageParam || 'เกิดข้อผิดพลาดในการตั้งค่า OAuth กรุณาตรวจสอบ environment variables');
+      }
     } else if (errorParam === 'AccessDenied') {
-      setError('การเข้าสู่ระบบถูกปฏิเสธ กรุณาลองใหม่อีกครั้ง');
+      if (providerParam === 'line') {
+        setError(messageParam || 'การเข้าสู่ระบบด้วย LINE ถูกปฏิเสธ กรุณาลองใหม่อีกครั้ง');
+      } else {
+        setError(messageParam || 'การเข้าสู่ระบบถูกปฏิเสธ กรุณาลองใหม่อีกครั้ง');
+      }
     } else if (errorParam === 'Verification') {
-      setError('เกิดข้อผิดพลาดในการยืนยันตัวตน กรุณาลองใหม่อีกครั้ง');
+      setError(messageParam || 'เกิดข้อผิดพลาดในการยืนยันตัวตน กรุณาลองใหม่อีกครั้ง');
     } else if (errorParam === 'unknown_error') {
       setError(messageParam || 'เกิดข้อผิดพลาดที่ไม่ทราบสาเหตุ');
+    } else if (errorParam) {
+      // จัดการ error อื่นๆ ที่อาจเกิดขึ้น
+      setError(messageParam || `เกิดข้อผิดพลาด: ${errorParam}`);
     }
   }, [searchParams]);
 
@@ -82,11 +98,20 @@ function LoginForm() {
       
       console.log('LINE_CLIENT_ID:', process.env.NEXT_PUBLIC_LINE_CLIENT_ID);
       
-      // ใช้ redirect แทน Promise.race เพื่อหลีกเลี่ยง timeout
-      signIn("line", { 
+      // ใช้ signIn พร้อมกับ error handling ที่ดีขึ้น
+      const result = await signIn("line", { 
         callbackUrl: "/dashboard",
-        redirect: true 
+        redirect: false 
       });
+      
+      if (result?.error) {
+        console.error('LINE login error:', result.error);
+        setError(`เกิดข้อผิดพลาดในการเข้าสู่ระบบ LINE: ${result.error}`);
+        setIsLoading(false);
+      } else if (result?.ok) {
+        // สำเร็จแล้ว ให้ redirect ไป dashboard
+        router.push('/dashboard');
+      }
       
     } catch (error) {
       console.error("LINE login failed:", error);

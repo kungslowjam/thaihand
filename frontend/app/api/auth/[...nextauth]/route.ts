@@ -7,8 +7,6 @@ import { Session } from "next-auth";
 // Force dynamic rendering
 export const dynamic = 'force-dynamic';
 
-
-
 // สร้าง providers array
 const providers = [
   GoogleProvider({
@@ -19,9 +17,18 @@ const providers = [
     clientId: process.env.LINE_CLIENT_ID!,
     clientSecret: process.env.LINE_CLIENT_SECRET!,
     authorization: {
+      url: "https://access.line.me/oauth2/v2.1/authorize",
       params: {
-        scope: 'profile openid email',
+        scope: 'profile openid',
+        response_type: 'code',
+        state: 'random_state_string',
       },
+    },
+    token: {
+      url: "https://api.line.me/oauth2/v2.1/token",
+    },
+    userinfo: {
+      url: "https://api.line.me/v2/profile",
     },
   }),
 ];
@@ -66,6 +73,8 @@ const handler = NextAuth({
       
       // สำหรับ LINE OAuth ให้ยืดหยุ่นมากขึ้น
       if (account?.provider === 'line') {
+        console.log('LINE OAUTH - Processing LINE user data');
+        
         // ตรวจสอบว่า user มีข้อมูลครบหรือไม่
         if (!user || !user.id) {
           console.log('LINE OAUTH - Creating user from profile data');
@@ -73,16 +82,35 @@ const handler = NextAuth({
             user.id = profile.sub;
           } else if (account.providerAccountId) {
             user.id = account.providerAccountId;
+          } else if (profile && (profile as any).userId) {
+            user.id = (profile as any).userId;
           }
         }
         
         // ตรวจสอบว่า user มีข้อมูลพื้นฐาน
         if (!user.name && profile && profile.name) {
           user.name = profile.name;
+        } else if (!user.name && profile && (profile as any).displayName) {
+          user.name = (profile as any).displayName;
         }
+        
         if (!user.image && profile && (profile as any).picture) {
           user.image = (profile as any).picture;
+        } else if (!user.image && profile && (profile as any).pictureUrl) {
+          user.image = (profile as any).pictureUrl;
         }
+        
+        // สร้าง email จาก LINE userId ถ้าไม่มี
+        if (!user.email && profile && (profile as any).userId) {
+          user.email = `${(profile as any).userId}@line.me`;
+        }
+        
+        console.log('LINE OAUTH - Final user data:', {
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          image: user.image
+        });
       }
       
       return true;
@@ -106,10 +134,36 @@ const handler = NextAuth({
         return baseUrl + '/dashboard';
       }
       
-      // ถ้าเป็น error ให้ไป login
+      // จัดการ error ของ LINE OAuth
       if (url.includes('error=')) {
-        console.log('ERROR REDIRECT - Going to login page');
-        return baseUrl + '/login?error=OAuthSignin';
+        console.log('ERROR REDIRECT - Processing OAuth error');
+        
+        if (url.includes('access_denied')) {
+          return baseUrl + '/login?error=AccessDenied&message=การเข้าสู่ระบบถูกปฏิเสธ';
+        }
+        
+        if (url.includes('invalid_request')) {
+          return baseUrl + '/login?error=Configuration&message=การตั้งค่า OAuth ไม่ถูกต้อง';
+        }
+        
+        if (url.includes('unauthorized_client')) {
+          return baseUrl + '/login?error=Configuration&message=LINE Client ID หรือ Client Secret ไม่ถูกต้อง';
+        }
+        
+        if (url.includes('unsupported_response_type')) {
+          return baseUrl + '/login?error=Configuration&message=การตั้งค่า response_type ไม่ถูกต้อง';
+        }
+        
+        if (url.includes('server_error')) {
+          return baseUrl + '/login?error=unknown_error&message=เกิดข้อผิดพลาดที่เซิร์ฟเวอร์ LINE';
+        }
+        
+        if (url.includes('temporarily_unavailable')) {
+          return baseUrl + '/login?error=unknown_error&message=LINE OAuth ปัจจุบันไม่พร้อมใช้งาน';
+        }
+        
+        // error ทั่วไป
+        return baseUrl + '/login?error=OAuthSignin&message=เกิดข้อผิดพลาดในการเข้าสู่ระบบ';
       }
       
       // ถ้าเป็น internal URL ให้ไป dashboard
