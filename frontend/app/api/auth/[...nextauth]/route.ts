@@ -16,21 +16,6 @@ const providers = [
   LineProvider({
     clientId: process.env.LINE_CLIENT_ID!,
     clientSecret: process.env.LINE_CLIENT_SECRET!,
-    authorization: {
-      url: "https://access.line.me/oauth2/v2.1/authorize",
-      params: {
-        scope: 'profile openid email',
-        response_type: 'code',
-        state: 'random_state_string',
-        redirect_uri: 'https://thaihand.shop/api/auth/callback/line',
-      },
-    },
-    token: {
-      url: "https://api.line.me/oauth2/v2.1/token",
-    },
-    userinfo: {
-      url: "https://api.line.me/v2/profile",
-    },
   }),
 ];
 
