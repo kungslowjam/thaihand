@@ -22,7 +22,7 @@ declare module "next-auth" {
 const getBaseUrl = () => {
   if (process.env.NEXT_PUBLIC_FORCE_DOMAIN) return process.env.NEXT_PUBLIC_FORCE_DOMAIN;
   if (process.env.NEXTAUTH_URL) return process.env.NEXTAUTH_URL;
-  if (process.env.NODE_ENV === 'production') return 'https://thaihand.shop';
+  if (process.env.NODE_ENV === 'production') return process.env.NEXTAUTH_URL || 'https://thaihand.shop';
   return 'http://localhost:3000';
 };
 
