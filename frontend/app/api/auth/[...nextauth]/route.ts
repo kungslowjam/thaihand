@@ -24,6 +24,7 @@ const missingEnvVars = Object.entries(requiredEnvVars)
 
 if (missingEnvVars.length > 0) {
   console.error('Missing environment variables:', missingEnvVars);
+  console.error('Available env vars:', Object.keys(process.env).filter(key => key.includes('CLIENT')));
 }
 
 // สร้าง providers array ตาม environment variables ที่มี
@@ -90,7 +91,7 @@ const handler = NextAuth({
     error: '/login',
   },
   secret: process.env.NEXTAUTH_SECRET,
-  debug: true, // เปิด debug เพื่อดู error
+  debug: true, // เปิด debug เพื่อดู logs
   session: {
     strategy: "jwt",
     maxAge: 30 * 24 * 60 * 60, // 30 วัน
@@ -146,7 +147,7 @@ const handler = NextAuth({
       }
       
       // ตรวจสอบว่ามี access_token หรือไม่ (ยืดหยุ่นสำหรับ LINE)
-      if (account && !account.access_token && account.provider === 'google') {
+      if (account && !account.access_token && account.provider !== 'line') {
         console.log(`${account.provider?.toUpperCase()} OAUTH ERROR - No access token`);
         return false;
       }
@@ -157,16 +158,10 @@ const handler = NextAuth({
     async redirect({ url, baseUrl }) {
       console.log('REDIRECT CALLBACK - URL:', url, 'Base URL:', baseUrl);
       
-      // ตรวจสอบว่า baseUrl ถูกต้อง (ต้องเป็น https://thaihand.shop)
-      if (baseUrl !== 'https://thaihand.shop') {
-        console.log('REDIRECT ERROR - Invalid baseUrl:', baseUrl);
-        return 'https://thaihand.shop/dashboard';
-      }
-      
       // ถ้าเป็น OAuth callback ให้ไป dashboard (ทั้ง Google และ LINE)
       if (url.includes('/api/auth/callback/')) {
         console.log('OAUTH CALLBACK - Redirecting to dashboard');
-        return 'https://thaihand.shop/dashboard';
+        return baseUrl + '/dashboard';
       }
       
       // ถ้าเป็น OAuth signin ให้อนุญาต (ทั้ง Google และ LINE)
@@ -178,13 +173,7 @@ const handler = NextAuth({
       // ถ้าเป็น internal URL ให้ไป dashboard
       if (url.startsWith(baseUrl)) {
         console.log('INTERNAL URL - Redirecting to dashboard');
-        return 'https://thaihand.shop/dashboard';
-      }
-      
-      // ถ้า URL มี localhost ให้เปลี่ยนเป็น thaihand.shop
-      if (url.includes('localhost')) {
-        console.log('REDIRECT FIX - Replacing localhost with thaihand.shop');
-        return url.replace('localhost:3000', 'thaihand.shop').replace('http://', 'https://');
+        return baseUrl + '/dashboard';
       }
       
       console.log('EXTERNAL URL - Allowing redirect');
