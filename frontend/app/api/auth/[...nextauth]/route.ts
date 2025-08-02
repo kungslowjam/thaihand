@@ -26,6 +26,20 @@ const handler = NextAuth({
     LineProvider({
       clientId: process.env.LINE_CLIENT_ID!,
       clientSecret: process.env.LINE_CLIENT_SECRET!,
+      authorization: {
+        url: "https://access.line.me/oauth2/v2.1/authorize",
+        params: {
+          scope: "profile openid",
+          response_type: "code",
+          client_id: process.env.LINE_CLIENT_ID!,
+        }
+      },
+      token: {
+        url: "https://api.line.me/oauth2/v2.1/token",
+      },
+      userinfo: {
+        url: "https://api.line.me/v2/profile",
+      },
     }),
   ],
   pages: {
