@@ -1,6 +1,7 @@
 import NextAuth from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 import LineProvider from "next-auth/providers/line";
+import { handleLineLoginError, createLineUserProfile } from "@/lib/lineAuth";
 
 // Force dynamic rendering
 export const dynamic = 'force-dynamic';
@@ -25,66 +26,68 @@ const getBaseUrl = () => {
   return 'http://localhost:3000';
 };
 
+// LINE Provider Configuration
+const lineProvider = LineProvider({
+  clientId: process.env.LINE_CLIENT_ID!,
+  clientSecret: process.env.LINE_CLIENT_SECRET!,
+  authorization: {
+    url: "https://access.line.me/oauth2/v2.1/authorize",
+    params: {
+      scope: "profile openid",
+      response_type: "code",
+      client_id: process.env.LINE_CLIENT_ID!,
+      state: "line_oauth_state",
+    }
+  },
+  token: {
+    url: "https://api.line.me/oauth2/v2.1/token",
+  },
+  userinfo: {
+    url: "https://api.line.me/v2/profile",
+    async request({ tokens, provider }) {
+      console.log('LINE UserInfo Request - Tokens:', tokens);
+      
+      try {
+        const userInfoUrl = typeof provider.userinfo === 'string' ? provider.userinfo : provider.userinfo?.url;
+        if (!userInfoUrl) {
+          throw new Error('LINE UserInfo URL not found');
+        }
+        
+        const response = await fetch(userInfoUrl, {
+          headers: {
+            Authorization: `Bearer ${tokens.access_token}`,
+          },
+        });
+        
+        if (!response.ok) {
+          throw new Error(`LINE UserInfo failed: ${response.statusText}`);
+        }
+        
+        const userInfo = await response.json();
+        console.log('LINE UserInfo Response:', userInfo);
+        return userInfo;
+      } catch (error) {
+        console.error('LINE UserInfo Error:', error);
+        const errorMessage = handleLineLoginError(error);
+        throw new Error(errorMessage);
+      }
+    }
+  },
+});
+
 const handler = NextAuth({
   providers: [
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID!,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
     }),
-    LineProvider({
-      clientId: process.env.LINE_CLIENT_ID!,
-      clientSecret: process.env.LINE_CLIENT_SECRET!,
-      authorization: {
-        url: "https://access.line.me/oauth2/v2.1/authorize",
-        params: {
-          scope: "profile openid",
-          response_type: "code",
-          client_id: process.env.LINE_CLIENT_ID!,
-          state: "line_oauth_state",
-        }
-      },
-      token: {
-        url: "https://api.line.me/oauth2/v2.1/token",
-      },
-      userinfo: {
-        url: "https://api.line.me/v2/profile",
-        async request({ tokens, provider }) {
-          console.log('LINE UserInfo Request - Tokens:', tokens);
-          
-          try {
-            const userInfoUrl = typeof provider.userinfo === 'string' ? provider.userinfo : provider.userinfo?.url;
-            if (!userInfoUrl) {
-              throw new Error('LINE UserInfo URL not found');
-            }
-            
-            const response = await fetch(userInfoUrl, {
-              headers: {
-                Authorization: `Bearer ${tokens.access_token}`,
-              },
-            });
-            
-            if (!response.ok) {
-              throw new Error(`LINE UserInfo failed: ${response.statusText}`);
-            }
-            
-            const userInfo = await response.json();
-            console.log('LINE UserInfo Response:', userInfo);
-            return userInfo;
-          } catch (error) {
-            console.error('LINE UserInfo Error:', error);
-            throw error;
-          }
-        }
-      },
-    }),
+    lineProvider,
   ],
   pages: {
     signIn: '/login',
     error: '/login',
   },
   secret: process.env.NEXTAUTH_SECRET,
-
-
   session: {
     strategy: "jwt",
     maxAge: 30 * 24 * 60 * 60, // 30 วัน
@@ -112,33 +115,29 @@ const handler = NextAuth({
         try {
           console.log('LINE OAuth - Processing user data');
           
-          // ตรวจสอบว่ามีข้อมูลครบหรือไม่
-          if (!user.id && profile?.sub) {
-            user.id = profile.sub;
-          }
-          if (!user.name && profile?.name) {
-            user.name = profile.name;
-          }
-          if (!user.image && (profile as any)?.pictureUrl) {
-            user.image = (profile as any).pictureUrl;
-          }
-          if (!user.email && (profile as any)?.userId) {
-            user.email = `${(profile as any).userId}@line.me`;
-          }
+          // ใช้ utility function เพื่อสร้าง user profile
+          const lineUserProfile = createLineUserProfile(profile as any);
           
-          // ถ้าไม่มีข้อมูลใดๆ เลย ให้ใช้ข้อมูลจาก account
-          if (!user.name && (profile as any)?.displayName) {
-            user.name = (profile as any).displayName;
+          // อัปเดต user data
+          if (!user.id && lineUserProfile.id) {
+            user.id = lineUserProfile.id;
           }
-          if (!user.image && (profile as any)?.pictureUrl) {
-            user.image = (profile as any).pictureUrl;
+          if (!user.name && lineUserProfile.name) {
+            user.name = lineUserProfile.name;
+          }
+          if (!user.image && lineUserProfile.image) {
+            user.image = lineUserProfile.image;
+          }
+          if (!user.email && lineUserProfile.email) {
+            user.email = lineUserProfile.email;
           }
           
           console.log('LINE OAuth - User data processed successfully');
           return true;
         } catch (error) {
           console.error('LINE OAuth error:', error);
-          return false;
+          const errorMessage = handleLineLoginError(error);
+          throw new Error(errorMessage);
         }
       }
       

@@ -60,6 +60,8 @@ services:
         - LINE_CLIENT_SECRET=${LINE_CLIENT_SECRET}
         - NEXT_PUBLIC_LINE_CLIENT_ID=${LINE_CLIENT_ID}
         - NEXT_PUBLIC_GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
+        - NEXTAUTH_DEBUG=true
+        - NEXTAUTH_LOGGING=true
     container_name: thaihand_frontend
     env_file:
       - .env
@@ -100,6 +102,13 @@ services:
       - "access.line.me:13.107.42.13"
       - "api.line.me:13.107.42.13"
       - "developers.line.biz:13.107.42.13"
+      - "profile.line-scdn.net:13.107.42.13"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
 
   # Nginx Reverse Proxy
   nginx:
@@ -117,6 +126,11 @@ services:
     networks:
       - thaihand_network
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "nginx", "-t"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 
 volumes:
   postgres_data:
