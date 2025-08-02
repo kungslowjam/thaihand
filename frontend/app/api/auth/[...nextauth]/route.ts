@@ -20,9 +20,10 @@ declare module "next-auth" {
 
 // Dynamic URL detection
 const getBaseUrl = () => {
-  if (process.env.NEXT_PUBLIC_FORCE_DOMAIN) return process.env.NEXT_PUBLIC_FORCE_DOMAIN;
+  // ใช้ NEXTAUTH_URL เสมอถ้ามี
   if (process.env.NEXTAUTH_URL) return process.env.NEXTAUTH_URL;
-  if (process.env.NODE_ENV === 'production') return process.env.NEXTAUTH_URL || 'https://thaihand.shop';
+  if (process.env.NEXT_PUBLIC_FORCE_DOMAIN) return process.env.NEXT_PUBLIC_FORCE_DOMAIN;
+  if (process.env.NODE_ENV === 'production') return 'https://thaihand.shop';
   return 'http://localhost:3000';
 };
 
@@ -42,34 +43,6 @@ const lineProvider = LineProvider({
   },
   userinfo: {
     url: "https://api.line.me/v2/profile",
-    async request({ tokens, provider }) {
-      console.log('LINE UserInfo Request - Tokens:', tokens);
-      
-      try {
-        const userInfoUrl = typeof provider.userinfo === 'string' ? provider.userinfo : provider.userinfo?.url;
-        if (!userInfoUrl) {
-          throw new Error('LINE UserInfo URL not found');
-        }
-        
-        const response = await fetch(userInfoUrl, {
-          headers: {
-            Authorization: `Bearer ${tokens.access_token}`,
-          },
-        });
-        
-        if (!response.ok) {
-          throw new Error(`LINE UserInfo failed: ${response.statusText}`);
-        }
-        
-        const userInfo = await response.json();
-        console.log('LINE UserInfo Response:', userInfo);
-        return userInfo;
-      } catch (error) {
-        console.error('LINE UserInfo Error:', error);
-        const errorMessage = handleLineLoginError(error);
-        throw new Error(errorMessage);
-      }
-    }
   },
 });
 
@@ -147,6 +120,9 @@ const handler = NextAuth({
       console.log('Redirect - URL:', url, 'Base URL:', baseUrl);
       console.log('URL includes line.me:', url.includes('line.me'));
       console.log('URL includes access.line.me:', url.includes('access.line.me'));
+      console.log('Environment - NEXTAUTH_URL:', process.env.NEXTAUTH_URL);
+      console.log('Environment - NODE_ENV:', process.env.NODE_ENV);
+      console.log('getBaseUrl():', getBaseUrl());
       
       // ถ้าเป็น LINE OAuth URL ให้ redirect ไป LINE
       if (url.includes('access.line.me') || url.includes('line.me')) {
