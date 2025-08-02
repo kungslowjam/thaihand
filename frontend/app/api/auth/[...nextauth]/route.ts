@@ -104,6 +104,8 @@ const handler = NextAuth({
   callbacks: {
     async signIn({ user, account, profile }) {
       console.log('SignIn - Provider:', account?.provider, 'User:', user?.name);
+      console.log('Account:', account);
+      console.log('Profile:', profile);
       
       // สำหรับ LINE OAuth ให้จัดการ error
       if (account?.provider === 'line') {
@@ -144,6 +146,14 @@ const handler = NextAuth({
     },
     async redirect({ url, baseUrl }) {
       console.log('Redirect - URL:', url, 'Base URL:', baseUrl);
+      console.log('URL includes line.me:', url.includes('line.me'));
+      console.log('URL includes access.line.me:', url.includes('access.line.me'));
+      
+      // ถ้าเป็น LINE OAuth URL ให้ redirect ไป LINE
+      if (url.includes('access.line.me') || url.includes('line.me')) {
+        console.log('LINE OAuth URL detected, redirecting to LINE');
+        return url;
+      }
       
       // จัดการ error URLs
       if (url.includes('error=')) {
@@ -163,6 +173,7 @@ const handler = NextAuth({
         return `${baseUrl}/dashboard`;
       }
       
+      console.log('Default redirect to:', url);
       return url;
     },
     async session({ session, token }) {
