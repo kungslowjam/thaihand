@@ -21,6 +21,9 @@ const providers = [
         scope: 'profile openid email',
       },
     },
+    httpOptions: {
+      timeout: 30000, // เพิ่ม timeout เป็น 30 วินาที
+    },
   }),
 ];
 
