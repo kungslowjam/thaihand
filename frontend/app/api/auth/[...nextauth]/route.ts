@@ -157,10 +157,16 @@ const handler = NextAuth({
     async redirect({ url, baseUrl }) {
       console.log('REDIRECT CALLBACK - URL:', url, 'Base URL:', baseUrl);
       
+      // ตรวจสอบว่า baseUrl ถูกต้อง (ต้องเป็น https://thaihand.shop)
+      if (baseUrl !== 'https://thaihand.shop') {
+        console.log('REDIRECT ERROR - Invalid baseUrl:', baseUrl);
+        return 'https://thaihand.shop/dashboard';
+      }
+      
       // ถ้าเป็น OAuth callback ให้ไป dashboard (ทั้ง Google และ LINE)
       if (url.includes('/api/auth/callback/')) {
         console.log('OAUTH CALLBACK - Redirecting to dashboard');
-        return baseUrl + '/dashboard';
+        return 'https://thaihand.shop/dashboard';
       }
       
       // ถ้าเป็น OAuth signin ให้อนุญาต (ทั้ง Google และ LINE)
@@ -172,7 +178,13 @@ const handler = NextAuth({
       // ถ้าเป็น internal URL ให้ไป dashboard
       if (url.startsWith(baseUrl)) {
         console.log('INTERNAL URL - Redirecting to dashboard');
-        return baseUrl + '/dashboard';
+        return 'https://thaihand.shop/dashboard';
+      }
+      
+      // ถ้า URL มี localhost ให้เปลี่ยนเป็น thaihand.shop
+      if (url.includes('localhost')) {
+        console.log('REDIRECT FIX - Replacing localhost with thaihand.shop');
+        return url.replace('localhost:3000', 'thaihand.shop').replace('http://', 'https://');
       }
       
       console.log('EXTERNAL URL - Allowing redirect');
