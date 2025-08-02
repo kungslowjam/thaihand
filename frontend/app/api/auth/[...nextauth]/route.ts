@@ -17,6 +17,14 @@ declare module "next-auth" {
   }
 }
 
+// Dynamic URL detection
+const getBaseUrl = () => {
+  if (process.env.NEXT_PUBLIC_FORCE_DOMAIN) return process.env.NEXT_PUBLIC_FORCE_DOMAIN;
+  if (process.env.NEXTAUTH_URL) return process.env.NEXTAUTH_URL;
+  if (process.env.NODE_ENV === 'production') return 'https://thaihand.shop';
+  return 'http://localhost:3000';
+};
+
 const handler = NextAuth({
   providers: [
     GoogleProvider({
@@ -57,25 +65,35 @@ const handler = NextAuth({
     async redirect({ url, baseUrl }) {
       console.log('Redirect - URL:', url, 'Base URL:', baseUrl);
       
+      // ใช้ dynamic base URL
+      const dynamicBaseUrl = getBaseUrl();
+      console.log('Dynamic Base URL:', dynamicBaseUrl);
+      
       // จัดการ error URLs
       if (url.includes('error=')) {
         console.log('OAuth Error detected, redirecting to login');
-        return `${baseUrl}/login?error=OAuthSignin&message=เกิดข้อผิดพลาดในการเข้าสู่ระบบ`;
+        return `${dynamicBaseUrl}/login?error=OAuthSignin&message=เกิดข้อผิดพลาดในการเข้าสู่ระบบ`;
       }
       
       // ถ้าเป็น callback ให้ไป dashboard
       if (url.includes('/api/auth/callback/')) {
         console.log('OAuth Callback detected, redirecting to dashboard');
-        return `${baseUrl}/dashboard`;
+        return `${dynamicBaseUrl}/dashboard`;
       }
       
-      // ถ้าเป็น internal URL ให้ไป dashboard
-      if (url.startsWith(baseUrl)) {
+      // ถ้าเป็น internal URL หรือ relative URL
+      if (url.startsWith('/') || url.startsWith(baseUrl) || url.startsWith(dynamicBaseUrl)) {
         console.log('Internal URL detected, redirecting to dashboard');
-        return `${baseUrl}/dashboard`;
+        return `${dynamicBaseUrl}/dashboard`;
       }
       
-      return url;
+      // ถ้าเป็น localhost หรือ production URL ให้ไป dashboard
+      if (url.includes('localhost:3000') || url.includes('thaihand.shop')) {
+        console.log('Domain URL detected, redirecting to dashboard');
+        return `${dynamicBaseUrl}/dashboard`;
+      }
+      
+      return `${dynamicBaseUrl}/dashboard`; // default fallback
     },
     async session({ session, token }) {
       // เพิ่ม user ID, provider และ accessToken เข้า session
