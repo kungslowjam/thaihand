@@ -18,6 +18,7 @@ ALLOWED_ORIGINS=http://localhost:3000,https://thaihand.shop,https://www.thaihand
 
 # Frontend Configuration
 NEXT_PUBLIC_API_URL=https://thaihand.shop/api
+NEXT_PUBLIC_BACKEND_URL=https://thaihand.shop
 NEXTAUTH_URL=https://thaihand.shop
 
 # Supabase Configuration
