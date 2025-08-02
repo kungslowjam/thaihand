@@ -19,9 +19,10 @@ const providers = [
     authorization: {
       url: "https://access.line.me/oauth2/v2.1/authorize",
       params: {
-        scope: 'profile openid',
+        scope: 'profile openid email',
         response_type: 'code',
         state: 'random_state_string',
+        redirect_uri: 'https://thaihand.shop/api/auth/callback/line',
       },
     },
     token: {
@@ -126,6 +127,12 @@ const handler = NextAuth({
       if (url.includes('localhost')) {
         console.log('REDIRECT FIX - Replacing localhost with production URL');
         url = url.replace('localhost', 'thaihand.shop');
+      }
+      
+      // จัดการ OAuthCallback error
+      if (url.includes('error=OAuthCallback')) {
+        console.log('OAUTH CALLBACK ERROR - Redirecting to login with error');
+        return baseUrl + '/login?error=OAuthCallback&message=เกิดข้อผิดพลาดในการ callback จาก LINE';
       }
       
       // ถ้าเป็น OAuth callback ให้ไป dashboard
