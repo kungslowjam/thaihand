@@ -32,19 +32,6 @@ const getBaseUrl = () => {
 const lineProvider = LineProvider({
   clientId: process.env.LINE_CLIENT_ID!,
   clientSecret: process.env.LINE_CLIENT_SECRET!,
-  authorization: {
-    url: "https://access.line.me/oauth2/v2.1/authorize",
-    params: {
-      scope: "profile openid",
-      response_type: "code",
-    }
-  },
-  token: {
-    url: "https://api.line.me/oauth2/v2.1/token",
-  },
-  userinfo: {
-    url: "https://api.line.me/v2/profile",
-  },
 });
 
 const handler = NextAuth({
@@ -83,6 +70,9 @@ const handler = NextAuth({
       console.log('Profile:', profile);
       console.log('Environment - NEXTAUTH_URL:', process.env.NEXTAUTH_URL);
       console.log('Environment - NODE_ENV:', process.env.NODE_ENV);
+      console.log('getBaseUrl():', getBaseUrl());
+      console.log('LINE_CLIENT_ID:', process.env.LINE_CLIENT_ID);
+      console.log('LINE_CLIENT_SECRET:', process.env.LINE_CLIENT_SECRET ? '***' : 'NOT_SET');
       
       // สำหรับ LINE OAuth ให้จัดการ error
       if (account?.provider === 'line') {
