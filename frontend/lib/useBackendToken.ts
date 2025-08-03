@@ -35,7 +35,7 @@ export function useBackendToken() {
       console.log("myUserId", (session as any)?.user?.id);
       
       // Use environment variable for API URL
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || '/api';
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://thaihand.shop/api';
       console.log("API URL:", apiUrl);
       
       fetch(`${apiUrl}/auth/exchange`, {

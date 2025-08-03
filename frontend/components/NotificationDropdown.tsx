@@ -65,11 +65,8 @@ export default function NotificationDropdown() {
     
     // ตรวจสอบว่า email พร้อมหรือไม่
     if (!email) {
-      console.log("[DEBUG] No email available for longpoll");
       return;
     }
-    
-    console.log("[DEBUG] userEmail for longpoll:", email);
     
     async function poll() {
       while (!cancelled && email && hasFetchedInitial) { // เพิ่มเงื่อนไข hasFetchedInitial
@@ -93,6 +90,9 @@ export default function NotificationDropdown() {
               }
             });
           }
+          
+          // เพิ่ม delay ระหว่าง calls เพื่อลดการเรียกใช้อย่างต่อเนื่อง
+          await new Promise(resolve => setTimeout(resolve, 3000));
         } catch (e) { 
           console.error("[DEBUG] longpoll error", e); 
           // เพิ่ม delay เมื่อเกิด error เพื่อไม่ให้เรียกใช้อย่างต่อเนื่อง
