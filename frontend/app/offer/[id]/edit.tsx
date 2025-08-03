@@ -51,17 +51,25 @@ export default function EditOfferPage() {
     const fetchOffer = async () => {
       try {
         setLoading(true);
+        console.log('Fetching offer with ID:', id);
+        console.log('Backend token:', backendToken ? 'exists' : 'missing');
+        
         const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || '/api'}/offers/${id}`, {
           headers: {
             "Authorization": `Bearer ${backendToken}`
           }
         });
         
+        console.log('Response status:', response.status);
+        
         if (!response.ok) {
-          throw new Error('ไม่สามารถดึงข้อมูลได้');
+          const errorData = await response.json();
+          console.error('API Error:', errorData);
+          throw new Error(errorData.detail || 'ไม่สามารถดึงข้อมูลได้');
         }
         
         const data = await response.json();
+        console.log('Offer data:', data);
         
         // แปลง rates จาก JSON string เป็น array
         let rates = [];

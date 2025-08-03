@@ -183,9 +183,20 @@ def get_my_orders(db: Session, user_id: int):
                 print(f"Error: user_id '{user_id}' cannot be converted to int")
                 return []
         
-        requests = db.query(models.Request).filter(models.Request.user_id == user_id).all()
-        # ตรวจสอบและแก้ไขข้อมูลที่ไม่สมเหตุสมผล
-        for request in requests:
+        # ใช้ raw SQL query เพื่อหลีกเลี่ยงปัญหา field status
+        from sqlalchemy import text
+        result = db.execute(text("SELECT * FROM requests WHERE user_id = :user_id"), {"user_id": user_id})
+        requests = []
+        
+        for row in result:
+            request_dict = dict(row._mapping)
+            # สร้าง Request object จาก dictionary
+            request = models.Request()
+            for key, value in request_dict.items():
+                if hasattr(request, key):
+                    setattr(request, key, value)
+            
+            # ตรวจสอบและแก้ไขข้อมูลที่ไม่สมเหตุสมผล
             # ตรวจสอบ budget
             if hasattr(request, 'budget') and (request.budget is None or request.budget <= 0):
                 request.budget = None
@@ -203,28 +214,19 @@ def get_my_orders(db: Session, user_id: int):
                 request.from_location = "ไม่ระบุ"
             if not request.to_location or request.to_location.strip() == "":
                 request.to_location = "ไม่ระบุ"
+            
+            # เพิ่ม status ถ้าไม่มี
+            if not hasattr(request, 'status') or not request.status:
+                request.status = "รออนุมัติ"
+            
+            requests.append(request)
         
         return requests
     except Exception as e:
         print(f"Error in get_my_orders: {e}")
-        # ถ้าเกิด error เพราะ field status ยังไม่มี ให้ query โดยไม่ใช้ field status
-        try:
-            # Query แบบ manual โดยไม่ใช้ field status
-            from sqlalchemy import text
-            result = db.execute(text("SELECT * FROM requests WHERE user_id = :user_id"), {"user_id": user_id})
-            requests = []
-            for row in result:
-                request_dict = dict(row._mapping)
-                # สร้าง Request object จาก dictionary
-                request = models.Request()
-                for key, value in request_dict.items():
-                    if hasattr(request, key):
-                        setattr(request, key, value)
-                requests.append(request)
-            return requests
-        except Exception as e2:
-            print(f"Error in fallback get_my_orders: {e2}")
-            return []
+        import traceback
+        print(traceback.format_exc())
+        return []
 
 def get_my_carry_orders(db: Session, user_id: int):
     try:

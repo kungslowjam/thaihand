@@ -15,12 +15,19 @@ export default function MyOrdersPage() {
 
   useEffect(() => {
     if (session?.accessToken && session?.user?.email) {
+      console.log('Fetching orders for email:', session.user.email);
+      console.log('Session token exists:', !!session.accessToken);
+      
       fetch(`${process.env.NEXT_PUBLIC_API_URL || '/api'}/my-orders?email=${session.user.email}`, {
         headers: { "Authorization": `Bearer ${session.accessToken}` }
       })
         .then(async (res) => {
+          console.log('Response status:', res.status);
+          console.log('Response headers:', Object.fromEntries(res.headers.entries()));
+          
           if (!res.ok) {
             const errorData = await res.json();
+            console.error('API Error:', errorData);
             throw new Error(errorData.detail || 'เกิดข้อผิดพลาดในการดึงข้อมูล');
           }
           return res.json();
@@ -43,6 +50,7 @@ export default function MyOrdersPage() {
           setLoading(false);
         });
     } else {
+      console.log('No session or email available');
       setLoading(false);
     }
   }, [session]);

@@ -253,10 +253,16 @@ def create_offer(offer: schemas.OfferCreate, db: Session = Depends(get_db), user
 
 @router.get("/offers/{offer_id}", response_model=schemas.OfferOut)
 def read_offer(offer_id: int, db: Session = Depends(get_db)):
-    db_offer = crud.get_offer(db, offer_id)
-    if db_offer is None:
-        raise HTTPException(status_code=404, detail="Offer not found")
-    return db_offer
+    try:
+        db_offer = crud.get_offer(db, offer_id)
+        if db_offer is None:
+            raise HTTPException(status_code=404, detail="Offer not found")
+        return db_offer
+    except Exception as e:
+        print(f"Error in read_offer: {e}")
+        import traceback
+        print(traceback.format_exc())
+        raise HTTPException(status_code=500, detail="เกิดข้อผิดพลาดภายในเซิร์ฟเวอร์")
 
 @router.put("/offers/{offer_id}", response_model=schemas.OfferOut)
 def update_offer(offer_id: int, offer: schemas.OfferUpdate, db: Session = Depends(get_db), user=Depends(verify_jwt_token)):
