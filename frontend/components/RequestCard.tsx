@@ -201,9 +201,9 @@ export default function RequestCard({
               <Package className="h-5 w-5 text-indigo-400" />
               {request.title || 'สินค้าทั่วไป'}
             </h3>
-            <Badge className="bg-gradient-to-r from-indigo-200 to-indigo-400 text-indigo-800 px-2 py-0.5 text-xs rounded-full flex items-center gap-1">
-              <Plane className="h-3 w-3" />
-              {request.offer_id ? 'รับหิ้ว' : 'ฝากหิ้ว'}
+            <Badge className="bg-gradient-to-r from-pink-200 to-purple-400 text-purple-800 px-2 py-0.5 text-xs rounded-full flex items-center gap-1 shadow-sm">
+              <Package className="h-3 w-3" />
+              ฝากหิ้ว
             </Badge>
           </div>
         </div>
@@ -212,16 +212,16 @@ export default function RequestCard({
         <div className="mb-4">
           <div className="flex items-center gap-2 text-sm text-gray-600 mb-2">
             <MapPin className="h-4 w-4 text-blue-400" />
-            <span>{shortenLocation(request.from_location)} → {shortenLocation(request.to_location)}</span>
+            <span className="font-medium">{shortenLocation(request.from_location)} → {shortenLocation(request.to_location)}</span>
           </div>
           <div className="flex items-center gap-4 text-xs text-gray-500">
-            <span className="flex items-center gap-1">
-              <Calendar className="h-3 w-3" />
+            <span className="flex items-center gap-1 bg-blue-50 px-2 py-1 rounded-full">
+              <Calendar className="h-3 w-3 text-blue-500" />
               บิน {formatDate(request.deadline)}
             </span>
             {request.close_date && (
-              <span className="flex items-center gap-1">
-                <Clock className="h-3 w-3" />
+              <span className="flex items-center gap-1 bg-orange-50 px-2 py-1 rounded-full">
+                <Clock className="h-3 w-3 text-orange-500" />
                 ปิดรับ {formatDate(request.close_date)}
               </span>
             )}
@@ -230,22 +230,23 @@ export default function RequestCard({
 
         {/* Price and Budget */}
         <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 bg-gradient-to-r from-green-50 to-emerald-50 px-3 py-2 rounded-lg">
             <BadgeDollarSign className="h-5 w-5 text-green-500" />
             <span className="text-green-700 dark:text-green-300 font-bold text-lg">
               {formatPrice(request.budget)} บาท
             </span>
           </div>
           {request.weight && (
-            <Badge variant="outline" className="text-xs">
+            <Badge variant="outline" className="text-xs bg-white shadow-sm">
+              <Package className="h-3 w-3 mr-1" />
               น้ำหนัก: {request.weight} กก.
             </Badge>
           )}
         </div>
 
         {/* User Information */}
-        <div className="flex items-center gap-3 mb-4 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
-          <div className="w-10 h-10 rounded-full bg-gradient-to-r from-blue-400 to-purple-500 flex items-center justify-center text-white font-bold">
+        <div className="flex items-center gap-3 mb-4 p-4 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-gray-800 dark:to-gray-700 rounded-xl border border-blue-100 dark:border-gray-600">
+          <div className="w-12 h-12 rounded-full bg-gradient-to-r from-blue-400 to-purple-500 flex items-center justify-center text-white font-bold shadow-lg">
             {request.user_image ? (
               <img 
                 src={request.user_image} 
@@ -253,24 +254,24 @@ export default function RequestCard({
                 className="w-full h-full rounded-full object-cover"
               />
             ) : (
-              <User className="h-5 w-5" />
+              <User className="h-6 w-6" />
             )}
           </div>
           <div className="flex-1">
-            <div className="font-semibold text-sm text-gray-900 dark:text-white">
+            <div className="font-semibold text-sm text-gray-900 dark:text-white flex items-center gap-2">
               {request.user || 'ไม่ระบุชื่อ'}
+              <Shield className="h-3 w-3 text-green-500" />
             </div>
             {request.rating && (
-              <div className="flex items-center gap-1 text-xs text-gray-500">
+              <div className="flex items-center gap-1 text-xs text-gray-500 mt-1">
                 <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
-                <span>{request.rating}</span>
+                <span className="font-medium">{request.rating}</span>
                 {request.review_count && (
-                  <span>({request.review_count} รีวิว)</span>
+                  <span className="text-gray-400">({request.review_count} รีวิว)</span>
                 )}
               </div>
             )}
           </div>
-          <Shield className="h-4 w-4 text-green-500" title="ยืนยันตัวตนแล้ว" />
         </div>
 
         {/* Description */}
@@ -284,15 +285,15 @@ export default function RequestCard({
 
         {/* Payment and Shipping Status */}
         <div className="grid grid-cols-2 gap-3 mb-4">
-          <div className="flex items-center gap-2 text-xs">
-            <CreditCard className="h-3 w-3 text-blue-400" />
-            <span className="text-gray-600">
+          <div className="flex items-center gap-2 text-xs bg-blue-50 px-2 py-1 rounded-lg">
+            <CreditCard className="h-3 w-3 text-blue-500" />
+            <span className="text-gray-700 font-medium">
               {request.payment_status || 'รอชำระเงิน'}
             </span>
           </div>
-          <div className="flex items-center gap-2 text-xs">
-            <Truck className="h-3 w-3 text-green-400" />
-            <span className="text-gray-600">
+          <div className="flex items-center gap-2 text-xs bg-green-50 px-2 py-1 rounded-lg">
+            <Truck className="h-3 w-3 text-green-500" />
+            <span className="text-gray-700 font-medium">
               {request.shipping_status || 'รอจัดส่ง'}
             </span>
           </div>
@@ -306,7 +307,7 @@ export default function RequestCard({
                 <Button
                   size="sm"
                   variant="outline"
-                  className="flex-1 flex items-center gap-2"
+                  className="flex-1 flex items-center gap-2 bg-white hover:bg-gray-50 border-gray-200"
                   onClick={() => onView?.(request.id)}
                 >
                   <Eye className="h-4 w-4" />
@@ -315,11 +316,11 @@ export default function RequestCard({
                 <Button
                   size="sm"
                   variant="default"
-                  className="flex items-center gap-2"
+                  className="flex items-center gap-2 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white shadow-lg hover:shadow-xl transition-all duration-200"
                   onClick={() => onContact?.(request.id)}
                 >
                   <MessageCircle className="h-4 w-4" />
-                  ติดต่อ
+                  ฝากหิ้ว
                 </Button>
               </>
             )}
@@ -375,9 +376,15 @@ export default function RequestCard({
         {/* Footer Information */}
         <div className="mt-4 pt-3 border-t border-gray-200 dark:border-gray-700">
           <div className="flex items-center justify-between text-xs text-gray-500">
-            <span>สร้างเมื่อ {formatDate(request.created_at || '')}</span>
+            <span className="flex items-center gap-1">
+              <Calendar className="h-3 w-3" />
+              สร้างเมื่อ {formatDate(request.created_at || '')}
+            </span>
             {request.updated_at && request.updated_at !== request.created_at && (
-              <span>อัปเดต {formatDate(request.updated_at)}</span>
+              <span className="flex items-center gap-1">
+                <Clock className="h-3 w-3" />
+                อัปเดต {formatDate(request.updated_at)}
+              </span>
             )}
           </div>
         </div>
