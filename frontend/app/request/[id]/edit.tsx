@@ -45,17 +45,25 @@ export default function EditRequestPage() {
     const fetchRequest = async () => {
       try {
         setLoading(true);
+        console.log('Fetching request with ID:', id);
+        console.log('Backend token:', backendToken ? 'exists' : 'missing');
+        
         const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || '/api'}/requests/${id}`, {
           headers: {
             "Authorization": `Bearer ${backendToken}`
           }
         });
         
+        console.log('Response status:', response.status);
+        
         if (!response.ok) {
-          throw new Error('ไม่สามารถดึงข้อมูลได้');
+          const errorData = await response.json();
+          console.error('API Error:', errorData);
+          throw new Error(errorData.detail || 'ไม่สามารถดึงข้อมูลได้');
         }
         
         const data = await response.json();
+        console.log('Request data:', data);
         setForm({
           title: data.title || "",
           fromLocation: data.from_location || "",

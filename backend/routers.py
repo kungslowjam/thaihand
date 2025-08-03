@@ -158,10 +158,19 @@ def create_request(request: schemas.RequestCreate, db: Session = Depends(get_db)
 
 @router.get("/requests/{request_id}", response_model=schemas.RequestOut)
 def read_request(request_id: int, db: Session = Depends(get_db)):
-    db_request = crud.get_request(db, request_id)
-    if db_request is None:
-        raise HTTPException(status_code=404, detail="Request not found")
-    return db_request
+    try:
+        print(f"DEBUG_READ_REQUEST: Looking for request_id = {request_id}")
+        db_request = crud.get_request(db, request_id)
+        print(f"DEBUG_READ_REQUEST: Found request = {db_request}")
+        if db_request is None:
+            print(f"DEBUG_READ_REQUEST: Request {request_id} not found")
+            raise HTTPException(status_code=404, detail="Request not found")
+        return db_request
+    except Exception as e:
+        print(f"Error in read_request: {e}")
+        import traceback
+        print(traceback.format_exc())
+        raise HTTPException(status_code=500, detail="เกิดข้อผิดพลาดภายในเซิร์ฟเวอร์")
 
 @router.put("/requests/{request_id}", response_model=schemas.RequestOut)
 def update_request(request_id: int, request: schemas.RequestUpdate, db: Session = Depends(get_db), user=Depends(verify_jwt_token)):
