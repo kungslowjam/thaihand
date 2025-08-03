@@ -17,6 +17,18 @@ import { useBackendToken } from "@/lib/useBackendToken";
 // เพิ่ม mock data สำหรับรับหิ้ว (offers)
 // ลบ mockOffers
 
+// ฟังก์ชันย่อชื่อสถานที่
+function shortenLocation(location: string) {
+  if (!location) return "";
+  const parts = location.split(',');
+  if (parts.length >= 2) {
+    const city = parts[0].trim();
+    const country = parts[parts.length - 1].trim();
+    return `${city}, ${country}`;
+  }
+  return location;
+}
+
 // เพิ่มฟังก์ชัน hook สำหรับขนาดหน้าจอ
 function useGridColumns() {
   const [columns, setColumns] = useState(1);
@@ -238,7 +250,11 @@ export default function MarketplacePage() {
                   {/* ชื่อสินค้า */}
                   <div className="font-bold text-lg text-gray-900 dark:text-white mb-1 truncate flex items-center gap-2">
                     <Plane className="h-5 w-5 text-indigo-400" />
-                    {req.routeFrom} → {req.routeTo}
+                    {req.title || "สินค้าทั่วไป"}
+                  </div>
+                  {/* เส้นทาง */}
+                  <div className="text-sm text-gray-500 mb-1">
+                    {shortenLocation(req.routeFrom)} → {shortenLocation(req.routeTo)}
                   </div>
                   {/* badge ประเภท/สถานะ */}
                   <div className="flex gap-2 mb-2">
@@ -282,7 +298,12 @@ export default function MarketplacePage() {
                     {/* ธงชาติแบบ flex row ไม่ absolute */}
                     <img src={`https://flagcdn.com/48x36/${offer.routeFrom?.split(',').pop()?.trim().toLowerCase()}.png`} alt="" className="w-7 h-7 rounded-full border-2 border-white shadow" />
                     <img src={`https://flagcdn.com/48x36/${offer.routeTo?.split(',').pop()?.trim().toLowerCase()}.png`} alt="" className="w-7 h-7 rounded-full border-2 border-white shadow -ml-2" />
-                    <div className="ml-2 flex-1 truncate font-bold text-lg text-gray-900">{offer.routeFrom} → {offer.routeTo}</div>
+                    <div className="ml-2 flex-1 truncate font-bold text-lg text-gray-900">
+                      {offer.title || "สินค้าทั่วไป"} 
+                      <span className="text-sm text-gray-500 font-normal block">
+                        {shortenLocation(offer.routeFrom)} → {shortenLocation(offer.routeTo)}
+                      </span>
+                    </div>
                     {offer.urgent === "true" && (
                       <span className="ml-auto bg-gradient-to-r from-pink-400 to-pink-600 text-white rounded-full px-3 py-0.5 text-xs font-semibold shadow flex items-center gap-1">
                         <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 2v2m6.364 1.636l-1.414 1.414M22 12h-2m-1.636 6.364l-1.414-1.414M12 22v-2m-6.364-1.636l1.414-1.414M2 12h2m1.636-6.364l1.414 1.414" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
@@ -340,7 +361,8 @@ export default function MarketplacePage() {
         <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50 animate-fade-in">
           <div className="bg-white/90 dark:bg-gray-900/90 rounded-2xl p-8 max-w-md w-full shadow-2xl relative animate-fade-in border border-blue-100 dark:border-blue-900 scale-95 animate-modal-in">
             <button className="absolute top-3 right-3 rounded-full bg-gray-100 dark:bg-gray-800 hover:bg-pink-200 dark:hover:bg-pink-900 p-2 transition" onClick={() => setSelectedRequest(null)}><X className="w-5 h-5 text-gray-400" /></button>
-            <h2 className="text-xl font-bold mb-2 text-gray-900 dark:text-white">{selectedRequest.routeFrom} → {selectedRequest.routeTo}</h2>
+            <h2 className="text-xl font-bold mb-2 text-gray-900 dark:text-white">{selectedRequest.title || "สินค้าทั่วไป"}</h2>
+            <p className="text-sm text-gray-500 mb-2">{shortenLocation(selectedRequest.routeFrom)} → {shortenLocation(selectedRequest.routeTo)}</p>
             <img src={selectedRequest.image} className="w-full h-40 object-cover rounded mb-3" />
             <div className="border-b border-gray-200 dark:border-gray-700 mb-3" />
             <div className="space-y-1">
@@ -370,6 +392,7 @@ export default function MarketplacePage() {
                 <span className="text-gray-400 text-xl">✕</span>
               </button>
               <h2 className="text-2xl font-bold mb-6 text-center text-blue-700">รับหิ้วสินค้า</h2>
+              <p className="text-sm text-gray-500 mb-4 text-center">กรุณากรอกข้อมูลสินค้าที่ต้องการรับหิ้ว</p>
               <form onSubmit={async e => {
                 e.preventDefault();
                 try {
@@ -385,12 +408,12 @@ export default function MarketplacePage() {
                       "Authorization": `Bearer ${backendToken}`
                     },
                     body: JSON.stringify({
-                      title: requestForm.itemName,
+                      title: requestForm.itemName || "สินค้าทั่วไป",
                       from_location: "", // เพิ่มค่าจริงตามที่ต้องการ
                       to_location: "",   // เพิ่มค่าจริงตามที่ต้องการ
                       deadline: "",      // เพิ่มค่าจริงตามที่ต้องการ
-                      budget: 0,          // เพิ่มค่าจริงตามที่ต้องการ
-                      description: requestForm.note,
+                      budget: parseInt(requestForm.amount) || 0,
+                      description: requestForm.note || "ไม่มีรายละเอียดเพิ่มเติม",
                       image: requestForm.image,
                       offer_id: openRequestModal ? parseInt(openRequestModal) : undefined,
                       source: "marketplace"
@@ -425,7 +448,7 @@ export default function MarketplacePage() {
                 </div>
                 <div>
                   <label className="block text-sm font-semibold mb-1">ชื่อสินค้า</label>
-                  <Input placeholder="ชื่อสินค้า" className="rounded-xl border px-3 py-2" value={requestForm.itemName} onChange={e => setRequestForm(f => ({ ...f, itemName: e.target.value }))} required />
+                  <Input placeholder="เช่น ไดฟูกุ, ช็อกโกแลต, เสื้อผ้า" className="rounded-xl border px-3 py-2" value={requestForm.itemName} onChange={e => setRequestForm(f => ({ ...f, itemName: e.target.value }))} required />
                 </div>
                 <div className="flex gap-3">
                   <div className="flex-1">
