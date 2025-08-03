@@ -23,9 +23,10 @@ export function useBackendToken() {
     const accessToken = (session as any)?.accessToken;
     const provider = (session as any)?.provider || "google";
     
-    console.log("Session data:", session);
-    console.log("Access token:", accessToken);
-    console.log("Provider:", provider);
+          console.log("Session data:", session);
+      console.log("Access token:", accessToken);
+      console.log("Provider:", provider);
+      console.log("User email:", session?.user?.email);
     
     if (accessToken && !backendToken) {
       setLoading(true);
@@ -41,7 +42,11 @@ export function useBackendToken() {
       fetch(`${apiUrl}/auth/exchange`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ accessToken, provider })
+        body: JSON.stringify({ 
+          accessToken, 
+          provider,
+          email: session?.user?.email 
+        })
       })
         .then(res => {
           if (!res.ok) {

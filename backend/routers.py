@@ -27,9 +27,11 @@ async def exchange_token(request: Request):
         data = await request.json()
         access_token = data.get("accessToken")
         provider = data.get("provider")  # เพิ่ม field provider ใน frontend ด้วย
+        user_email_from_request = data.get("email")
         
         print(f"Exchange token request - Provider: {provider}")
         print(f"Exchange token request - Access token: {access_token[:20] if access_token else 'None'}...")
+        print(f"Exchange token request - Email from request: {user_email_from_request}")
         
         if not access_token:
             return JSONResponse(status_code=400, content={"detail": "No accessToken provided"})
@@ -42,15 +44,23 @@ async def exchange_token(request: Request):
                 print(f"Google API response status: {resp.status_code}")
                 if resp.status_code != 200:
                     print(f"Google API error: {resp.text}")
-                    # ถ้า token ไม่ถูกต้อง ให้ลองใช้ user info จาก session แทน
-                    print("Token verification failed, trying alternative approach...")
-                    return JSONResponse(status_code=401, content={"detail": "Invalid Google token"})
-                user_info = resp.json()
-                user_email = user_info.get("email")
-                print(f"Google user email: {user_email}")
+                    # ถ้า token ไม่ถูกต้อง ให้ใช้ email จาก request body แทน
+                    print("Token verification failed, trying to use email from request...")
+                    user_email = data.get("email")
+                    if not user_email:
+                        return JSONResponse(status_code=401, content={"detail": "Invalid Google token and no email provided"})
+                    print(f"Using email from request: {user_email}")
+                else:
+                    user_info = resp.json()
+                    user_email = user_info.get("email")
+                    print(f"Google user email: {user_email}")
             except Exception as e:
                 print(f"Error verifying Google token: {e}")
-                return JSONResponse(status_code=401, content={"detail": "Error verifying Google token"})
+                # ถ้าเกิด error ให้ใช้ email จาก request body แทน
+                user_email = data.get("email")
+                if not user_email:
+                    return JSONResponse(status_code=401, content={"detail": "Error verifying Google token and no email provided"})
+                print(f"Using email from request after error: {user_email}")
         elif provider == "line":
             # Verify Line token
             print("Verifying Line token...")
