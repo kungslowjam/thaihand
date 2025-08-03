@@ -1,13 +1,31 @@
 import React from 'react';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Progress } from '@/components/progress';
 import { 
   Plane, 
+  User, 
+  Calendar, 
+  BadgeDollarSign, 
+  Star, 
+  MessageCircle, 
   MapPin, 
+  Clock, 
+  Package, 
   Phone, 
-  FileText,
-  Star
+  Mail, 
+  Eye,
+  Edit,
+  Trash2,
+  CheckCircle,
+  XCircle,
+  AlertCircle,
+  Truck,
+  CreditCard,
+  Shield,
+  Heart,
+  Share2
 } from 'lucide-react';
 
 interface RequestCardProps {
@@ -41,8 +59,6 @@ interface RequestCardProps {
     shipping_status?: string;
     rating?: number;
     review_count?: number;
-    pickup_place?: string;
-    contact?: string;
   };
   mode?: 'view' | 'edit' | 'manage';
   onView?: (id: number) => void;
@@ -72,10 +88,41 @@ export default function RequestCard({
   showActions = true
 }: RequestCardProps) {
   
+  // ฟังก์ชันช่วยเหลือ
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'รออนุมัติ': return 'bg-yellow-100 text-yellow-700';
+      case 'อนุมัติ': return 'bg-blue-100 text-blue-700';
+      case 'ปฏิเสธ': return 'bg-red-100 text-red-700';
+      case 'สำเร็จ': return 'bg-green-100 text-green-700';
+      case 'ยกเลิก': return 'bg-gray-100 text-gray-700';
+      default: return 'bg-gray-100 text-gray-700';
+    }
+  };
+
+  const getStatusIcon = (status: string) => {
+    switch (status) {
+      case 'รออนุมัติ': return <Clock className="h-4 w-4" />;
+      case 'อนุมัติ': return <CheckCircle className="h-4 w-4" />;
+      case 'ปฏิเสธ': return <XCircle className="h-4 w-4" />;
+      case 'สำเร็จ': return <CheckCircle className="h-4 w-4" />;
+      case 'ยกเลิก': return <XCircle className="h-4 w-4" />;
+      default: return <AlertCircle className="h-4 w-4" />;
+    }
+  };
+
   const formatDate = (dateString: string) => {
     if (!dateString) return '-';
     const date = new Date(dateString);
-    return date.toISOString().split('T')[0]; // Return YYYY-MM-DD format
+    return date.toLocaleDateString('th-TH', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
+    });
+  };
+
+  const formatPrice = (price: number) => {
+    return new Intl.NumberFormat('th-TH').format(price);
   };
 
   const shortenLocation = (location: string) => {
@@ -89,108 +136,252 @@ export default function RequestCard({
     return location;
   };
 
-  const getCountryCode = (location: string) => {
-    if (!location) return 'us';
-    const parts = location.split(',');
-    const country = parts[parts.length - 1]?.trim().toLowerCase();
-    
-    // Map country names to country codes
-    const countryMap: { [key: string]: string } = {
-      'thailand': 'th',
-      'thai': 'th',
-      'australia': 'au',
-      'australian': 'au',
-      'japan': 'jp',
-      'japanese': 'jp',
-      'singapore': 'sg',
-      'singaporean': 'sg',
-      'malaysia': 'my',
-      'malaysian': 'my',
-      'indonesia': 'id',
-      'indonesian': 'id',
-      'philippines': 'ph',
-      'filipino': 'ph',
-      'vietnam': 'vn',
-      'vietnamese': 'vn',
-      'cambodia': 'kh',
-      'cambodian': 'kh',
-      'laos': 'la',
-      'laotian': 'la',
-      'myanmar': 'mm',
-      'burmese': 'mm',
-      'brunei': 'bn',
-      'bruneian': 'bn',
-      'east timor': 'tl',
-      'timorese': 'tl'
-    };
-    
-    return countryMap[country] || 'us';
-  };
-
-  const fromCountryCode = getCountryCode(request.from_location);
-  const toCountryCode = getCountryCode(request.to_location);
-
   return (
-    <Card className="bg-white/90 dark:bg-gray-900/90 rounded-3xl shadow-2xl border-0 p-6 flex flex-col w-full max-w-[320px] mx-auto transition-transform hover:scale-105 hover:shadow-[0_8px_32px_rgba(80,80,200,0.15)] duration-200">
-      <div className="flex items-center gap-2 mb-4">
-        {/* ธงชาติแบบ flex row ไม่ absolute */}
+    <Card className="overflow-hidden bg-white/90 dark:bg-gray-900/90 rounded-2xl shadow-xl border border-white/30 dark:border-gray-800 hover:shadow-2xl transition-all duration-300 hover:scale-[1.02]">
+      {/* Header with Image */}
+      <div className="relative">
         <img 
-          src={`https://flagcdn.com/48x36/${fromCountryCode}.png`} 
-          alt="" 
-          className="w-7 h-7 rounded-full border-2 border-white shadow" 
+          src={request.image || '/default-product.jpg'} 
+          alt={request.title}
+          className="w-full h-48 object-cover"
+          onError={(e) => {
+            e.currentTarget.src = '/default-product.jpg';
+          }}
         />
-        <img 
-          src={`https://flagcdn.com/48x36/${toCountryCode}.png`} 
-          alt="" 
-          className="w-7 h-7 rounded-full border-2 border-white shadow -ml-2" 
-        />
-        <div className="ml-2 flex-1 truncate font-bold text-lg text-gray-900">
-          {request.title || "สินค้าทั่วไป"} 
-          <span className="text-sm text-gray-500 font-normal block">
-            {shortenLocation(request.from_location)} → {shortenLocation(request.to_location)}
-          </span>
+        
+        {/* Status Badge */}
+        <div className="absolute top-3 left-3">
+          <Badge className={`${getStatusColor(request.status)} flex items-center gap-1`}>
+            {getStatusIcon(request.status)}
+            {request.status}
+          </Badge>
         </div>
-        {request.urgent && (
-          <span className="ml-auto bg-gradient-to-r from-pink-400 to-pink-600 text-white rounded-full px-3 py-0.5 text-xs font-semibold shadow flex items-center gap-1">
-            <Star className="w-3 h-3" />
-            ด่วน
-          </span>
+
+        {/* Action Buttons */}
+        <div className="absolute top-3 right-3 flex gap-2">
+          {request.urgent && (
+            <Badge className="bg-pink-100 text-pink-600 rounded-full px-2 py-1 text-xs flex items-center gap-1">
+              <Star className="w-3 h-3" />
+              ด่วน
+            </Badge>
+          )}
+          
+          {showActions && (
+            <>
+              <Button
+                size="sm"
+                variant="secondary"
+                className="rounded-full w-8 h-8 p-0 bg-white/90 dark:bg-gray-900/90 shadow"
+                onClick={() => onBookmark?.(request.id)}
+                title={isBookmarked ? 'ลบจากรายการโปรด' : 'เพิ่มในรายการโปรด'}
+              >
+                <Heart className={`w-4 h-4 ${isBookmarked ? 'fill-red-500 text-red-500' : 'text-gray-400'}`} />
+              </Button>
+              
+              <Button
+                size="sm"
+                variant="secondary"
+                className="rounded-full w-8 h-8 p-0 bg-white/90 dark:bg-gray-900/90 shadow"
+                onClick={() => onShare?.(request.id)}
+                title="แชร์"
+              >
+                <Share2 className="w-4 h-4 text-blue-400" />
+              </Button>
+            </>
+          )}
+        </div>
+      </div>
+
+      {/* Content */}
+      <CardContent className="p-6">
+        {/* Title and Type */}
+        <div className="flex items-start justify-between mb-3">
+          <div className="flex-1">
+            <h3 className="font-bold text-lg text-gray-900 dark:text-white mb-1 flex items-center gap-2">
+              <Package className="h-5 w-5 text-indigo-400" />
+              {request.title || 'สินค้าทั่วไป'}
+            </h3>
+            <Badge className="bg-gradient-to-r from-indigo-200 to-indigo-400 text-indigo-800 px-2 py-0.5 text-xs rounded-full flex items-center gap-1">
+              <Plane className="h-3 w-3" />
+              {request.offer_id ? 'รับหิ้ว' : 'ฝากหิ้ว'}
+            </Badge>
+          </div>
+        </div>
+
+        {/* Route Information */}
+        <div className="mb-4">
+          <div className="flex items-center gap-2 text-sm text-gray-600 mb-2">
+            <MapPin className="h-4 w-4 text-blue-400" />
+            <span>{shortenLocation(request.from_location)} → {shortenLocation(request.to_location)}</span>
+          </div>
+          <div className="flex items-center gap-4 text-xs text-gray-500">
+            <span className="flex items-center gap-1">
+              <Calendar className="h-3 w-3" />
+              บิน {formatDate(request.deadline)}
+            </span>
+            {request.close_date && (
+              <span className="flex items-center gap-1">
+                <Clock className="h-3 w-3" />
+                ปิดรับ {formatDate(request.close_date)}
+              </span>
+            )}
+          </div>
+        </div>
+
+        {/* Price and Budget */}
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-2">
+            <BadgeDollarSign className="h-5 w-5 text-green-500" />
+            <span className="text-green-700 dark:text-green-300 font-bold text-lg">
+              {formatPrice(request.budget)} บาท
+            </span>
+          </div>
+          {request.weight && (
+            <Badge variant="outline" className="text-xs">
+              น้ำหนัก: {request.weight} กก.
+            </Badge>
+          )}
+        </div>
+
+        {/* User Information */}
+        <div className="flex items-center gap-3 mb-4 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+          <div className="w-10 h-10 rounded-full bg-gradient-to-r from-blue-400 to-purple-500 flex items-center justify-center text-white font-bold">
+            {request.user_image ? (
+              <img 
+                src={request.user_image} 
+                alt={request.user || 'User'} 
+                className="w-full h-full rounded-full object-cover"
+              />
+            ) : (
+              <User className="h-5 w-5" />
+            )}
+          </div>
+          <div className="flex-1">
+            <div className="font-semibold text-sm text-gray-900 dark:text-white">
+              {request.user || 'ไม่ระบุชื่อ'}
+            </div>
+            {request.rating && (
+              <div className="flex items-center gap-1 text-xs text-gray-500">
+                <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
+                <span>{request.rating}</span>
+                {request.review_count && (
+                  <span>({request.review_count} รีวิว)</span>
+                )}
+              </div>
+            )}
+          </div>
+          <Shield className="h-4 w-4 text-green-500" title="ยืนยันตัวตนแล้ว" />
+        </div>
+
+        {/* Description */}
+        {request.description && (
+          <div className="mb-4">
+            <p className="text-sm text-gray-600 dark:text-gray-300 line-clamp-2">
+              {request.description}
+            </p>
+          </div>
         )}
-      </div>
-      
-      <div className="flex items-center text-xs text-gray-500 mb-2 gap-2">
-        <span>✈️ {formatDate(request.deadline)}</span>
-        <span>•</span>
-        <span>ปิดรับ {formatDate(request.close_date || request.deadline)}</span>
-      </div>
-      
-      <div className="flex items-center gap-2 mb-3">
-        <span className="text-indigo-700 font-bold text-xl">
-          {request.budget ? `${request.budget.toLocaleString()} บาท` : "-"}
-        </span>
-      </div>
-      
-      <div className="flex flex-col gap-1 text-sm text-gray-600 mb-3">
-        <div className="flex items-center gap-2">
-          <span className="text-blue-400">📍</span> 
-          <span>จุดนัดรับ: {request.pickup_place || request.carrier_name || "-"}</span>
+
+        {/* Payment and Shipping Status */}
+        <div className="grid grid-cols-2 gap-3 mb-4">
+          <div className="flex items-center gap-2 text-xs">
+            <CreditCard className="h-3 w-3 text-blue-400" />
+            <span className="text-gray-600">
+              {request.payment_status || 'รอชำระเงิน'}
+            </span>
+          </div>
+          <div className="flex items-center gap-2 text-xs">
+            <Truck className="h-3 w-3 text-green-400" />
+            <span className="text-gray-600">
+              {request.shipping_status || 'รอจัดส่ง'}
+            </span>
+          </div>
         </div>
-        <div className="flex items-center gap-2">
-          <span className="text-green-400">📞</span> 
-          <span>ติดต่อ: {request.contact || request.carrier_phone || request.user || "-"}</span>
+
+        {/* Action Buttons */}
+        {showActions && (
+          <div className="flex gap-2">
+            {mode === 'view' && (
+              <>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="flex-1 flex items-center gap-2"
+                  onClick={() => onView?.(request.id)}
+                >
+                  <Eye className="h-4 w-4" />
+                  ดูรายละเอียด
+                </Button>
+                <Button
+                  size="sm"
+                  variant="default"
+                  className="flex items-center gap-2"
+                  onClick={() => onContact?.(request.id)}
+                >
+                  <MessageCircle className="h-4 w-4" />
+                  ติดต่อ
+                </Button>
+              </>
+            )}
+
+            {mode === 'edit' && (
+              <>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="flex-1 flex items-center gap-2"
+                  onClick={() => onEdit?.(request.id)}
+                >
+                  <Edit className="h-4 w-4" />
+                  แก้ไข
+                </Button>
+                <Button
+                  size="sm"
+                  variant="destructive"
+                  className="flex items-center gap-2"
+                  onClick={() => onDelete?.(request.id)}
+                >
+                  <Trash2 className="h-4 w-4" />
+                  ลบ
+                </Button>
+              </>
+            )}
+
+            {mode === 'manage' && (
+              <>
+                <Button
+                  size="sm"
+                  variant="default"
+                  className="flex-1 flex items-center gap-2"
+                  onClick={() => onApprove?.(request.id)}
+                >
+                  <CheckCircle className="h-4 w-4" />
+                  อนุมัติ
+                </Button>
+                <Button
+                  size="sm"
+                  variant="destructive"
+                  className="flex items-center gap-2"
+                  onClick={() => onReject?.(request.id)}
+                >
+                  <XCircle className="h-4 w-4" />
+                  ปฏิเสธ
+                </Button>
+              </>
+            )}
+          </div>
+        )}
+
+        {/* Footer Information */}
+        <div className="mt-4 pt-3 border-t border-gray-200 dark:border-gray-700">
+          <div className="flex items-center justify-between text-xs text-gray-500">
+            <span>สร้างเมื่อ {formatDate(request.created_at || '')}</span>
+            {request.updated_at && request.updated_at !== request.created_at && (
+              <span>อัปเดต {formatDate(request.updated_at)}</span>
+            )}
+          </div>
         </div>
-        <div className="flex items-center gap-2">
-          <span className="text-yellow-400">📝</span> 
-          <span>หมายเหตุ: {request.note || request.description || "-"}</span>
-        </div>
-      </div>
-      
-      <button
-        className="mt-auto w-full bg-gradient-to-r from-blue-500 to-pink-500 text-white font-bold py-2.5 rounded-2xl shadow-lg text-base hover:scale-105 transition"
-        onClick={() => onContact?.(request.id)}
-      >
-        รับหิ้ว
-      </button>
+      </CardContent>
     </Card>
   );
 } 
