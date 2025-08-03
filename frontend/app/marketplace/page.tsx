@@ -10,6 +10,7 @@ import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { useRef } from 'react';
+import { createPortal } from 'react-dom';
 
 import Link from "next/link";
 import { useBackendToken } from "@/lib/useBackendToken";
@@ -380,9 +381,43 @@ export default function MarketplacePage() {
       )}
 
       {/* เพิ่ม modal ฟอร์มรับหิ้ว */}
-      {openRequestModal && (
-        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50" onClick={() => setOpenRequestModal(null)}>
-          <div className="bg-white/90 rounded-3xl p-10 max-w-md w-full shadow-2xl border-0 animate-fade-in flex flex-col items-center mx-4 relative" onClick={(e) => e.stopPropagation()}>
+      {openRequestModal && typeof window !== 'undefined' && createPortal(
+        <div 
+          style={{
+            position: 'fixed',
+            top: '0px',
+            left: '0px',
+            right: '0px',
+            bottom: '0px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 9999,
+            backgroundColor: 'rgba(0, 0, 0, 0.5)',
+            width: '100vw',
+            height: '100vh'
+          }}
+          onClick={() => setOpenRequestModal(null)}
+        >
+          <div 
+            style={{
+              position: 'relative',
+              maxWidth: '28rem',
+              width: 'calc(100vw - 2rem)',
+              maxHeight: '90vh',
+              overflowY: 'auto',
+              backgroundColor: 'rgba(255, 255, 255, 0.95)',
+              borderRadius: '1.5rem',
+              padding: '2.5rem',
+              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+              border: 'none',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              margin: '0 1rem'
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
               <h2 className="text-2xl font-bold mb-6 text-center text-blue-700">รับหิ้วสินค้า</h2>
               <button
                 className="absolute top-4 right-4 rounded-full bg-gray-100 hover:bg-pink-200 p-2 transition"
@@ -467,7 +502,8 @@ export default function MarketplacePage() {
                 <button type="submit" className="w-full bg-gradient-to-r from-blue-500 via-indigo-500 to-pink-500 text-white font-bold py-3 rounded-2xl shadow-lg text-lg hover:scale-105 transition">ส่งคำขอรับหิ้ว</button>
               </form>
             </div>
-          </div>
+          </div>,
+          document.body
         )}
     </div>
   );
