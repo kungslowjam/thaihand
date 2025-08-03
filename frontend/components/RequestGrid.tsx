@@ -50,6 +50,8 @@ interface Request {
   shipping_status?: string;
   rating?: number;
   review_count?: number;
+  pickup_place?: string;
+  contact?: string;
 }
 
 interface RequestGridProps {
