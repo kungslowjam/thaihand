@@ -385,17 +385,15 @@ export default function MarketplacePage() {
         <div 
           style={{
             position: 'fixed',
-            top: '0px',
-            left: '0px',
-            right: '0px',
-            bottom: '0px',
+            top: 0,
+            left: 0,
+            width: '100%',
+            height: '100%',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             zIndex: 9999,
-            backgroundColor: 'rgba(0, 0, 0, 0.5)',
-            width: '100vw',
-            height: '100vh'
+            backgroundColor: 'rgba(0, 0, 0, 0.5)'
           }}
           onClick={() => setOpenRequestModal(null)}
         >
@@ -403,8 +401,8 @@ export default function MarketplacePage() {
             style={{
               position: 'relative',
               maxWidth: '28rem',
-              width: 'calc(100vw - 2rem)',
-              maxHeight: '90vh',
+              width: '90%',
+              maxHeight: '80vh',
               overflowY: 'auto',
               backgroundColor: 'rgba(255, 255, 255, 0.95)',
               borderRadius: '1.5rem',
@@ -413,8 +411,7 @@ export default function MarketplacePage() {
               border: 'none',
               display: 'flex',
               flexDirection: 'column',
-              alignItems: 'center',
-              margin: '0 1rem'
+              alignItems: 'center'
             }}
             onClick={(e) => e.stopPropagation()}
           >
