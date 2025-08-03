@@ -40,7 +40,10 @@ export default function EditRequestPage() {
 
   // ดึงข้อมูล Request จาก backend
   useEffect(() => {
-    if (!id || !backendToken) return;
+    if (!id || !backendToken) {
+      console.log('Skipping fetchRequest: ID or backendToken missing', { id, backendToken: !!backendToken });
+      return;
+    }
     
     const fetchRequest = async () => {
       try {
@@ -81,6 +84,19 @@ export default function EditRequestPage() {
       } catch (error) {
         console.error('Error fetching request:', error);
         toast.error('ไม่สามารถดึงข้อมูลได้');
+        
+        // Fallback: ใช้ข้อมูล mock สำหรับการทดสอบ
+        console.log('Using fallback data for testing');
+        setForm({
+          title: "รายการฝากหิ้วทดสอบ",
+          fromLocation: "ประเทศไทย",
+          toLocation: "ประเทศญี่ปุ่น",
+          deadline: "2025-01-15",
+          budget: "5000",
+          description: "รายการทดสอบสำหรับแก้ไข",
+          urgent: false,
+          imageFile: null,
+        });
       } finally {
         setLoading(false);
       }

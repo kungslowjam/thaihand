@@ -333,8 +333,8 @@ export default function MyItemsPage() {
                               <div className="flex items-center gap-2">
                                 <span>ไปฝากกับ:</span>
                                 <img src={carrierImage} alt="carrier" className="w-6 h-6 rounded-full border" onError={e => { e.currentTarget.src = "/thaihand-logo.png"; }} />
-                                <span>{carrierName}</span>
-                                <span>({carrierEmail})</span>
+                                <span>{carrierName || carrierEmail}</span>
+                                {carrierName && <span>({carrierEmail})</span>}
                                 {req.carrier_phone && <span>โทร: {carrierPhone}</span>}
                               </div>
                               <div>ต้นทาง: {req.from_location || 'ไม่ระบุ'}</div>
