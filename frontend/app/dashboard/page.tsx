@@ -88,12 +88,23 @@ export default function DashboardPage() {
 
   // mock delete handler
   async function handleDelete() {
-    if (!showDelete || !backendToken) return;
+    console.log("handleDelete - showDelete:", showDelete);
+    console.log("handleDelete - backendToken:", backendToken);
+    console.log("handleDelete - backendToken exists:", !!backendToken);
+    
+    if (!showDelete || !backendToken) {
+      console.log("handleDelete - Cannot delete: showDelete or backendToken is null");
+      return;
+    }
     
     setDeleting(true);
     try {
       const endpoint = showDelete.type === 'request' ? 'requests' : 'offers';
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || '/api'}/${endpoint}/${showDelete.id}`, {
+      const url = `${process.env.NEXT_PUBLIC_API_URL || '/api'}/${endpoint}/${showDelete.id}`;
+      console.log("handleDelete - URL:", url);
+      console.log("handleDelete - Authorization header:", `Bearer ${backendToken.substring(0, 20)}...`);
+      
+      const response = await fetch(url, {
         method: "DELETE",
         headers: {
           "Authorization": `Bearer ${backendToken}`

@@ -39,14 +39,17 @@ export function useBackendToken() {
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://thaihand.shop/api';
       console.log("API URL:", apiUrl);
       
+      const requestBody = { 
+        accessToken, 
+        provider,
+        email: session?.user?.email 
+      };
+      console.log("Request body for auth exchange:", requestBody);
+      
       fetch(`${apiUrl}/auth/exchange`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ 
-          accessToken, 
-          provider,
-          email: session?.user?.email 
-        })
+        body: JSON.stringify(requestBody)
       })
         .then(res => {
           if (!res.ok) {
@@ -78,5 +81,11 @@ export function useBackendToken() {
     }
   }, [session, status, backendToken]);
 
+  console.log("useBackendToken - Current state:", { 
+    backendToken: backendToken ? `${backendToken.substring(0, 20)}...` : null, 
+    loading, 
+    error 
+  });
+  
   return { backendToken, loading, error };
 } 

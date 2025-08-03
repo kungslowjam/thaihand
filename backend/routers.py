@@ -48,6 +48,10 @@ async def exchange_token(request: Request):
                     print("Token verification failed, trying to use email from request...")
                     user_email = data.get("email")
                     if not user_email:
+                        print("No email in request, trying to extract from token...")
+                        # ลองใช้ email จาก session หรือ token
+                        user_email = user_email_from_request
+                    if not user_email:
                         return JSONResponse(status_code=401, content={"detail": "Invalid Google token and no email provided"})
                     print(f"Using email from request: {user_email}")
                 else:
