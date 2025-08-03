@@ -175,6 +175,14 @@ def delete_offer(db: Session, offer_id: int):
 
 def get_my_orders(db: Session, user_id: int):
     try:
+        # แปลง user_id เป็น int ถ้าเป็น string
+        if isinstance(user_id, str):
+            try:
+                user_id = int(user_id)
+            except ValueError:
+                print(f"Error: user_id '{user_id}' cannot be converted to int")
+                return []
+        
         requests = db.query(models.Request).filter(models.Request.user_id == user_id).all()
         # ตรวจสอบและแก้ไขข้อมูลที่ไม่สมเหตุสมผล
         for request in requests:

@@ -281,8 +281,11 @@ def my_orders(email: str, db: Session = Depends(get_db)):
         if not user:
             print("DEBUG_MY_ORDERS: user not found for email", email)
             return []
-        result = crud.get_my_orders(db, user.id)
-        print("DEBUG_MY_ORDERS: user_id =", user.id, "result count =", len(result))
+        
+        # แปลง user.id เป็น int ถ้าเป็น string
+        user_id = int(user.id) if isinstance(user.id, str) else user.id
+        result = crud.get_my_orders(db, user_id)
+        print("DEBUG_MY_ORDERS: user_id =", user_id, "result count =", len(result))
         
         # ตรวจสอบและแก้ไขข้อมูลที่ไม่สมเหตุสมผล
         for r in result:

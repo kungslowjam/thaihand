@@ -143,11 +143,11 @@ export default function RequestDetailModal({
         {/* Header */}
         <div className="relative">
           <img 
-            src={request.image || '/default-product.jpg'} 
+            src={request.image || '/default-product.svg'} 
             alt={request.title}
             className="w-full h-64 object-cover rounded-t-3xl"
             onError={(e) => {
-              e.currentTarget.src = '/default-product.jpg';
+              e.currentTarget.src = '/default-product.svg';
             }}
           />
           

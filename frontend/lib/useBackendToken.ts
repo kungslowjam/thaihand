@@ -2,18 +2,33 @@ import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 
 export function useBackendToken() {
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
   const [backendToken, setBackendToken] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    // รอให้ session โหลดเสร็จ
+    if (status === "loading") {
+      return;
+    }
+
+    // ถ้าไม่มี session ให้ reset token
+    if (!session) {
+      setBackendToken(null);
+      setError(null);
+      return;
+    }
+
     const accessToken = (session as any)?.accessToken;
     const provider = (session as any)?.provider || "google";
     
     if (accessToken && !backendToken) {
       setLoading(true);
       setError(null);
+      
+      console.log("SESSION_USER", session?.user);
+      console.log("myUserId", (session as any)?.user?.id);
       
       // Use environment variable for API URL
       fetch(`${process.env.NEXT_PUBLIC_API_URL || '/api'}/auth/exchange`, {
@@ -49,7 +64,7 @@ export function useBackendToken() {
           setLoading(false);
         });
     }
-  }, [session, backendToken]);
+  }, [session, status, backendToken]);
 
   return { backendToken, loading, error };
 } 

@@ -141,11 +141,11 @@ export default function RequestCard({
       {/* Header with Image */}
       <div className="relative">
         <img 
-          src={request.image || '/default-product.jpg'} 
+          src={request.image || '/default-product.svg'} 
           alt={request.title}
           className="w-full h-48 object-cover"
           onError={(e) => {
-            e.currentTarget.src = '/default-product.jpg';
+            e.currentTarget.src = '/default-product.svg';
           }}
         />
         

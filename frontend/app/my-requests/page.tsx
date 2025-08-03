@@ -1,16 +1,14 @@
 "use client";
 import { useSession } from "next-auth/react";
 import { useState, useEffect } from "react";
-import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import RequestGrid from "@/components/RequestGrid";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
-export default function MyOrdersPage() {
+export default function MyRequestsPage() {
   const { data: session } = useSession();
   const router = useRouter();
-  const [orders, setOrders] = useState<any[]>([]);
+  const [requests, setRequests] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -26,18 +24,18 @@ export default function MyOrdersPage() {
           return res.json();
         })
         .then((data) => {
-          console.log('my-orders', data);
+          console.log('my-requests', data);
           if (Array.isArray(data)) {
-            setOrders(data);
+            setRequests(data);
           } else {
             console.error('API response ไม่ใช่ array', data);
-            setOrders([]);
+            setRequests([]);
           }
         })
         .catch((error) => {
-          console.error('Error fetching orders:', error);
+          console.error('Error fetching requests:', error);
           toast.error('ไม่สามารถดึงข้อมูลได้');
-          setOrders([]);
+          setRequests([]);
         })
         .finally(() => {
           setLoading(false);
@@ -76,9 +74,9 @@ export default function MyOrdersPage() {
 
       toast.success('ลบข้อมูลสำเร็จ!');
       // รีเฟรชข้อมูล
-      setOrders(orders.filter(order => order.id !== id));
+      setRequests(requests.filter(request => request.id !== id));
     } catch (error: any) {
-      console.error('Error deleting order:', error);
+      console.error('Error deleting request:', error);
       toast.error(error.message || 'เกิดข้อผิดพลาดในการลบข้อมูล');
     }
   };
@@ -109,15 +107,15 @@ export default function MyOrdersPage() {
     );
   }
 
-  if (orders.length === 0) {
+  if (requests.length === 0) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-white">
         <div className="max-w-6xl mx-auto px-4 py-10">
-          <h1 className="text-3xl font-bold mb-8 text-center">งานของฉัน</h1>
+          <h1 className="text-3xl font-bold mb-8 text-center">คำขอฝากหิ้วของฉัน</h1>
           <div className="text-center py-20 text-gray-400">
             <span className="text-6xl mb-4 block">📦</span>
-            <div className="text-xl mb-2">ยังไม่มีงาน</div>
-            <div className="text-sm">เมื่อคุณสร้างงาน ข้อมูลจะแสดงที่นี่</div>
+            <div className="text-xl mb-2">ยังไม่มีคำขอฝากหิ้ว</div>
+            <div className="text-sm">เมื่อคุณสร้างคำขอฝากหิ้ว ข้อมูลจะแสดงที่นี่</div>
           </div>
         </div>
       </div>
@@ -127,10 +125,10 @@ export default function MyOrdersPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-white">
       <div className="max-w-6xl mx-auto px-4 py-10">
-        <h1 className="text-3xl font-bold mb-8 text-center">งานของฉัน</h1>
+        <h1 className="text-3xl font-bold mb-8 text-center">คำขอฝากหิ้วของฉัน</h1>
         
         <RequestGrid
-          requests={orders}
+          requests={requests}
           mode="edit"
           loading={loading}
           onView={handleView}
