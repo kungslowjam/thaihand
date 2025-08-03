@@ -130,12 +130,18 @@ def get_user():
 # Notifications
 @router.get("/notifications")
 def read_notifications(user_email: str = None, db: Session = Depends(get_db)):
-    if not user_email:
-        return []
-    user = db.query(models.User).filter(models.User.email == user_email).first()
-    if not user:
-        return []
-    return crud.get_notifications_after_time(db, user.id, "1970-01-01T00:00:00")
+    try:
+        if not user_email:
+            return []
+        user = db.query(models.User).filter(models.User.email == user_email).first()
+        if not user:
+            return []
+        return crud.get_notifications_after_time(db, user.id, "1970-01-01T00:00:00")
+    except Exception as e:
+        print(f"Error in read_notifications: {e}")
+        import traceback
+        print(traceback.format_exc())
+        raise HTTPException(status_code=500, detail="เกิดข้อผิดพลาดภายในเซิร์ฟเวอร์")
 
 @router.get("/requests", response_model=list[schemas.RequestOut])
 def read_requests(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
@@ -268,17 +274,43 @@ def delete_offer(offer_id: int, db: Session = Depends(get_db), user=Depends(veri
 
 @router.get("/my-orders", response_model=list[schemas.RequestOut])
 def my_orders(email: str, db: Session = Depends(get_db)):
-    print("DEBUG_MY_ORDERS: email =", email)
-    user = db.query(User).filter(User.email == email).first()
-    print("DEBUG_MY_ORDERS: user =", user)
-    if not user:
-        print("DEBUG_MY_ORDERS: user not found for email", email)
-        return []
-    result = crud.get_my_orders(db, user.id)
-    print("DEBUG_MY_ORDERS: user_id =", user.id, "result count =", len(result))
-    for r in result:
-        print(f"DEBUG_MY_ORDERS: request id={r.id} user_id={r.user_id} user_email={r.user_email} title={r.title}")
-    return result
+    try:
+        print("DEBUG_MY_ORDERS: email =", email)
+        user = db.query(User).filter(User.email == email).first()
+        print("DEBUG_MY_ORDERS: user =", user)
+        if not user:
+            print("DEBUG_MY_ORDERS: user not found for email", email)
+            return []
+        result = crud.get_my_orders(db, user.id)
+        print("DEBUG_MY_ORDERS: user_id =", user.id, "result count =", len(result))
+        
+        # ตรวจสอบและแก้ไขข้อมูลที่ไม่สมเหตุสมผล
+        for r in result:
+            print(f"DEBUG_MY_ORDERS: request id={r.id} user_id={r.user_id} user_email={r.user_email} title={r.title}")
+            # ตรวจสอบ budget
+            if hasattr(r, 'budget') and (r.budget is None or r.budget <= 0):
+                r.budget = None
+            
+            # ตรวจสอบ title
+            if not r.title or r.title.strip() == "":
+                r.title = "รายการฝากหิ้ว"
+            
+            # ตรวจสอบ description
+            if not r.description or r.description.strip() == "":
+                r.description = "ไม่มีรายละเอียดเพิ่มเติม"
+            
+            # ตรวจสอบ locations
+            if not r.from_location or r.from_location.strip() == "":
+                r.from_location = "ไม่ระบุ"
+            if not r.to_location or r.to_location.strip() == "":
+                r.to_location = "ไม่ระบุ"
+        
+        return result
+    except Exception as e:
+        print(f"Error in my_orders: {e}")
+        import traceback
+        print(traceback.format_exc())
+        raise HTTPException(status_code=500, detail="เกิดข้อผิดพลาดภายในเซิร์ฟเวอร์")
 
 @router.get("/my-carry-orders", response_model=list[schemas.OfferOut])
 def my_carry_orders(email: str, db: Session = Depends(get_db)):
@@ -315,40 +347,46 @@ def get_requests_for_offer(offer_id: int, db: Session = Depends(get_db)):
 
 @router.get("/notifications/longpoll")
 async def longpoll_notifications(user_email: str, last_time: str = "1970-01-01T00:00:00", db: Session = Depends(get_db)):
-    user = db.query(User).filter(User.email == user_email).first()
-    if not user:
-        return {"notifications": []}
-    user_id = user.id
-    timeout = 25
-    interval = 1
-    waited = 0
-    
-    # ตรวจสอบว่า last_time เป็น timestamp ที่ถูกต้องหรือไม่
     try:
-        from datetime import datetime
-        datetime.fromisoformat(last_time.replace('Z', '+00:00'))
-    except:
-        last_time = "1970-01-01T00:00:00"
-    
-    print(f"[DEBUG] Longpoll for user {user_id} ({user_email}) with last_time: {last_time}")
-    
-    while waited < timeout:
-        new_notifs = crud.get_notifications_after_time(db, user_id, last_time)
-        if new_notifs:
-            # กรองเฉพาะ notification ที่ใหม่กว่า last_time จริงๆ
-            filtered_notifs = []
-            for notif in new_notifs:
-                try:
-                    notif_time = notif.get('created_at', '')
-                    if notif_time and notif_time > last_time:
-                        filtered_notifs.append(notif)
-                except:
-                    continue
-            
-            if filtered_notifs:
-                print(f"[DEBUG] Sending {len(filtered_notifs)} new notifications for user {user_id}")
-                return {"notifications": filtered_notifs}
-        await asyncio.sleep(interval)
-        waited += interval
-    
-    return {"notifications": []} 
+        user = db.query(User).filter(User.email == user_email).first()
+        if not user:
+            return {"notifications": []}
+        user_id = user.id
+        timeout = 25
+        interval = 1
+        waited = 0
+        
+        # ตรวจสอบว่า last_time เป็น timestamp ที่ถูกต้องหรือไม่
+        try:
+            from datetime import datetime
+            datetime.fromisoformat(last_time.replace('Z', '+00:00'))
+        except:
+            last_time = "1970-01-01T00:00:00"
+        
+        print(f"[DEBUG] Longpoll for user {user_id} ({user_email}) with last_time: {last_time}")
+        
+        while waited < timeout:
+            new_notifs = crud.get_notifications_after_time(db, user_id, last_time)
+            if new_notifs:
+                # กรองเฉพาะ notification ที่ใหม่กว่า last_time จริงๆ
+                filtered_notifs = []
+                for notif in new_notifs:
+                    try:
+                        notif_time = notif.get('created_at', '')
+                        if notif_time and notif_time > last_time:
+                            filtered_notifs.append(notif)
+                    except:
+                        continue
+                
+                if filtered_notifs:
+                    print(f"[DEBUG] Sending {len(filtered_notifs)} new notifications for user {user_id}")
+                    return {"notifications": filtered_notifs}
+            await asyncio.sleep(interval)
+            waited += interval
+        
+        return {"notifications": []}
+    except Exception as e:
+        print(f"Error in longpoll_notifications: {e}")
+        import traceback
+        print(traceback.format_exc())
+        raise HTTPException(status_code=500, detail="เกิดข้อผิดพลาดภายในเซิร์ฟเวอร์") 

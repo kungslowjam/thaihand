@@ -47,13 +47,18 @@ export default function MyItemsPage() {
           }
           const mapped = arr.map((item: any) => ({
             ...item,
-            id: item.id || item.request_id || item._id, // ให้แน่ใจว่ามี id เสมอ
-            title: item.title || (item.from_location && item.to_location ? `${item.from_location} → ${item.to_location}` : "รายการฝากหิ้ว"),
-            image: item.image,
-            status: item.status,
+            id: item.id || item.request_id || item._id,
+            title: item.title || "รายการฝากหิ้ว",
+            image: item.image || "/thaihand-logo.png",
+            status: item.status || "รออนุมัติ",
             date: item.deadline || item.flight_date || item.date || "",
-            user_id: item.user_id, // เพิ่มบรรทัดนี้
-            offer_id: item.offer_id, // เพิ่มบรรทัดนี้
+            user_id: item.user_id,
+            offer_id: item.offer_id,
+            // ตรวจสอบและแก้ไขข้อมูลที่ไม่สมเหตุสมผล
+            budget: item.budget && item.budget > 0 ? item.budget : null,
+            from_location: item.from_location || "ไม่ระบุ",
+            to_location: item.to_location || "ไม่ระบุ",
+            description: item.description || "ไม่มีรายละเอียดเพิ่มเติม"
           }));
           setRequests(mapped);
           console.log("DEBUG_MY_REQUESTS", mapped);
@@ -73,10 +78,14 @@ export default function MyItemsPage() {
           const mapped = arr.map((item: any) => ({
             ...item,
             id: item.id || item.offer_id || item._id,
-            route: item.route || item.routeFrom || item.route_from || (item.routeFrom && item.routeTo ? `${item.routeFrom} → ${item.routeTo}` : (item.route_from && item.route_to ? `${item.route_from} → ${item.route_to}` : (item.from_location && item.to_location ? `${item.from_location} → ${item.to_location}` : "ข้อเสนอรับหิ้ว"))),
+            route: item.route || item.routeFrom || item.route_from || "ข้อเสนอรับหิ้ว",
             image: item.image || item.profile_image || "/thaihand-logo.png",
             status: item.status || "เปิดรับฝาก",
             date: item.flight_date || item.deadline || item.date || "",
+            // ตรวจสอบและแก้ไขข้อมูลที่ไม่สมเหตุสมผล
+            route_from: item.route_from || item.routeFrom || "ไม่ระบุ",
+            route_to: item.route_to || item.routeTo || "ไม่ระบุ",
+            description: item.description || "ไม่มีรายละเอียดเพิ่มเติม"
           }));
           setOffers(mapped);
         });
@@ -255,12 +264,12 @@ export default function MyItemsPage() {
                             {req.date}
                           </div>
                           {/* เพิ่มรายละเอียด */}
-                          <div className="text-xs text-gray-600 mt-1">
-                            <div>ต้นทาง: {req.from_location || '-'}</div>
-                            <div>ปลายทาง: {req.to_location || '-'}</div>
-                            <div>งบประมาณ: {req.budget ? `${req.budget} บาท` : '-'}</div>
-                            <div>หมายเหตุ: {req.description || '-'}</div>
-                          </div>
+                                                      <div className="text-xs text-gray-600 mt-1">
+                              <div>ต้นทาง: {req.from_location || 'ไม่ระบุ'}</div>
+                              <div>ปลายทาง: {req.to_location || 'ไม่ระบุ'}</div>
+                              <div>งบประมาณ: {req.budget && req.budget > 0 ? `${req.budget} บาท` : 'ไม่ระบุ'}</div>
+                              <div>หมายเหตุ: {req.description || 'ไม่มีรายละเอียดเพิ่มเติม'}</div>
+                            </div>
                         </div>
                       </div>
                       <div className="flex gap-1 items-center">
@@ -328,10 +337,10 @@ export default function MyItemsPage() {
                                 <span>({carrierEmail})</span>
                                 {req.carrier_phone && <span>โทร: {carrierPhone}</span>}
                               </div>
-                              <div>ต้นทาง: {req.from_location || '-'}</div>
-                              <div>ปลายทาง: {req.to_location || '-'}</div>
-                              <div>งบประมาณ: {req.budget ? `${req.budget} บาท` : '-'}</div>
-                              <div>หมายเหตุ: {req.description || '-'}</div>
+                              <div>ต้นทาง: {req.from_location || 'ไม่ระบุ'}</div>
+                              <div>ปลายทาง: {req.to_location || 'ไม่ระบุ'}</div>
+                              <div>งบประมาณ: {req.budget && req.budget > 0 ? `${req.budget} บาท` : 'ไม่ระบุ'}</div>
+                              <div>หมายเหตุ: {req.description || 'ไม่มีรายละเอียดเพิ่มเติม'}</div>
                             </div>
                           </div>
                         </div>
