@@ -27,26 +27,38 @@ async def exchange_token(request: Request):
         data = await request.json()
         access_token = data.get("accessToken")
         provider = data.get("provider")  # เพิ่ม field provider ใน frontend ด้วย
+        
+        print(f"Exchange token request - Provider: {provider}")
+        print(f"Exchange token request - Access token: {access_token[:20] if access_token else 'None'}...")
+        
         if not access_token:
             return JSONResponse(status_code=400, content={"detail": "No accessToken provided"})
         user_email = None
         if provider == "google":
             # Verify Google token
+            print("Verifying Google token...")
             resp = requests.get(f"https://www.googleapis.com/oauth2/v3/tokeninfo?access_token={access_token}")
+            print(f"Google API response status: {resp.status_code}")
             if resp.status_code != 200:
+                print(f"Google API error: {resp.text}")
                 return JSONResponse(status_code=401, content={"detail": "Invalid Google token"})
             user_info = resp.json()
             user_email = user_info.get("email")
+            print(f"Google user email: {user_email}")
         elif provider == "line":
             # Verify Line token
+            print("Verifying Line token...")
             resp = requests.get("https://api.line.me/v2/profile", headers={"Authorization": f"Bearer {access_token}"})
+            print(f"Line API response status: {resp.status_code}")
             if resp.status_code != 200:
+                print(f"Line API error: {resp.text}")
                 return JSONResponse(status_code=401, content={"detail": "Invalid Line token"})
             user_info = resp.json()
             user_id = user_info.get("userId")
             if not user_id:
                 return JSONResponse(status_code=401, content={"detail": "No userId in Line profile"})
             user_email = f"{user_id}@line.me"  # ใช้ userId เป็น pseudo-email เหมือน frontend
+            print(f"Line user email: {user_email}")
         else:
             return JSONResponse(status_code=400, content={"detail": "Unknown provider"})
         if not user_email:
@@ -60,12 +72,17 @@ async def exchange_token(request: Request):
             new_user = User(email=user_email, username=user_email, hashed_password="")
             db.add(new_user)
             db.commit()
+            print(f"Created new user: {user_email}")
+        else:
+            print(f"User already exists: {user_email}")
         db.close()
         # --- จบส่วนเพิ่ม ---
         # สร้าง JWT ของ backend
         jwt_token = create_access_token({"sub": user_email})
+        print(f"Generated JWT token for: {user_email}")
         return {"accessToken": jwt_token}
     except Exception as e:
+        print(f"Exchange token error: {str(e)}")
         return JSONResponse(status_code=500, content={"detail": str(e)})
 
 # NextAuth endpoints
@@ -374,7 +391,7 @@ async def longpoll_notifications(user_email: str, last_time: str = "1970-01-01T0
             return {"notifications": []}
         user_id = user.id
         timeout = 25
-        interval = 1
+        interval = 2  # เพิ่ม interval เป็น 2 วินาที
         waited = 0
         
         # ตรวจสอบว่า last_time เป็น timestamp ที่ถูกต้องหรือไม่
@@ -383,8 +400,6 @@ async def longpoll_notifications(user_email: str, last_time: str = "1970-01-01T0
             datetime.fromisoformat(last_time.replace('Z', '+00:00'))
         except:
             last_time = "1970-01-01T00:00:00"
-        
-        print(f"[DEBUG] Longpoll for user {user_id} ({user_email}) with last_time: {last_time}")
         
         while waited < timeout:
             new_notifs = crud.get_notifications_after_time(db, user_id, last_time)
@@ -400,7 +415,6 @@ async def longpoll_notifications(user_email: str, last_time: str = "1970-01-01T0
                         continue
                 
                 if filtered_notifs:
-                    print(f"[DEBUG] Sending {len(filtered_notifs)} new notifications for user {user_id}")
                     return {"notifications": filtered_notifs}
             await asyncio.sleep(interval)
             waited += interval

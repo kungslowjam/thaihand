@@ -74,10 +74,9 @@ export default function NotificationDropdown() {
     async function poll() {
       while (!cancelled && email && hasFetchedInitial) { // เพิ่มเงื่อนไข hasFetchedInitial
         try {
-          console.log("[DEBUG] lastTime before fetch:", lastTimeRef.current);
           const res = await fetch(`/api/notifications/longpoll?user_email=${email}&last_time=${lastTimeRef.current}`);
           const data = await res.json();
-          console.log("[DEBUG] response:", data);
+          
           if (data.notifications && data.notifications.length > 0) {
             // หา created_at ที่มากที่สุด
             const maxTime = data.notifications.reduce(
@@ -85,7 +84,6 @@ export default function NotificationDropdown() {
               lastTimeRef.current
             );
             lastTimeRef.current = maxTime;
-            console.log("[DEBUG] NEW NOTIFICATIONS", data.notifications);
             
             // เพิ่มเฉพาะ notification ที่ไม่มีใน store แล้ว
             data.notifications.forEach((n: any) => {
@@ -95,7 +93,11 @@ export default function NotificationDropdown() {
               }
             });
           }
-        } catch (e) { console.error("[DEBUG] longpoll error", e); }
+        } catch (e) { 
+          console.error("[DEBUG] longpoll error", e); 
+          // เพิ่ม delay เมื่อเกิด error เพื่อไม่ให้เรียกใช้อย่างต่อเนื่อง
+          await new Promise(resolve => setTimeout(resolve, 5000));
+        }
       }
     }
     if (email && hasFetchedInitial) poll(); // เพิ่มเงื่อนไข hasFetchedInitial

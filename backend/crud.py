@@ -321,7 +321,6 @@ def get_notifications_after_time(db: Session, user_id: int, last_time: str = "19
             
             result.append(notif_dict)
         
-        print(f"[DEBUG] Found {len(result)} notifications after {last_time} for user {user_id}")
         return result
     except Exception as e:
         print(f"Error in get_notifications_after_time: {e}")

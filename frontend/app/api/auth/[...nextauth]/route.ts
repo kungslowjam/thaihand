@@ -93,6 +93,9 @@ const handler = NextAuth({
       return url;
     },
     async session({ session, token }) {
+      console.log("Session callback - Token:", token);
+      console.log("Session callback - Session before:", session);
+      
       // เพิ่ม user ID, provider และ accessToken เข้า session
       if (token.sub) {
         session.user.id = token.sub;
@@ -103,9 +106,15 @@ const handler = NextAuth({
       if (token.accessToken) {
         (session as any).accessToken = token.accessToken;
       }
+      
+      console.log("Session callback - Session after:", session);
       return session;
     },
     async jwt({ token, user, account, profile }) {
+      console.log("JWT callback - Token:", token);
+      console.log("JWT callback - User:", user);
+      console.log("JWT callback - Account:", account);
+      
       // เพิ่มข้อมูล user และ provider เข้า token
       if (user) {
         token.id = user.id;
@@ -113,7 +122,11 @@ const handler = NextAuth({
       if (account) {
         token.provider = account.provider;
         token.accessToken = account.access_token;
+        console.log("JWT callback - Set provider:", account.provider);
+        console.log("JWT callback - Set accessToken:", account.access_token ? "exists" : "missing");
       }
+      
+      console.log("JWT callback - Final token:", token);
       return token;
     },
   },

@@ -100,4 +100,8 @@ def get_current_user_info(user=Depends(auth.verify_jwt_token)):
 
 @fastapi_app.get("/health")
 def health_check():
+    return {"status": "healthy", "timestamp": datetime.now().isoformat()}
+
+@fastapi_app.get("/api/health")
+def api_health_check():
     return {"status": "healthy", "timestamp": datetime.now().isoformat()} 

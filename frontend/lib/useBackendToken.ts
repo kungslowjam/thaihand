@@ -23,6 +23,10 @@ export function useBackendToken() {
     const accessToken = (session as any)?.accessToken;
     const provider = (session as any)?.provider || "google";
     
+    console.log("Session data:", session);
+    console.log("Access token:", accessToken);
+    console.log("Provider:", provider);
+    
     if (accessToken && !backendToken) {
       setLoading(true);
       setError(null);
@@ -31,7 +35,10 @@ export function useBackendToken() {
       console.log("myUserId", (session as any)?.user?.id);
       
       // Use environment variable for API URL
-      fetch(`${process.env.NEXT_PUBLIC_API_URL || '/api'}/auth/exchange`, {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || '/api';
+      console.log("API URL:", apiUrl);
+      
+      fetch(`${apiUrl}/auth/exchange`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ accessToken, provider })
