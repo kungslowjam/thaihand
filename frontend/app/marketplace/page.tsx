@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useMemo, useState } from "react";
-import { ShoppingBag, CheckCircle, Search, BadgeDollarSign, Globe, BadgeCheck, SortAsc, Eye, Star, MessageCircle, X, Sparkles, Plus, Plane, Package } from "lucide-react";
+import { ShoppingBag, CheckCircle, Search, BadgeDollarSign, Globe, BadgeCheck, SortAsc, Eye, Star, MessageCircle, X, Sparkles, Plus, Plane } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useSession } from "next-auth/react";
@@ -259,7 +259,7 @@ export default function MarketplacePage() {
                   </div>
                   {/* badge ประเภท/สถานะ */}
                   <div className="flex gap-2 mb-2">
-                    <Badge className="bg-gradient-to-r from-pink-200 to-purple-400 text-purple-800 px-2 py-0.5 text-xs rounded-full flex items-center gap-1"><Package className="h-3 w-3 mr-1" /> ฝากหิ้ว</Badge>
+                    <Badge className="bg-gradient-to-r from-pink-200 to-purple-400 text-purple-800 px-2 py-0.5 text-xs rounded-full flex items-center gap-1"><ShoppingBag className="h-3 w-3 mr-1" /> ฝากหิ้ว</Badge>
                   </div>
                   {/* เส้นทาง + วันที่ */}
                   <div className="text-sm text-gray-500 mb-2">บิน {req.flightDate} • ปิดรับ {req.closeDate}</div>
