@@ -124,6 +124,9 @@ const handler = NextAuth({
         token.accessToken = account.access_token;
         console.log("JWT callback - Set provider:", account.provider);
         console.log("JWT callback - Set accessToken:", account.access_token ? "exists" : "missing");
+        if (account.access_token) {
+          console.log("JWT callback - Access token preview:", account.access_token.substring(0, 20) + "...");
+        }
       }
       
       console.log("JWT callback - Final token:", token);

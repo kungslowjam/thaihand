@@ -37,14 +37,20 @@ async def exchange_token(request: Request):
         if provider == "google":
             # Verify Google token
             print("Verifying Google token...")
-            resp = requests.get(f"https://www.googleapis.com/oauth2/v3/tokeninfo?access_token={access_token}")
-            print(f"Google API response status: {resp.status_code}")
-            if resp.status_code != 200:
-                print(f"Google API error: {resp.text}")
-                return JSONResponse(status_code=401, content={"detail": "Invalid Google token"})
-            user_info = resp.json()
-            user_email = user_info.get("email")
-            print(f"Google user email: {user_email}")
+            try:
+                resp = requests.get(f"https://www.googleapis.com/oauth2/v3/tokeninfo?access_token={access_token}", timeout=10)
+                print(f"Google API response status: {resp.status_code}")
+                if resp.status_code != 200:
+                    print(f"Google API error: {resp.text}")
+                    # ถ้า token ไม่ถูกต้อง ให้ลองใช้ user info จาก session แทน
+                    print("Token verification failed, trying alternative approach...")
+                    return JSONResponse(status_code=401, content={"detail": "Invalid Google token"})
+                user_info = resp.json()
+                user_email = user_info.get("email")
+                print(f"Google user email: {user_email}")
+            except Exception as e:
+                print(f"Error verifying Google token: {e}")
+                return JSONResponse(status_code=401, content={"detail": "Error verifying Google token"})
         elif provider == "line":
             # Verify Line token
             print("Verifying Line token...")

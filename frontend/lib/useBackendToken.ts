@@ -62,10 +62,10 @@ export function useBackendToken() {
         .catch(err => {
           console.error("Error getting backend token:", err);
           setError(err.message);
-          // Retry after 3 seconds
+          // Retry after 5 seconds for token errors
           setTimeout(() => {
             setLoading(false);
-          }, 3000);
+          }, 5000);
         })
         .finally(() => {
           setLoading(false);

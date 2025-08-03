@@ -98,7 +98,7 @@ services:
       - "developers.line.biz:13.107.42.13"
       - "profile.line-scdn.net:13.107.42.13"
     healthcheck:
-      test: ["CMD", "curl", "-f", "${NEXT_PUBLIC_API_URL}/api/health"]
+      test: ["CMD", "curl", "-f", "https://thaihand.shop/api/health"]
       interval: 30s
       timeout: 10s
       retries: 3
