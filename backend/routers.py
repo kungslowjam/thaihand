@@ -254,8 +254,11 @@ def create_offer(offer: schemas.OfferCreate, db: Session = Depends(get_db), user
 @router.get("/offers/{offer_id}", response_model=schemas.OfferOut)
 def read_offer(offer_id: int, db: Session = Depends(get_db)):
     try:
+        print(f"DEBUG_READ_OFFER: Looking for offer_id = {offer_id}")
         db_offer = crud.get_offer(db, offer_id)
+        print(f"DEBUG_READ_OFFER: Found offer = {db_offer}")
         if db_offer is None:
+            print(f"DEBUG_READ_OFFER: Offer {offer_id} not found")
             raise HTTPException(status_code=404, detail="Offer not found")
         return db_offer
     except Exception as e:

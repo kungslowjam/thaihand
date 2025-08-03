@@ -22,7 +22,7 @@ class RequestBase(BaseModel):
     from_location: str
     to_location: str
     deadline: str
-    budget: int
+    budget: int | None = None
     description: str
     image: str | None = None
     user_id: int
@@ -40,7 +40,7 @@ class RequestCreate(BaseModel):
     from_location: str
     to_location: str
     deadline: str
-    budget: int
+    budget: int | None = None
     description: str
     image: str | None = None
     offer_id: int | None = None
