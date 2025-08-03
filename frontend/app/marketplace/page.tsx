@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { useSession } from "next-auth/react";
 import { useUserStore } from '@/store/userStore';
 import { useNotificationStore } from '@/store/notificationStore';
-import { Dialog, DialogContent, DialogTitle } from '@radix-ui/react-dialog';
+import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { useRef } from 'react';
@@ -37,6 +37,12 @@ function useGridColumns() {
 }
 
 export default function MarketplacePage() {
+  // Add error boundary
+  if (typeof window !== 'undefined') {
+    window.addEventListener('error', (event) => {
+      console.error('Global error caught:', event.error);
+    });
+  }
   const { data: session } = useSession();
   const setUser = useUserStore((state) => state.setUser);
   const user = useUserStore((state) => state.user);
@@ -65,6 +71,10 @@ export default function MarketplacePage() {
         .then(res => res.json())
         .then(data => {
           setOffers(data); // ใช้ข้อมูลตรงจาก backend
+        })
+        .catch(error => {
+          console.error('Error fetching offers:', error);
+          setOffers([]);
         });
       fetch(`${process.env.NEXT_PUBLIC_API_URL || '/api'}/requests`, {
         headers: { "Authorization": `Bearer ${backendToken}` }
@@ -84,6 +94,10 @@ export default function MarketplacePage() {
             status: item.status,
           }));
           setRequests(mapped);
+        })
+        .catch(error => {
+          console.error('Error fetching requests:', error);
+          setRequests([]);
         });
     }
   }, [backendToken]);
@@ -149,8 +163,9 @@ export default function MarketplacePage() {
     setBookmarks(bm => bm.includes(id) ? bm.filter(i => i !== id) : [...bm, id]);
   }
 
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-pink-50 dark:from-gray-900 dark:to-gray-800">
+  try {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-pink-50 dark:from-gray-900 dark:to-gray-800">
       <main className="pt-24 max-w-7xl mx-auto px-4">
         {/* Filter/Sort Bar */}
         <div className="sticky top-16 z-20 flex flex-wrap gap-2 bg-white/70 dark:bg-gray-900/70 rounded-xl px-3 py-2 shadow-sm border border-white/30 dark:border-gray-800 backdrop-blur-xl mb-4">
@@ -238,11 +253,7 @@ export default function MarketplacePage() {
                     </span>
                     <Badge className={`px-2 py-0.5 text-xs rounded-full flex items-center gap-1 bg-indigo-100 text-indigo-700`}><span className='mr-1'>✈️</span>{req.status}</Badge>
                   </div>
-                  {/* น้ำหนักคงเหลือ (gauge) */}
-                  <Progress value={0} className="h-4 bg-gray-200 mt-2" />
-                  <div className="flex justify-between items-center mt-1 text-xs">
-                    <span className="text-gray-500 font-semibold">เหลือ 0 กก.</span>
-                  </div>
+
                   {/* ผู้ใช้ */}
                   <div className="flex items-center gap-2 mt-auto mb-2">
                     <div className="w-7 h-7 rounded-full bg-gray-200 flex items-center justify-center text-gray-500 text-sm font-bold">{req.user?.[0] ?? "-"}</div>
@@ -346,11 +357,10 @@ export default function MarketplacePage() {
         </div>
       )}
 
-      {/* เพิ่ม modal ฟอร์มฝากหิ้ว */}
+      {/* เพิ่ม modal ฟอร์มรับหิ้ว */}
       {openRequestModal && (
         <Dialog open={true} onOpenChange={() => setOpenRequestModal(null)}>
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm">
-            <DialogContent className="bg-white/90 rounded-3xl p-10 max-w-md w-full shadow-2xl border-0 relative animate-fade-in flex flex-col items-center">
+          <DialogContent className="bg-white/90 rounded-3xl p-10 max-w-md w-full shadow-2xl border-0 relative animate-fade-in flex flex-col items-center">
               <DialogTitle>รับหิ้วสินค้า</DialogTitle>
               <button
                 className="absolute top-4 right-4 rounded-full bg-gray-100 hover:bg-pink-200 p-2 transition"
@@ -432,11 +442,27 @@ export default function MarketplacePage() {
                   <Textarea placeholder="หมายเหตุ (ถ้ามี)" className="rounded-xl border px-3 py-2" value={requestForm.note} onChange={e => setRequestForm(f => ({ ...f, note: e.target.value }))} />
                 </div>
                 <button type="submit" className="w-full bg-gradient-to-r from-blue-500 via-indigo-500 to-pink-500 text-white font-bold py-3 rounded-2xl shadow-lg text-lg hover:scale-105 transition">ส่งคำขอรับหิ้ว</button>
-              </form>
-            </DialogContent>
-          </div>
+                              </form>
+              </DialogContent>
         </Dialog>
       )}
     </div>
   );
+  } catch (error) {
+    console.error('Error in MarketplacePage:', error);
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-pink-50 dark:from-gray-900 dark:to-gray-800 flex items-center justify-center">
+        <div className="text-center">
+          <h2 className="text-2xl font-bold text-gray-900 mb-4">เกิดข้อผิดพลาด</h2>
+          <p className="text-gray-600 mb-4">ขออภัย เกิดข้อผิดพลาดที่ไม่คาดคิด</p>
+          <button
+            onClick={() => window.location.reload()}
+            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+          >
+            ลองใหม่
+          </button>
+        </div>
+      </div>
+    );
+  }
 }
