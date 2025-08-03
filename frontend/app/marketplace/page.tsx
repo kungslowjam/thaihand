@@ -70,9 +70,7 @@ export default function MarketplacePage() {
   const [bookmarks, setBookmarks] = useState<number[]>([]);
   const [loading, setLoading] = useState(false); // mock loading
   const [openRequestModal, setOpenRequestModal] = useState<string|null>(null);
-  const [openCarryModal, setOpenCarryModal] = useState<string|null>(null);
   const [requestForm, setRequestForm] = useState({ image: '', itemName: '', weight: '', amount: '', note: '' });
-  const [carryForm, setCarryForm] = useState({ image: '', itemName: '', weight: '', amount: '', note: '' });
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [offers, setOffers] = useState<any[]>([]);
   const [requests, setRequests] = useState<any[]>([]); // ถ้ามี requests จริงให้เตรียมไว้ด้วย
@@ -212,7 +210,6 @@ export default function MarketplacePage() {
           <div className="flex gap-1">
             <Button size="sm" variant={tab === "requests" ? "default" : "outline"} className={`rounded-full px-4 py-1 text-xs font-semibold`} onClick={() => { setTab("requests"); setPage(1); }}>ฝากหิ้ว</Button>
             <Button size="sm" variant={tab === "offers" ? "default" : "outline"} className={`rounded-full px-4 py-1 text-xs font-semibold`} onClick={() => { setTab("offers"); setPage(1); }}>รับหิ้ว</Button>
-            <Button size="sm" variant="outline" className="rounded-full px-4 py-1 text-xs font-semibold bg-green-50 hover:bg-green-100 text-green-700 border-green-200" onClick={() => setOpenCarryModal("new")}>+ ฝากหิ้วใหม่</Button>
           </div>
         </div>
 
@@ -237,14 +234,6 @@ export default function MarketplacePage() {
                 <span className="text-5xl mb-2">🛍️</span>
                 <h3 className="text-lg font-semibold text-gray-500 mb-2">ยังไม่มีรายการฝากหิ้ว</h3>
                 <p className="text-gray-400 mb-4">เริ่มฝากหิ้วของชิ้นแรกของคุณได้เลย!</p>
-                <Button 
-                  size="lg" 
-                  variant="outline" 
-                  className="bg-green-50 hover:bg-green-100 text-green-700 border-green-200 px-6 py-3 rounded-full"
-                  onClick={() => setOpenCarryModal("new")}
-                >
-                  + ฝากหิ้วใหม่
-                </Button>
               </div>
             ) : validRequests.map((req: any) => (
               <div key={req.id} className="bg-white/90 dark:bg-gray-900/90 rounded-2xl shadow border border-white/30 dark:border-gray-800 flex flex-col overflow-hidden min-w-[260px] animate-fade-in">
@@ -270,7 +259,7 @@ export default function MarketplacePage() {
                   </div>
                   {/* badge ประเภท/สถานะ */}
                   <div className="flex gap-2 mb-2">
-                    <Badge className="bg-gradient-to-r from-indigo-200 to-indigo-400 text-indigo-800 px-2 py-0.5 text-xs rounded-full flex items-center gap-1"><Plane className="h-3 w-3 mr-1" /> รับหิ้ว</Badge>
+                    <Badge className="bg-gradient-to-r from-pink-200 to-purple-400 text-purple-800 px-2 py-0.5 text-xs rounded-full flex items-center gap-1"><Package className="h-3 w-3 mr-1" /> ฝากหิ้ว</Badge>
                   </div>
                   {/* เส้นทาง + วันที่ */}
                   <div className="text-sm text-gray-500 mb-2">บิน {req.flightDate} • ปิดรับ {req.closeDate}</div>
@@ -288,7 +277,7 @@ export default function MarketplacePage() {
                     <span className="text-sm text-gray-700 dark:text-gray-200">{req.user ?? "-"}</span>
                   </div>
                   <div className="border-t border-gray-100 dark:border-gray-800 my-2" />
-                  <Button size="lg" variant="outline" className="w-full rounded-b-2xl py-2 text-base font-semibold shadow hover:bg-indigo-50/60 hover:scale-105 transition flex items-center gap-2" title="รับหิ้ว" onClick={() => setOpenRequestModal(req.id.toString())}><span>รับหิ้ว</span></Button>
+                  <Button size="lg" variant="outline" className="w-full rounded-b-2xl py-2 text-base font-semibold shadow hover:bg-pink-50/60 hover:scale-105 transition flex items-center gap-2" title="ฝากหิ้ว" onClick={() => setOpenRequestModal(req.id.toString())}><span>ฝากหิ้ว</span></Button>
                 </div>
               </div>
             ))
@@ -426,7 +415,7 @@ export default function MarketplacePage() {
             }}
             onClick={(e) => e.stopPropagation()}
           >
-              <h2 className="text-2xl font-bold mb-6 text-center text-blue-700">รับหิ้วสินค้า</h2>
+              <h2 className="text-2xl font-bold mb-6 text-center text-blue-700">ฝากหิ้วสินค้า</h2>
               <button
                 className="absolute top-4 right-4 rounded-full bg-gray-100 hover:bg-pink-200 p-2 transition"
                 onClick={() => setOpenRequestModal(null)}
@@ -434,8 +423,7 @@ export default function MarketplacePage() {
               >
                 <span className="text-gray-400 text-xl">✕</span>
               </button>
-              <h2 className="text-2xl font-bold mb-6 text-center text-blue-700">รับหิ้วสินค้า</h2>
-              <p className="text-sm text-gray-500 mb-4 text-center">กรุณากรอกข้อมูลสินค้าที่ต้องการรับหิ้ว</p>
+              <p className="text-sm text-gray-500 mb-4 text-center">กรุณากรอกข้อมูลสินค้าที่ต้องการฝากหิ้ว</p>
               <form onSubmit={async e => {
                 e.preventDefault();
                 try {
@@ -466,7 +454,7 @@ export default function MarketplacePage() {
                     setOpenRequestModal(null);
                     setRequestForm({ image: '', itemName: '', weight: '', amount: '', note: '' });
                     if (fileInputRef.current) fileInputRef.current.value = '';
-                    alert("ส่งคำขอรับหิ้วสำเร็จ!");
+                    alert("ส่งคำขอฝากหิ้วสำเร็จ!");
                   } else if (res.status === 401) {
                     alert("กรุณาเข้าสู่ระบบก่อนส่งคำขอ");
                   } else {
@@ -507,132 +495,14 @@ export default function MarketplacePage() {
                   <label className="block text-sm font-semibold mb-1">หมายเหตุ (ถ้ามี)</label>
                   <Textarea placeholder="หมายเหตุ (ถ้ามี)" className="rounded-xl border px-3 py-2" value={requestForm.note} onChange={e => setRequestForm(f => ({ ...f, note: e.target.value }))} />
                 </div>
-                <button type="submit" className="w-full bg-gradient-to-r from-blue-500 via-indigo-500 to-pink-500 text-white font-bold py-3 rounded-2xl shadow-lg text-lg hover:scale-105 transition">ส่งคำขอรับหิ้ว</button>
+                <button type="submit" className="w-full bg-gradient-to-r from-blue-500 via-indigo-500 to-pink-500 text-white font-bold py-3 rounded-2xl shadow-lg text-lg hover:scale-105 transition">ส่งคำขอฝากหิ้ว</button>
               </form>
             </div>
           </div>,
           document.body
         )}
 
-      {/* เพิ่ม modal ฟอร์มฝากหิ้ว */}
-      {openCarryModal && typeof window !== 'undefined' && createPortal(
-        <div 
-          style={{
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            width: '100%',
-            height: '100%',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            zIndex: 9999,
-            backgroundColor: 'rgba(0, 0, 0, 0.5)'
-          }}
-          onClick={() => setOpenCarryModal(null)}
-        >
-          <div 
-            style={{
-              position: 'relative',
-              maxWidth: '28rem',
-              width: '90%',
-              maxHeight: '80vh',
-              overflowY: 'auto',
-              backgroundColor: 'rgba(255, 255, 255, 0.95)',
-              borderRadius: '1.5rem',
-              padding: '2.5rem',
-              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
-              border: 'none',
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center'
-            }}
-            onClick={(e) => e.stopPropagation()}
-          >
-              <h2 className="text-2xl font-bold mb-6 text-center text-green-700">ฝากหิ้วสินค้า</h2>
-              <button
-                className="absolute top-4 right-4 rounded-full bg-gray-100 hover:bg-green-200 p-2 transition"
-                onClick={() => setOpenCarryModal(null)}
-                type="button"
-              >
-                <span className="text-gray-400 text-xl">✕</span>
-              </button>
-              <p className="text-sm text-gray-500 mb-4 text-center">กรุณากรอกข้อมูลสินค้าที่ต้องการฝากหิ้ว</p>
-              <form onSubmit={async e => {
-                e.preventDefault();
-                try {
-                  if (!backendToken) {
-                    alert("กรุณาเข้าสู่ระบบก่อนส่งคำขอ");
-                    return;
-                  }
-                  
-                  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || '/api'}/requests`, {
-                    method: "POST",
-                    headers: {
-                      "Content-Type": "application/json",
-                      "Authorization": `Bearer ${backendToken}`
-                    },
-                    body: JSON.stringify({
-                      title: carryForm.itemName || "สินค้าทั่วไป",
-                      from_location: "", // เพิ่มค่าจริงตามที่ต้องการ
-                      to_location: "",   // เพิ่มค่าจริงตามที่ต้องการ
-                      deadline: "",      // เพิ่มค่าจริงตามที่ต้องการ
-                      budget: parseInt(carryForm.amount) || 0,
-                      description: carryForm.note || "ไม่มีรายละเอียดเพิ่มเติม",
-                      image: carryForm.image,
-                      source: "marketplace"
-                    })
-                  });
-                  if (res.ok) {
-                    setOpenCarryModal(null);
-                    setCarryForm({ image: '', itemName: '', weight: '', amount: '', note: '' });
-                    alert("ส่งคำขอฝากหิ้วสำเร็จ!");
-                  } else if (res.status === 401) {
-                    alert("กรุณาเข้าสู่ระบบก่อนส่งคำขอ");
-                  } else {
-                    const text = await res.text();
-                    alert("เกิดข้อผิดพลาด: " + text);
-                  }
-                } catch (err) {
-                  alert("เกิดข้อผิดพลาดในการเชื่อมต่อเซิร์ฟเวอร์");
-                }
-              }} className="w-full flex flex-col gap-4">
-                <div>
-                  <label className="block text-sm font-semibold mb-1">รูปสินค้า</label>
-                  <Input type="file" accept="image/*" className="mb-2" onChange={e => {
-                    const file = e.target.files?.[0];
-                    if (file) {
-                      const reader = new FileReader();
-                      reader.onload = ev => setCarryForm(f => ({ ...f, image: ev.target?.result as string }));
-                      reader.readAsDataURL(file);
-                    }
-                  }} />
-                  {carryForm.image && <img src={carryForm.image} alt="preview" className="w-full h-32 object-cover rounded-lg border mb-2" />}
-                </div>
-                <div>
-                  <label className="block text-sm font-semibold mb-1">ชื่อสินค้า</label>
-                  <Input placeholder="เช่น ไดฟูกุ, ช็อกโกแลต, เสื้อผ้า" className="rounded-xl border px-3 py-2" value={carryForm.itemName} onChange={e => setCarryForm(f => ({ ...f, itemName: e.target.value }))} required />
-                </div>
-                <div className="flex gap-3">
-                  <div className="flex-1">
-                    <label className="block text-sm font-semibold mb-1">น้ำหนัก (กก.)</label>
-                    <Input type="number" placeholder="น้ำหนัก (กก.)" className="rounded-xl border px-3 py-2" value={carryForm.weight} onChange={e => setCarryForm(f => ({ ...f, weight: e.target.value }))} required />
-                  </div>
-                  <div className="flex-1">
-                    <label className="block text-sm font-semibold mb-1">จำนวน</label>
-                    <Input type="number" placeholder="จำนวน" className="rounded-xl border px-3 py-2" value={carryForm.amount} onChange={e => setCarryForm(f => ({ ...f, amount: e.target.value }))} required />
-                  </div>
-                </div>
-                <div>
-                  <label className="block text-sm font-semibold mb-1">หมายเหตุ (ถ้ามี)</label>
-                  <Textarea placeholder="หมายเหตุ (ถ้ามี)" className="rounded-xl border px-3 py-2" value={carryForm.note} onChange={e => setCarryForm(f => ({ ...f, note: e.target.value }))} />
-                </div>
-                <button type="submit" className="w-full bg-gradient-to-r from-green-500 via-emerald-500 to-teal-500 text-white font-bold py-3 rounded-2xl shadow-lg text-lg hover:scale-105 transition">ส่งคำขอฝากหิ้ว</button>
-              </form>
-            </div>
-          </div>,
-          document.body
-        )}
+
     </div>
   );
   } catch (error) {
