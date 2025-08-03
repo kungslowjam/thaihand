@@ -273,7 +273,7 @@ export default function MyItemsPage() {
                         </div>
                       </div>
                       <div className="flex gap-1 items-center">
-                        <Link href={`/request/${req.id}/edit`}><Button size="icon" variant="outline" title="แก้ไข"><Edit2 className="h-4 w-4" /></Button></Link>
+                        <Link href={`/request/${req.id}`}><Button size="icon" variant="outline" title="แก้ไข"><Edit2 className="h-4 w-4" /></Button></Link>
                         <Button size="icon" variant="destructive" title="ลบ" onClick={() => setShowDelete({ type: "request", id: req.id })}><Trash2 className="h-4 w-4" /></Button>
                       </div>
                     </div>
@@ -345,7 +345,7 @@ export default function MyItemsPage() {
                           </div>
                         </div>
                         <div className="flex gap-1 items-center">
-                          <Link href={`/request/${req.id}/edit`}><Button size="icon" variant="outline" title="แก้ไข"><Edit2 className="h-4 w-4" /></Button></Link>
+                          <Link href={`/request/${req.id}`}><Button size="icon" variant="outline" title="แก้ไข"><Edit2 className="h-4 w-4" /></Button></Link>
                           <Button size="icon" variant="destructive" title="ลบ" onClick={() => setShowDelete({ type: "request", id: req.id })}><Trash2 className="h-4 w-4" /></Button>
                         </div>
                       </div>
@@ -399,7 +399,7 @@ export default function MyItemsPage() {
                     </div>
                     <div className="flex gap-1 items-center">
                       <Link href={`/my-routes/management/${offer.id}`}><Button size="icon" variant="outline" title="จัดการ"><svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536M9 11l6 6M3 21h6v-6l9.293-9.293a1 1 0 00-1.414-1.414L9 9.586V3H3v6h6v6H3v6z" /></svg></Button></Link>
-                      <Link href={`/offer/${offer.id}/edit`}><Button size="icon" variant="outline" title="แก้ไข"><Edit2 className="h-4 w-4" /></Button></Link>
+                      <Link href={`/offer/${offer.id}`}><Button size="icon" variant="outline" title="แก้ไข"><Edit2 className="h-4 w-4" /></Button></Link>
                       <Button size="icon" variant="destructive" title="ลบ" onClick={() => setShowDelete({ type: "offer", id: offer.id })}><Trash2 className="h-4 w-4" /></Button>
                     </div>
                   </div>

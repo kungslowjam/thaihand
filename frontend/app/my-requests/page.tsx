@@ -46,11 +46,11 @@ export default function MyRequestsPage() {
   }, [session]);
 
   const handleView = (id: number) => {
-    router.push(`/request/${id}/edit`);
+    router.push(`/request/${id}`);
   };
 
   const handleEdit = (id: number) => {
-    router.push(`/request/${id}/edit`);
+    router.push(`/request/${id}`);
   };
 
   const handleDelete = async (id: number) => {
