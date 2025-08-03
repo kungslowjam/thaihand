@@ -10,7 +10,7 @@ import { Dialog, DialogContent, DialogTitle } from '@radix-ui/react-dialog';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { useRef } from 'react';
-import { Progress } from '@/components/progress';
+
 import Link from "next/link";
 import { useBackendToken } from "@/lib/useBackendToken";
 
@@ -152,6 +152,11 @@ export default function MarketplacePage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-pink-50 dark:from-gray-900 dark:to-gray-800">
       <main className="pt-24 max-w-7xl mx-auto px-4">
+        {/* Header */}
+        <div className="mb-8 text-center">
+          <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent mb-3">ตลาดฝากหิ้ว</h1>
+          <p className="text-gray-600 text-lg">ค้นหาและจองบริการฝากหิ้วจากผู้เดินทาง</p>
+        </div>
         {/* Filter/Sort Bar */}
         <div className="sticky top-16 z-20 flex flex-wrap gap-2 bg-white/70 dark:bg-gray-900/70 rounded-xl px-3 py-2 shadow-sm border border-white/30 dark:border-gray-800 backdrop-blur-xl mb-4">
           <div className="flex items-center bg-transparent rounded-full px-2 py-0.5">
@@ -186,20 +191,20 @@ export default function MarketplacePage() {
         </div>
 
         {/* Search Bar */}
-        <div className="flex items-center gap-2 mb-8 bg-white/60 dark:bg-gray-800/60 rounded-full px-4 py-2 shadow-sm max-w-lg mx-auto">
+        <div className="flex items-center gap-2 mb-8 bg-white/80 rounded-full px-6 py-3 shadow-lg max-w-lg mx-auto border border-gray-100">
           <Search className="h-5 w-5 text-gray-400" />
           <input
             type="text"
             placeholder={tab === "requests" ? "ค้นหาของฝาก..." : "ค้นหาเส้นทาง..."}
             value={search}
             onChange={e => { setSearch(e.target.value); setPage(1); }}
-            className="flex-1 bg-transparent outline-none px-2 py-1 text-sm"
+            className="flex-1 bg-transparent outline-none px-2 py-1 text-sm font-medium"
           />
         </div>
 
         {/* Card Grid */}
         <div className="mb-2 text-right text-xs text-gray-400">จำนวนแถว: {rowCount}</div>
-        <div className="grid gap-8 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 justify-center">
+        <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 justify-items-center">
           {isRequestsTab ? (
             validRequests.length === 0 ? (
               <div className="col-span-full flex flex-col items-center justify-center py-16 animate-fade-in">
@@ -208,49 +213,73 @@ export default function MarketplacePage() {
                 <p className="text-gray-400 mb-4">เริ่มฝากหิ้วของชิ้นแรกของคุณได้เลย!</p>
               </div>
             ) : validRequests.map((req: any) => (
-              <div key={req.id} className="bg-white/90 dark:bg-gray-900/90 rounded-2xl shadow border border-white/30 dark:border-gray-800 flex flex-col overflow-hidden min-w-[260px] animate-fade-in">
-                {/* รูปภาพ + badge + ปุ่ม action */}
-                <div className="relative">
-                  <img src={req.image} alt={req.routeFrom + " → " + req.routeTo} className="w-full h-40 object-cover" />
-                  <div className="absolute top-2 right-2 flex gap-1 z-10">
-                    {req.urgent && <Badge className="bg-pink-100 text-pink-600 rounded-full px-2 py-0.5 text-xs flex items-center gap-1"><Sparkles className="w-3 h-3" />ด่วน</Badge>}
-                    {/* ปุ่ม bookmark/chat (mock) */}
-                    <button className="rounded-full bg-white/90 dark:bg-gray-900/90 shadow p-1.5 hover:bg-blue-100 dark:hover:bg-blue-900 transition" title="บันทึกรายการ"><Star className="w-4 h-4 text-pink-400" /></button>
-                    <button className="rounded-full bg-white/90 dark:bg-gray-900/90 shadow p-1.5 hover:bg-green-100 dark:hover:bg-green-900 transition" title="ติดต่อ"><MessageCircle className="w-4 h-4 text-green-400" /></button>
+              <div key={req.id} className="bg-white/95 rounded-2xl shadow-lg border border-gray-100 p-5 flex flex-col h-full transition-all duration-300 hover:shadow-xl hover:scale-[1.02] hover:border-green-200">
+                {/* Header with flags and route */}
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="flex items-center -space-x-1">
+                    <img src={`https://flagcdn.com/48x36/${req.routeFrom?.split(',').pop()?.trim().toLowerCase()}.png`} alt="" className="w-8 h-8 rounded-full border-2 border-white shadow-sm" />
+                    <img src={`https://flagcdn.com/48x36/${req.routeTo?.split(',').pop()?.trim().toLowerCase()}.png`} alt="" className="w-8 h-8 rounded-full border-2 border-white shadow-sm" />
                   </div>
-                </div>
-                <div className="p-5 flex-1 flex flex-col">
-                  {/* ชื่อสินค้า */}
-                  <div className="font-bold text-lg text-gray-900 dark:text-white mb-1 truncate flex items-center gap-2">
-                    <Plane className="h-5 w-5 text-indigo-400" />
-                    {req.routeFrom} → {req.routeTo}
+                  <div className="flex-1 min-w-0">
+                    <div className="font-bold text-gray-900 text-lg truncate">{req.routeFrom} → {req.routeTo}</div>
+                    <div className="flex items-center gap-2 text-xs text-gray-500 mt-1">
+                      <span>✈️ {req.flightDate}</span>
+                      <span>•</span>
+                      <span>ปิดรับ {req.closeDate}</span>
+                    </div>
                   </div>
-                  {/* badge ประเภท/สถานะ */}
-                  <div className="flex gap-2 mb-2">
-                    <Badge className="bg-gradient-to-r from-indigo-200 to-indigo-400 text-indigo-800 px-2 py-0.5 text-xs rounded-full flex items-center gap-1"><Plane className="h-3 w-3 mr-1" /> รับหิ้ว</Badge>
-                  </div>
-                  {/* เส้นทาง + วันที่ */}
-                  <div className="text-sm text-gray-500 mb-2">บิน {req.flightDate} • ปิดรับ {req.closeDate}</div>
-                  {/* ราคา + สถานะ */}
-                  <div className="flex items-center gap-2 mb-2">
-                    <span className="text-blue-700 dark:text-blue-300 font-semibold text-lg flex items-center gap-1"><BadgeDollarSign className="h-4 w-4" />
-                      {req.rates?.[0] ? `${req.rates[0].price} บาท/${req.rates[0].weight}` : "-"}
+                  {req.urgent && (
+                    <span className="bg-gradient-to-r from-orange-400 to-red-500 text-white rounded-full px-2 py-1 text-xs font-semibold shadow-sm flex items-center gap-1">
+                      <Sparkles className="w-3 h-3" />
+                      ด่วน
                     </span>
-                    <Badge className={`px-2 py-0.5 text-xs rounded-full flex items-center gap-1 bg-indigo-100 text-indigo-700`}><span className='mr-1'>✈️</span>{req.status}</Badge>
-                  </div>
-                  {/* น้ำหนักคงเหลือ (gauge) */}
-                  <Progress value={0} className="h-4 bg-gray-200 mt-2" />
-                  <div className="flex justify-between items-center mt-1 text-xs">
-                    <span className="text-gray-500 font-semibold">เหลือ 0 กก.</span>
-                  </div>
-                  {/* ผู้ใช้ */}
-                  <div className="flex items-center gap-2 mt-auto mb-2">
-                    <div className="w-7 h-7 rounded-full bg-gray-200 flex items-center justify-center text-gray-500 text-sm font-bold">{req.user?.[0] ?? "-"}</div>
-                    <span className="text-sm text-gray-700 dark:text-gray-200">{req.user ?? "-"}</span>
-                  </div>
-                  <div className="border-t border-gray-100 dark:border-gray-800 my-2" />
-                  <Button size="lg" variant="outline" className="w-full rounded-b-2xl py-2 text-base font-semibold shadow hover:bg-indigo-50/60 hover:scale-105 transition flex items-center gap-2" title="ฝากหิ้ว" onClick={() => setOpenRequestModal(req.id.toString())}><span>ฝากหิ้ว</span></Button>
+                  )}
                 </div>
+
+                {/* Price section */}
+                <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl p-3 mb-4">
+                  <div className="text-center">
+                    <div className="text-emerald-700 font-bold text-2xl">
+                      {req.rates?.[0] ? `${req.rates[0].price} บาท/${req.rates[0].weight}` : "-"}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Details section */}
+                <div className="space-y-2 mb-4 flex-1">
+                  <div className="flex items-center gap-2 text-sm text-gray-600">
+                    <span className="text-blue-500">📍</span>
+                    <span className="truncate">จุดนัดรับ: {req.pickupPlace || "-"}</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm text-gray-600">
+                    <span className="text-green-500">📞</span>
+                    <span className="truncate">ติดต่อ: {req.contact || "-"}</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm text-gray-600">
+                    <span className="text-yellow-500">📝</span>
+                    <span className="truncate">หมายเหตุ: {req.description || "-"}</span>
+                  </div>
+                </div>
+
+                {/* User info */}
+                <div className="flex items-center gap-2 mb-4">
+                  <div className="w-8 h-8 rounded-full bg-gradient-to-r from-green-400 to-emerald-500 flex items-center justify-center text-white text-sm font-bold">
+                    {req.user?.[0] ?? "-"}
+                  </div>
+                  <span className="text-sm text-gray-700 font-medium">{req.user ?? "-"}</span>
+                </div>
+
+                {/* Action button */}
+                <Button 
+                  size="lg" 
+                  variant="outline" 
+                  className="w-full bg-gradient-to-r from-green-500 to-emerald-600 text-white border-0 font-semibold py-3 rounded-xl shadow-md text-base hover:shadow-lg hover:scale-[1.02] transition-all duration-200 flex items-center justify-center gap-2" 
+                  title="รับหิ้ว" 
+                  onClick={() => setOpenRequestModal(req.id.toString())}
+                >
+                  <ShoppingBag className="w-5 h-5" />
+                  รับหิ้ว
+                </Button>
               </div>
             ))
           ) : (
@@ -266,55 +295,63 @@ export default function MarketplacePage() {
               const usedWeight = offer?.usedWeight || 0;
               const remainingWeight = maxWeight - usedWeight;
               return (
-                <div key={offer.id} className="bg-white/90 rounded-3xl shadow-2xl border-0 p-6 flex flex-col w-full max-w-[320px] mx-auto transition-transform hover:scale-105 hover:shadow-[0_8px_32px_rgba(80,80,200,0.15)] duration-200">
-                  <div className="flex items-center gap-2 mb-4">
-                    {/* ธงชาติแบบ flex row ไม่ absolute */}
-                    <img src={`https://flagcdn.com/48x36/${offer.routeFrom?.split(',').pop()?.trim().toLowerCase()}.png`} alt="" className="w-7 h-7 rounded-full border-2 border-white shadow" />
-                    <img src={`https://flagcdn.com/48x36/${offer.routeTo?.split(',').pop()?.trim().toLowerCase()}.png`} alt="" className="w-7 h-7 rounded-full border-2 border-white shadow -ml-2" />
-                    <div className="ml-2 flex-1 truncate font-bold text-lg text-gray-900">{offer.routeFrom} → {offer.routeTo}</div>
+                <div key={offer.id} className="bg-white/95 rounded-2xl shadow-lg border border-gray-100 p-5 flex flex-col h-full transition-all duration-300 hover:shadow-xl hover:scale-[1.02] hover:border-blue-200">
+                  {/* Header with flags and route */}
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="flex items-center -space-x-1">
+                      <img src={`https://flagcdn.com/48x36/${offer.routeFrom?.split(',').pop()?.trim().toLowerCase()}.png`} alt="" className="w-8 h-8 rounded-full border-2 border-white shadow-sm" />
+                      <img src={`https://flagcdn.com/48x36/${offer.routeTo?.split(',').pop()?.trim().toLowerCase()}.png`} alt="" className="w-8 h-8 rounded-full border-2 border-white shadow-sm" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="font-bold text-gray-900 text-lg truncate">{offer.routeFrom} → {offer.routeTo}</div>
+                      <div className="flex items-center gap-2 text-xs text-gray-500 mt-1">
+                        <span>✈️ {offer.flightDate}</span>
+                        <span>•</span>
+                        <span>ปิดรับ {offer.closeDate}</span>
+                      </div>
+                    </div>
                     {offer.urgent === "true" && (
-                      <span className="ml-auto bg-gradient-to-r from-pink-400 to-pink-600 text-white rounded-full px-3 py-0.5 text-xs font-semibold shadow flex items-center gap-1">
-                        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 2v2m6.364 1.636l-1.414 1.414M22 12h-2m-1.636 6.364l-1.414-1.414M12 22v-2m-6.364-1.636l1.414-1.414M2 12h2m1.636-6.364l1.414 1.414" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                      <span className="bg-gradient-to-r from-orange-400 to-red-500 text-white rounded-full px-2 py-1 text-xs font-semibold shadow-sm flex items-center gap-1">
+                        <Sparkles className="w-3 h-3" />
                         ด่วน
                       </span>
                     )}
                   </div>
-                  <div className="flex items-center text-xs text-gray-500 mb-2 gap-2">
-                    <span>✈️ {offer.flightDate}</span>
-                    <span>•</span>
-                    <span>ปิดรับ {offer.closeDate}</span>
-                  </div>
-                  <div className="flex items-center gap-2 mb-3">
-                    <span className="text-indigo-700 font-bold text-xl">
-                      {Array.isArray(offer.rates) && offer.rates.length > 0 && offer.rates[0].price
-                        ? `${offer.rates[0].price} บาท/${offer.rates[0].weight}`
-                        : "-"}
-                    </span>
-                  </div>
-                  <div className="flex flex-col gap-1 text-sm text-gray-600 mb-3">
-                    <div className="flex items-center gap-2"><span className="text-blue-400">📍</span> <span>จุดนัดรับ: {offer.pickupPlace || "-"}</span></div>
-                    <div className="flex items-center gap-2"><span className="text-green-400">📞</span> <span>ติดต่อ: {offer.contact || "-"}</span></div>
-                    <div className="flex items-center gap-2"><span className="text-yellow-400">📝</span> <span>หมายเหตุ: {offer.description || "-"}</span></div>
-                  </div>
-                  {/* น้ำหนักคงเหลือ */}
-                  <div className="mb-3">
-                    <div className="flex justify-between items-center mb-1 text-xs font-medium">
-                      <span>น้ำหนักที่รับแล้ว</span>
-                      <span>{usedWeight} / {maxWeight} กก.</span>
+
+                  {/* Price section */}
+                  <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-3 mb-4">
+                    <div className="text-center">
+                      <div className="text-indigo-700 font-bold text-2xl">
+                        {Array.isArray(offer.rates) && offer.rates.length > 0 && offer.rates[0].price
+                          ? `${offer.rates[0].price} บาท/${offer.rates[0].weight}`
+                          : "-"}
+                      </div>
                     </div>
-                    <Progress value={Math.min((usedWeight / maxWeight) * 100, 100)} className="h-4 bg-gray-200" />
-                    <div className="flex justify-between items-center mt-1 text-xs">
-                      <span className="text-gray-500 font-semibold">เหลือ {remainingWeight.toFixed(2)} กก.</span>
-                    </div>
-                    {usedWeight > maxWeight && (
-                      <div className="text-xs text-red-500 mt-1 font-semibold">น้ำหนักเกินลิมิต!</div>
-                    )}
                   </div>
+
+                  {/* Details section */}
+                  <div className="space-y-2 mb-4 flex-1">
+                    <div className="flex items-center gap-2 text-sm text-gray-600">
+                      <span className="text-blue-500">📍</span>
+                      <span className="truncate">จุดนัดรับ: {offer.pickupPlace || "-"}</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-sm text-gray-600">
+                      <span className="text-green-500">📞</span>
+                      <span className="truncate">ติดต่อ: {offer.contact || "-"}</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-sm text-gray-600">
+                      <span className="text-yellow-500">📝</span>
+                      <span className="truncate">หมายเหตุ: {offer.description || "-"}</span>
+                    </div>
+                  </div>
+
+                  {/* Action button */}
                   <button
-                    className="mt-auto w-full bg-gradient-to-r from-blue-500 to-pink-500 text-white font-bold py-2.5 rounded-2xl shadow-lg text-base hover:scale-105 transition"
+                    className="w-full bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-semibold py-3 rounded-xl shadow-md text-base hover:shadow-lg hover:scale-[1.02] transition-all duration-200 flex items-center justify-center gap-2"
                     onClick={() => setOpenRequestModal(offer.id.toString())}
                   >
-                    ฝากหิ้ว
+                    <ShoppingBag className="w-5 h-5" />
+                    รับหิ้ว
                   </button>
                 </div>
               );
@@ -365,7 +402,7 @@ export default function MarketplacePage() {
         <Dialog open={true} onOpenChange={() => setOpenRequestModal(null)}>
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm">
             <DialogContent className="bg-white/90 rounded-3xl p-10 max-w-md w-full shadow-2xl border-0 relative animate-fade-in flex flex-col items-center">
-              <DialogTitle>ฝากหิ้วสินค้า</DialogTitle>
+              <DialogTitle>รับหิ้วสินค้า</DialogTitle>
               <button
                 className="absolute top-4 right-4 rounded-full bg-gray-100 hover:bg-pink-200 p-2 transition"
                 onClick={() => setOpenRequestModal(null)}
@@ -373,7 +410,7 @@ export default function MarketplacePage() {
               >
                 <span className="text-gray-400 text-xl">✕</span>
               </button>
-              <h2 className="text-2xl font-bold mb-6 text-center text-blue-700">ฝากหิ้วสินค้า</h2>
+              <h2 className="text-2xl font-bold mb-6 text-center text-blue-700">รับหิ้วสินค้า</h2>
               <form onSubmit={async e => {
                 e.preventDefault();
                 try {
@@ -404,7 +441,7 @@ export default function MarketplacePage() {
                     setOpenRequestModal(null);
                     setRequestForm({ image: '', itemName: '', weight: '', amount: '', note: '' });
                     if (fileInputRef.current) fileInputRef.current.value = '';
-                    alert("ส่งคำขอฝากหิ้วสำเร็จ!");
+                    alert("ส่งคำขอรับหิ้วสำเร็จ!");
                   } else if (res.status === 401) {
                     alert("กรุณาเข้าสู่ระบบก่อนส่งคำขอ");
                   } else {
@@ -445,7 +482,7 @@ export default function MarketplacePage() {
                   <label className="block text-sm font-semibold mb-1">หมายเหตุ (ถ้ามี)</label>
                   <Textarea placeholder="หมายเหตุ (ถ้ามี)" className="rounded-xl border px-3 py-2" value={requestForm.note} onChange={e => setRequestForm(f => ({ ...f, note: e.target.value }))} />
                 </div>
-                <button type="submit" className="w-full bg-gradient-to-r from-blue-500 via-indigo-500 to-pink-500 text-white font-bold py-3 rounded-2xl shadow-lg text-lg hover:scale-105 transition">ส่งคำขอ</button>
+                <button type="submit" className="w-full bg-gradient-to-r from-blue-500 via-indigo-500 to-pink-500 text-white font-bold py-3 rounded-2xl shadow-lg text-lg hover:scale-105 transition">ส่งคำขอรับหิ้ว</button>
               </form>
             </DialogContent>
           </div>
