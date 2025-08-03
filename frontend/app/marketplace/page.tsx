@@ -381,9 +381,9 @@ export default function MarketplacePage() {
 
       {/* เพิ่ม modal ฟอร์มรับหิ้ว */}
       {openRequestModal && (
-        <Dialog open={true} onOpenChange={() => setOpenRequestModal(null)}>
-          <DialogContent className="bg-white/90 rounded-3xl p-10 max-w-md w-full shadow-2xl border-0 relative animate-fade-in flex flex-col items-center">
-              <DialogTitle>รับหิ้วสินค้า</DialogTitle>
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50" onClick={() => setOpenRequestModal(null)}>
+          <div className="bg-white/90 rounded-3xl p-10 max-w-md w-full shadow-2xl border-0 animate-fade-in flex flex-col items-center mx-4 relative" onClick={(e) => e.stopPropagation()}>
+              <h2 className="text-2xl font-bold mb-6 text-center text-blue-700">รับหิ้วสินค้า</h2>
               <button
                 className="absolute top-4 right-4 rounded-full bg-gray-100 hover:bg-pink-200 p-2 transition"
                 onClick={() => setOpenRequestModal(null)}
@@ -465,10 +465,10 @@ export default function MarketplacePage() {
                   <Textarea placeholder="หมายเหตุ (ถ้ามี)" className="rounded-xl border px-3 py-2" value={requestForm.note} onChange={e => setRequestForm(f => ({ ...f, note: e.target.value }))} />
                 </div>
                 <button type="submit" className="w-full bg-gradient-to-r from-blue-500 via-indigo-500 to-pink-500 text-white font-bold py-3 rounded-2xl shadow-lg text-lg hover:scale-105 transition">ส่งคำขอรับหิ้ว</button>
-                              </form>
-              </DialogContent>
-        </Dialog>
-      )}
+              </form>
+            </div>
+          </div>
+        )}
     </div>
   );
   } catch (error) {
