@@ -6,7 +6,6 @@ import { Plane, User, Calendar, BadgeDollarSign, Star, MessageCircle } from 'luc
 import Link from 'next/link';
 import { useSession } from "next-auth/react";
 import { Progress } from '@/components/progress';
-
 export default function MyCarryOrdersPage() {
   const { data: session } = useSession();
   const [flights, setFlights] = useState<any[]>([]);

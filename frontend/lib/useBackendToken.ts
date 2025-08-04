@@ -45,7 +45,7 @@ export function useBackendToken() {
        };
        console.log("Request body for auth exchange:", requestBody);
        
-       fetch('/api/auth/exchange', {
+       fetch(`${process.env.NEXT_PUBLIC_API_URL || '/api'}/auth/exchange`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(requestBody)
