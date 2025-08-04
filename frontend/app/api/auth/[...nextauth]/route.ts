@@ -18,9 +18,19 @@ declare module "next-auth" {
   }
 }
 
-// Dynamic URL detection - ใช้ HTTPS เสมอ
+// Dynamic URL detection
 const getBaseUrl = () => {
-  // ใช้ HTTPS URL เสมอใน production
+  // ใช้ environment variable ถ้ามี
+  if (process.env.NEXTAUTH_URL) {
+    return process.env.NEXTAUTH_URL;
+  }
+  
+  // Fallback สำหรับ development
+  if (process.env.NODE_ENV === 'development') {
+    return 'http://localhost:3000';
+  }
+  
+  // Fallback สำหรับ production
   return 'https://thaihand.shop';
 };
 
@@ -33,6 +43,11 @@ const handler = NextAuth({
     LineProvider({
       clientId: process.env.LINE_CLIENT_ID!,
       clientSecret: process.env.LINE_CLIENT_SECRET!,
+      authorization: {
+        params: {
+          scope: 'profile openid email',
+        },
+      },
     }),
   ],
   pages: {
