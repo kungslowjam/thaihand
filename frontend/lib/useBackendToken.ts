@@ -35,9 +35,9 @@ export function useBackendToken() {
       console.log("SESSION_USER", session?.user);
       console.log("myUserId", (session as any)?.user?.id);
       
-      // Use environment variable for API URL
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://thaihand.shop/api';
-      console.log("API URL:", apiUrl);
+             // Use environment variable for API URL
+       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://thaihand.shop/api';
+       console.log("API URL:", apiUrl);
       
       const requestBody = { 
         accessToken, 
@@ -46,7 +46,7 @@ export function useBackendToken() {
       };
       console.log("Request body for auth exchange:", requestBody);
       
-      fetch(`${apiUrl}/auth/exchange`, {
+             fetch(`${apiUrl}/auth/exchange`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(requestBody)

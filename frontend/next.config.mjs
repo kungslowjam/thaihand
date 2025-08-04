@@ -50,10 +50,10 @@ const nextConfig = {
       {
         source: '/api/:path*',
         destination: process.env.NEXT_PUBLIC_API_URL
-          ? `${process.env.NEXT_PUBLIC_API_URL}/api/:path*`
+          ? `${process.env.NEXT_PUBLIC_API_URL}/api/v1/:path*`
           : process.env.NEXT_PUBLIC_BACKEND_URL
-          ? `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/:path*`
-          : 'https://thaihand.shop/api/:path*',
+          ? `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/:path*`
+          : 'https://thaihand.shop/api/v1/:path*',
       },
     ]
   },
