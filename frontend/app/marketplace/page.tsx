@@ -277,7 +277,9 @@ export default function MarketplacePage() {
                     <span className="text-sm text-gray-700 dark:text-gray-200">{req.user ?? "-"}</span>
                   </div>
                   <div className="border-t border-gray-100 dark:border-gray-800 my-2" />
-                  <Button size="lg" variant="outline" className="w-full rounded-b-2xl py-2 text-base font-semibold shadow hover:bg-pink-50/60 hover:scale-105 transition flex items-center gap-2" title="ฝากหิ้ว" onClick={() => setOpenRequestModal(req.id.toString())}><span>ฝากหิ้ว</span></Button>
+                  <Button size="lg" variant="outline" className="w-full rounded-b-2xl py-2 text-base font-semibold shadow hover:bg-pink-50/60 hover:scale-105 transition flex items-center gap-2" title={tab === "requests" ? "รับหิ้ว" : "ฝากหิ้ว"} onClick={() => setOpenRequestModal(req.id.toString())}>
+                    <span>{tab === "requests" ? "รับหิ้ว" : "ฝากหิ้ว"}</span>
+                  </Button>
                 </div>
               </div>
             ))
@@ -333,7 +335,7 @@ export default function MarketplacePage() {
                     className="mt-auto w-full bg-gradient-to-r from-blue-500 to-pink-500 text-white font-bold py-2.5 rounded-2xl shadow-lg text-base hover:scale-105 transition"
                     onClick={() => setOpenRequestModal(offer.id.toString())}
                   >
-                    รับหิ้ว
+                    {tab === "offers" ? "ฝากหิ้ว" : "รับหิ้ว"}
                   </button>
                 </div>
               );
@@ -415,7 +417,9 @@ export default function MarketplacePage() {
             }}
             onClick={(e) => e.stopPropagation()}
           >
-              <h2 className="text-2xl font-bold mb-6 text-center text-blue-700">ฝากหิ้วสินค้า</h2>
+              <h2 className="text-2xl font-bold mb-6 text-center text-blue-700">
+                {tab === "requests" ? "รับหิ้วสินค้า" : "ฝากหิ้วสินค้า"}
+              </h2>
               <button
                 className="absolute top-4 right-4 rounded-full bg-gray-100 hover:bg-pink-200 p-2 transition"
                 onClick={() => setOpenRequestModal(null)}
@@ -423,7 +427,12 @@ export default function MarketplacePage() {
               >
                 <span className="text-gray-400 text-xl">✕</span>
               </button>
-              <p className="text-sm text-gray-500 mb-4 text-center">กรุณากรอกข้อมูลสินค้าที่ต้องการฝากหิ้ว</p>
+              <p className="text-sm text-gray-500 mb-4 text-center">
+                {tab === "requests" 
+                  ? "กรุณากรอกข้อมูลสินค้าที่ต้องการรับหิ้ว" 
+                  : "กรุณากรอกข้อมูลสินค้าที่ต้องการฝากหิ้ว"
+                }
+              </p>
               <form onSubmit={async e => {
                 e.preventDefault();
                 try {
@@ -454,7 +463,7 @@ export default function MarketplacePage() {
                     setOpenRequestModal(null);
                     setRequestForm({ image: '', itemName: '', weight: '', amount: '', note: '' });
                     if (fileInputRef.current) fileInputRef.current.value = '';
-                    alert("ส่งคำขอฝากหิ้วสำเร็จ!");
+                    alert(tab === "requests" ? "ส่งคำขอรับหิ้วสำเร็จ!" : "ส่งคำขอฝากหิ้วสำเร็จ!");
                   } else if (res.status === 401) {
                     alert("กรุณาเข้าสู่ระบบก่อนส่งคำขอ");
                   } else {
@@ -495,7 +504,9 @@ export default function MarketplacePage() {
                   <label className="block text-sm font-semibold mb-1">หมายเหตุ (ถ้ามี)</label>
                   <Textarea placeholder="หมายเหตุ (ถ้ามี)" className="rounded-xl border px-3 py-2" value={requestForm.note} onChange={e => setRequestForm(f => ({ ...f, note: e.target.value }))} />
                 </div>
-                <button type="submit" className="w-full bg-gradient-to-r from-blue-500 via-indigo-500 to-pink-500 text-white font-bold py-3 rounded-2xl shadow-lg text-lg hover:scale-105 transition">ส่งคำขอฝากหิ้ว</button>
+                <button type="submit" className="w-full bg-gradient-to-r from-blue-500 via-indigo-500 to-pink-500 text-white font-bold py-3 rounded-2xl shadow-lg text-lg hover:scale-105 transition">
+                  {tab === "requests" ? "ส่งคำขอรับหิ้ว" : "ส่งคำขอฝากหิ้ว"}
+                </button>
               </form>
             </div>
           </div>,
