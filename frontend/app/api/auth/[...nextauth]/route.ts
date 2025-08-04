@@ -1,6 +1,5 @@
 import NextAuth from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
-import LineProvider from "next-auth/providers/line";
 
 // Force dynamic rendering
 export const dynamic = 'force-dynamic';
@@ -24,10 +23,6 @@ const handler = NextAuth({
       clientId: process.env.GOOGLE_CLIENT_ID!,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
     }),
-    LineProvider({
-      clientId: process.env.LINE_CLIENT_ID!,
-      clientSecret: process.env.LINE_CLIENT_SECRET!,
-    }),
   ],
   pages: {
     signIn: '/login',
@@ -40,24 +35,6 @@ const handler = NextAuth({
   },
   callbacks: {
     async signIn({ user, account, profile }) {
-      // สำหรับ LINE provider
-      if (account?.provider === 'line') {
-        // LINE อาจไม่มี email ให้ใช้ LINE ID แทน
-        if (!user.email && profile?.sub) {
-          user.email = `${profile.sub}@line.me`;
-        }
-        
-        // ใช้ LINE display name ถ้าไม่มี name
-        if (!user.name && (profile as any)?.name) {
-          user.name = (profile as any).name;
-        }
-        
-        // ใช้ LINE picture ถ้าไม่มี image
-        if (!user.image && (profile as any)?.picture) {
-          user.image = (profile as any).picture;
-        }
-      }
-      
       return true;
     },
     async redirect({ url, baseUrl }) {

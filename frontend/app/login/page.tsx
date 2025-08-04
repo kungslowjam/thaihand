@@ -3,7 +3,6 @@
 import { useState, Suspense, useEffect } from "react"
 import { ThaiHandLogo } from "@/components/thai-hand-logo"
 import { GoogleLoginButton } from "@/components/GoogleLoginButton"
-import { LineLoginButton } from "@/components/LineLoginButton"
 import { useSession } from "next-auth/react"
 import { useRouter, useSearchParams } from "next/navigation"
 
@@ -88,9 +87,6 @@ function LoginForm() {
           <div className="flex flex-col gap-5 w-full">
             {/* Google Login Button */}
             <GoogleLoginButton onError={handleError} />
-
-            {/* Line Login Button */}
-            <LineLoginButton onError={handleError} />
           </div>
 
           <div className="text-center mt-8">

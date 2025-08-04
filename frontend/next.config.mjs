@@ -2,14 +2,12 @@
 const nextConfig = {
   images: {
     domains: [
-      "profile.line-scdn.net",
       "lh3.googleusercontent.com",
       "abhprxkswysntmerxklb.supabase.co",
       // เพิ่ม domain อื่นๆ ที่ต้องการโหลดรูปได้ที่นี่
     ],
     remotePatterns: [
       { protocol: 'https', hostname: 'lh3.googleusercontent.com', port: '', pathname: '/**', },
-      { protocol: 'https', hostname: 'profile.line-scdn.net', port: '', pathname: '/**', },
       { protocol: 'https', hostname: 'abhprxkswysntmerxklb.supabase.co', port: '', pathname: '/**', },
     ],
     unoptimized: true, // เปลี่ยนเป็น true เพื่อปิด Image Optimization

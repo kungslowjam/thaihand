@@ -32,9 +32,7 @@ export default function NotificationsPage() {
 
   useEffect(() => {
     let email = session?.user?.email;
-    if (!email && session?.provider === 'line' && session?.user?.id) {
-      email = `${session.user.id}@line`;
-    }
+
     if (email) {
       fetch(`/api/notifications?user_email=${email}`)
         .then(res => res.json())

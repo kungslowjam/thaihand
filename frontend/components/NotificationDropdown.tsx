@@ -32,9 +32,6 @@ export default function NotificationDropdown() {
       clearNotifications();
       lastTimeRef.current = "1970-01-01T00:00:00";
       let email = session.user?.email;
-      if (!email && session.provider === "line" && session.user?.id) {
-        email = `${session.user.id}@line`;
-      }
       if (email) {
         fetch(`/api/notifications?user_email=${email}`)
           .then((res) => res.json())
@@ -57,11 +54,7 @@ export default function NotificationDropdown() {
       return;
     }
     
-    // รองรับ Line login ที่ไม่มี email แต่มี pseudo-email
     let email = session?.user?.email;
-    if (!email && session?.provider === 'line' && session?.user?.id) {
-      email = `${session.user.id}@line`; // สร้าง pseudo-email สำหรับ Line
-    }
     
     // ตรวจสอบว่า email พร้อมหรือไม่
     if (!email) {
