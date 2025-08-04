@@ -40,6 +40,11 @@ const handler = NextAuth({
   },
   callbacks: {
     async signIn({ user, account, profile }) {
+      console.log("SIGNIN CALLBACK:", { 
+        user: user ? { id: user.id, email: user.email, name: user.name } : null,
+        account: account ? { provider: account.provider, type: account.type } : null,
+        profile: profile ? { sub: profile.sub } : null
+      });
       return true;
     },
     async redirect({ url, baseUrl }) {
@@ -61,6 +66,11 @@ const handler = NextAuth({
       return url;
     },
     async session({ session, token }) {
+      console.log("SESSION CALLBACK:", { 
+        token: { id: token.id, provider: token.provider, hasAccessToken: !!token.accessToken },
+        session: { user: session.user }
+      });
+      
       // เพิ่ม user ID และ provider เข้า session
       if (token.sub) {
         session.user.id = token.sub;
@@ -69,9 +79,26 @@ const handler = NextAuth({
         session.user.provider = token.provider as string;
       }
       
+      // เพิ่ม access token เข้า session
+      if (token.accessToken) {
+        (session as any).accessToken = token.accessToken;
+      }
+      
+      console.log("SESSION DEBUG - Final session:", {
+        user: session.user.name,
+        provider: session.user.provider,
+        hasAccessToken: !!(session as any).accessToken
+      });
+      
       return session;
     },
     async jwt({ token, user, account, profile }) {
+      console.log("JWT CALLBACK:", { 
+        user: user ? { id: user.id, email: user.email, name: user.name } : null,
+        account: account ? { provider: account.provider, type: account.type } : null,
+        profile: profile ? { sub: profile.sub } : null
+      });
+      
       // เพิ่มข้อมูล user และ provider เข้า token
       if (user) {
         token.id = user.id;
@@ -79,7 +106,20 @@ const handler = NextAuth({
       if (account) {
         token.provider = account.provider;
         token.accessToken = account.access_token;
+        
+        // สำหรับ LINE login ที่อาจจะไม่มี email
+        if (account.provider === 'line' && !user.email) {
+          // ใช้ LINE ID เป็น email แทน
+          token.email = `line_${user.id}@line.user`;
+          console.log("LINE LOGIN - Using pseudo email:", token.email);
+        }
       }
+      
+      console.log("JWT CALLBACK - Final token:", { 
+        id: token.id, 
+        provider: token.provider, 
+        hasAccessToken: !!token.accessToken 
+      });
       
       return token;
     },

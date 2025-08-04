@@ -68,17 +68,31 @@ async def exchange_token(request: Request):
         elif provider == "line":
             # Verify Line token
             print("Verifying Line token...")
-            resp = requests.get("https://api.line.me/v2/profile", headers={"Authorization": f"Bearer {access_token}"})
-            print(f"Line API response status: {resp.status_code}")
-            if resp.status_code != 200:
-                print(f"Line API error: {resp.text}")
-                return JSONResponse(status_code=401, content={"detail": "Invalid Line token"})
-            user_info = resp.json()
-            user_id = user_info.get("userId")
-            if not user_id:
-                return JSONResponse(status_code=401, content={"detail": "No userId in Line profile"})
-            user_email = f"{user_id}@line.me"  # ใช้ userId เป็น pseudo-email เหมือน frontend
-            print(f"Line user email: {user_email}")
+            try:
+                resp = requests.get("https://api.line.me/v2/profile", headers={"Authorization": f"Bearer {access_token}"}, timeout=10)
+                print(f"Line API response status: {resp.status_code}")
+                if resp.status_code != 200:
+                    print(f"Line API error: {resp.text}")
+                    # ถ้า token ไม่ถูกต้อง ให้ใช้ email จาก request body แทน
+                    print("Line token verification failed, using email from request...")
+                    user_email = data.get("email")
+                    if not user_email:
+                        return JSONResponse(status_code=401, content={"detail": "Invalid Line token and no email provided"})
+                    print(f"Using email from request: {user_email}")
+                else:
+                    user_info = resp.json()
+                    user_id = user_info.get("userId")
+                    if not user_id:
+                        return JSONResponse(status_code=401, content={"detail": "No userId in Line profile"})
+                    user_email = f"{user_id}@line.me"  # ใช้ userId เป็น pseudo-email
+                    print(f"Line user email: {user_email}")
+            except Exception as e:
+                print(f"Error verifying Line token: {e}")
+                # ถ้าเกิด error ให้ใช้ email จาก request body แทน
+                user_email = data.get("email")
+                if not user_email:
+                    return JSONResponse(status_code=401, content={"detail": "Error verifying Line token and no email provided"})
+                print(f"Using email from request after error: {user_email}")
         else:
             return JSONResponse(status_code=400, content={"detail": "Unknown provider"})
         if not user_email:

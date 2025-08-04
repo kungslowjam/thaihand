@@ -41,7 +41,7 @@ export function useBackendToken() {
        const requestBody = { 
          accessToken, 
          provider,
-         email: session?.user?.email 
+         email: session?.user?.email || `line_${session?.user?.id}@line.user`
        };
        console.log("Request body for auth exchange:", requestBody);
        
