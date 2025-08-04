@@ -17,8 +17,13 @@ export function LineLoginButton({ onError, className = "" }: LineLoginButtonProp
     
     try {
       console.log('Starting Line login...');
-      console.log('NEXTAUTH_URL:', process.env.NEXTAUTH_URL);
-      console.log('LINE_CLIENT_ID:', process.env.LINE_CLIENT_ID);
+      
+      // ใช้ค่าจาก environment variables โดยตรง
+      const nextAuthUrl = process.env.NEXT_PUBLIC_NEXTAUTH_URL || 'https://thaihand.shop';
+      const lineClientId = process.env.NEXT_PUBLIC_LINE_CLIENT_ID || '2007700233';
+      
+      console.log('NEXTAUTH_URL:', nextAuthUrl);
+      console.log('LINE_CLIENT_ID:', lineClientId);
       
       await signIn("line", { 
         callbackUrl: "/dashboard",
