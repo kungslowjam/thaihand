@@ -66,6 +66,17 @@ export default function MarketplacePage() {
   const [sortBy, setSortBy] = useState("newest");
   const [page, setPage] = useState(1);
   const pageSize = 12;
+  
+  // Advanced Filters
+  const [priceRange, setPriceRange] = useState({ min: "", max: "" });
+  const [dateRange, setDateRange] = useState({ from: "", to: "" });
+  const [itemTypes, setItemTypes] = useState<string[]>([]);
+  const [weightRange, setWeightRange] = useState({ min: "", max: "" });
+  const [userRating, setUserRating] = useState<number>(0);
+  const [verifiedUsersOnly, setVerifiedUsersOnly] = useState(false);
+  const [urgentOnly, setUrgentOnly] = useState(false);
+  const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
+  
   const [selectedRequest, setSelectedRequest] = useState<any>(null);
   const [bookmarks, setBookmarks] = useState<number[]>([]);
   const [loading, setLoading] = useState(false); // mock loading
@@ -128,11 +139,51 @@ export default function MarketplacePage() {
 
   // filter/sort logic สำหรับ requests (ถ้ามีข้อมูลจริง)
   let filteredRequests = requests
-    .filter(r =>
-      (filterCountry ? r.routeFrom === filterCountry : true) &&
-      (filterStatus ? r.status === filterStatus : true) &&
-      (r.routeFrom?.includes(search) || r.routeTo?.includes(search) || r.description?.includes(search))
-    )
+    .filter(r => {
+      // Basic filters
+      const countryMatch = filterCountry ? r.routeFrom === filterCountry : true;
+      const statusMatch = filterStatus ? r.status === filterStatus : true;
+      const searchMatch = r.routeFrom?.includes(search) || r.routeTo?.includes(search) || r.description?.includes(search) || r.title?.includes(search);
+      
+      // Advanced filters
+      const priceMatch = (() => {
+        if (!priceRange.min && !priceRange.max) return true;
+        const price = r.rates?.[0]?.price || r.budget || 0;
+        const min = priceRange.min ? parseInt(priceRange.min) : 0;
+        const max = priceRange.max ? parseInt(priceRange.max) : Infinity;
+        return price >= min && price <= max;
+      })();
+      
+      const dateMatch = (() => {
+        if (!dateRange.from && !dateRange.to) return true;
+        const flightDate = new Date(r.flightDate);
+        const fromDate = dateRange.from ? new Date(dateRange.from) : new Date(0);
+        const toDate = dateRange.to ? new Date(dateRange.to) : new Date(9999, 11, 31);
+        return flightDate >= fromDate && flightDate <= toDate;
+      })();
+      
+      const itemTypeMatch = itemTypes.length === 0 || itemTypes.some(type => 
+        r.title?.toLowerCase().includes(type.toLowerCase()) || 
+        r.description?.toLowerCase().includes(type.toLowerCase())
+      );
+      
+      const weightMatch = (() => {
+        if (!weightRange.min && !weightRange.max) return true;
+        const weight = r.weight || 1;
+        const min = weightRange.min ? parseFloat(weightRange.min) : 0;
+        const max = weightRange.max ? parseFloat(weightRange.max) : Infinity;
+        return weight >= min && weight <= max;
+      })();
+      
+      const ratingMatch = userRating === 0 || (r.rating && r.rating >= userRating);
+      
+      const verifiedMatch = !verifiedUsersOnly || r.user_verified;
+      
+      const urgentMatch = !urgentOnly || r.urgent;
+      
+      return countryMatch && statusMatch && searchMatch && priceMatch && dateMatch && 
+             itemTypeMatch && weightMatch && ratingMatch && verifiedMatch && urgentMatch;
+    })
     .filter(r => !r.offer_id); // แสดงเฉพาะ request ที่สร้างเอง (ไม่ใช่ฝากหิ้วกับ offer)
   if (sortBy === "lowestPrice") {
     filteredRequests = [...filteredRequests].sort((a, b) => a.rates[0].price - b.rates[0].price);
@@ -144,11 +195,51 @@ export default function MarketplacePage() {
 
   // filter/sort สำหรับ offers (ข้อมูลจริง)
   let filteredOffers = offers
-    .filter(o =>
-      (filterCountry ? o.routeTo === filterCountry : true) &&
-      (filterStatus ? o.status === filterStatus : true) &&
-      (o.routeFrom?.includes(search) || o.routeTo?.includes(search) || o.description?.includes(search))
-    );
+    .filter(o => {
+      // Basic filters
+      const countryMatch = filterCountry ? o.routeTo === filterCountry : true;
+      const statusMatch = filterStatus ? o.status === filterStatus : true;
+      const searchMatch = o.routeFrom?.includes(search) || o.routeTo?.includes(search) || o.description?.includes(search) || o.title?.includes(search);
+      
+      // Advanced filters
+      const priceMatch = (() => {
+        if (!priceRange.min && !priceRange.max) return true;
+        const price = o.rates?.[0]?.price || 0;
+        const min = priceRange.min ? parseInt(priceRange.min) : 0;
+        const max = priceRange.max ? parseInt(priceRange.max) : Infinity;
+        return price >= min && price <= max;
+      })();
+      
+      const dateMatch = (() => {
+        if (!dateRange.from && !dateRange.to) return true;
+        const flightDate = new Date(o.flightDate);
+        const fromDate = dateRange.from ? new Date(dateRange.from) : new Date(0);
+        const toDate = dateRange.to ? new Date(dateRange.to) : new Date(9999, 11, 31);
+        return flightDate >= fromDate && flightDate <= toDate;
+      })();
+      
+      const itemTypeMatch = itemTypes.length === 0 || itemTypes.some(type => 
+        o.title?.toLowerCase().includes(type.toLowerCase()) || 
+        o.description?.toLowerCase().includes(type.toLowerCase())
+      );
+      
+      const weightMatch = (() => {
+        if (!weightRange.min && !weightRange.max) return true;
+        const weight = o.maxWeight || 10;
+        const min = weightRange.min ? parseFloat(weightRange.min) : 0;
+        const max = weightRange.max ? parseFloat(weightRange.max) : Infinity;
+        return weight >= min && weight <= max;
+      })();
+      
+      const ratingMatch = userRating === 0 || (o.user_rating && o.user_rating >= userRating);
+      
+      const verifiedMatch = !verifiedUsersOnly || o.user_verified;
+      
+      const urgentMatch = !urgentOnly || o.urgent;
+      
+      return countryMatch && statusMatch && searchMatch && priceMatch && dateMatch && 
+             itemTypeMatch && weightMatch && ratingMatch && verifiedMatch && urgentMatch;
+    });
   if (sortBy === "lowestPrice") {
     filteredOffers = [...filteredOffers].sort((a, b) => a.rates[0].price - b.rates[0].price);
   } else if (sortBy === "nearestDate") {
@@ -175,6 +266,26 @@ export default function MarketplacePage() {
   function toggleBookmark(id: number) {
     setBookmarks(bm => bm.includes(id) ? bm.filter(i => i !== id) : [...bm, id]);
   }
+
+  // Clear all filters
+  function clearAllFilters() {
+    setSearch("");
+    setFilterCountry("");
+    setFilterStatus("");
+    setPriceRange({ min: "", max: "" });
+    setDateRange({ from: "", to: "" });
+    setItemTypes([]);
+    setWeightRange({ min: "", max: "" });
+    setUserRating(0);
+    setVerifiedUsersOnly(false);
+    setUrgentOnly(false);
+    setPage(1);
+  }
+
+  // Check if any advanced filter is active
+  const hasActiveFilters = priceRange.min || priceRange.max || dateRange.from || dateRange.to || 
+                          itemTypes.length > 0 || weightRange.min || weightRange.max || 
+                          userRating > 0 || verifiedUsersOnly || urgentOnly;
 
   try {
     return (
@@ -208,10 +319,187 @@ export default function MarketplacePage() {
           </div>
           <div className="flex-1" />
           <div className="flex gap-1">
+            <Button 
+              size="sm" 
+              variant={showAdvancedFilters ? "default" : "outline"} 
+              className="rounded-full px-3 py-1 text-xs font-semibold"
+              onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
+            >
+              🔍 ตัวกรองขั้นสูง
+            </Button>
+            {hasActiveFilters && (
+              <Button 
+                size="sm" 
+                variant="destructive" 
+                className="rounded-full px-3 py-1 text-xs font-semibold"
+                onClick={clearAllFilters}
+              >
+                ล้างตัวกรอง
+              </Button>
+            )}
             <Button size="sm" variant={tab === "requests" ? "default" : "outline"} className={`rounded-full px-4 py-1 text-xs font-semibold`} onClick={() => { setTab("requests"); setPage(1); }}>ฝากหิ้ว</Button>
             <Button size="sm" variant={tab === "offers" ? "default" : "outline"} className={`rounded-full px-4 py-1 text-xs font-semibold`} onClick={() => { setTab("offers"); setPage(1); }}>รับหิ้ว</Button>
           </div>
         </div>
+
+        {/* Advanced Filters Panel */}
+        {showAdvancedFilters && (
+          <div className="bg-white/80 dark:bg-gray-800/80 rounded-xl p-4 mb-6 shadow-sm border border-white/30 dark:border-gray-700 backdrop-blur-xl animate-fade-in">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              {/* Price Range */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">ช่วงราคา (บาท)</label>
+                <div className="flex gap-2">
+                  <input
+                    type="number"
+                    placeholder="ต่ำสุด"
+                    value={priceRange.min}
+                    onChange={e => setPriceRange(prev => ({ ...prev, min: e.target.value }))}
+                    className="flex-1 px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  />
+                  <input
+                    type="number"
+                    placeholder="สูงสุด"
+                    value={priceRange.max}
+                    onChange={e => setPriceRange(prev => ({ ...prev, max: e.target.value }))}
+                    className="flex-1 px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  />
+                </div>
+              </div>
+
+              {/* Date Range */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">ช่วงวันที่เดินทาง</label>
+                <div className="flex gap-2">
+                  <input
+                    type="date"
+                    value={dateRange.from}
+                    onChange={e => setDateRange(prev => ({ ...prev, from: e.target.value }))}
+                    className="flex-1 px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  />
+                  <input
+                    type="date"
+                    value={dateRange.to}
+                    onChange={e => setDateRange(prev => ({ ...prev, to: e.target.value }))}
+                    className="flex-1 px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  />
+                </div>
+              </div>
+
+              {/* Weight Range */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">น้ำหนัก (กก.)</label>
+                <div className="flex gap-2">
+                  <input
+                    type="number"
+                    placeholder="ต่ำสุด"
+                    value={weightRange.min}
+                    onChange={e => setWeightRange(prev => ({ ...prev, min: e.target.value }))}
+                    className="flex-1 px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  />
+                  <input
+                    type="number"
+                    placeholder="สูงสุด"
+                    value={weightRange.max}
+                    onChange={e => setWeightRange(prev => ({ ...prev, max: e.target.value }))}
+                    className="flex-1 px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  />
+                </div>
+              </div>
+
+              {/* Item Types */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">ประเภทสินค้า</label>
+                <div className="flex flex-wrap gap-1">
+                  {['อาหาร', 'อิเล็กทรอนิกส์', 'เสื้อผ้า', 'เครื่องสำอาง', 'หนังสือ', 'ของเล่น'].map(type => (
+                    <button
+                      key={type}
+                      onClick={() => setItemTypes(prev => 
+                        prev.includes(type) 
+                          ? prev.filter(t => t !== type)
+                          : [...prev, type]
+                      )}
+                      className={`px-2 py-1 text-xs rounded-full border transition ${
+                        itemTypes.includes(type)
+                          ? 'bg-blue-500 text-white border-blue-500'
+                          : 'bg-white text-gray-600 border-gray-300 hover:bg-gray-50'
+                      }`}
+                    >
+                      {type}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Additional Filters Row */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4 pt-4 border-t border-gray-200 dark:border-gray-600">
+              {/* User Rating */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">คะแนนผู้ใช้ (⭐)</label>
+                <select
+                  value={userRating}
+                  onChange={e => setUserRating(Number(e.target.value))}
+                  className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                >
+                  <option value={0}>ทุกคะแนน</option>
+                  <option value={4}>4+ ⭐</option>
+                  <option value={3}>3+ ⭐</option>
+                  <option value={2}>2+ ⭐</option>
+                </select>
+              </div>
+
+              {/* Verified Users Only */}
+              <div className="flex items-center">
+                <label className="flex items-center space-x-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={verifiedUsersOnly}
+                    onChange={e => setVerifiedUsersOnly(e.target.checked)}
+                    className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                  />
+                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300">ผู้ใช้ยืนยันตัวตนเท่านั้น</span>
+                </label>
+              </div>
+
+              {/* Urgent Only */}
+              <div className="flex items-center">
+                <label className="flex items-center space-x-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={urgentOnly}
+                    onChange={e => setUrgentOnly(e.target.checked)}
+                    className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                  />
+                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300">ด่วนเท่านั้น</span>
+                </label>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Filter Summary */}
+        {hasActiveFilters && (
+          <div className="mb-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-medium text-blue-700 dark:text-blue-300">ตัวกรองที่ใช้งาน:</span>
+                <div className="flex flex-wrap gap-1">
+                  {priceRange.min && <Badge variant="secondary" className="text-xs">ราคา: {priceRange.min}-{priceRange.max || '∞'} บาท</Badge>}
+                  {dateRange.from && <Badge variant="secondary" className="text-xs">วันที่: {dateRange.from} - {dateRange.to || '∞'}</Badge>}
+                  {weightRange.min && <Badge variant="secondary" className="text-xs">น้ำหนัก: {weightRange.min}-{weightRange.max || '∞'} กก.</Badge>}
+                  {itemTypes.length > 0 && <Badge variant="secondary" className="text-xs">ประเภท: {itemTypes.join(', ')}</Badge>}
+                  {userRating > 0 && <Badge variant="secondary" className="text-xs">{userRating}+ ⭐</Badge>}
+                  {verifiedUsersOnly && <Badge variant="secondary" className="text-xs">ยืนยันตัวตน</Badge>}
+                  {urgentOnly && <Badge variant="secondary" className="text-xs">ด่วนเท่านั้น</Badge>}
+                </div>
+              </div>
+              <Button size="sm" variant="outline" onClick={clearAllFilters} className="text-xs">
+                ล้างทั้งหมด
+              </Button>
+            </div>
+          </div>
+        )}
 
         {/* Search Bar */}
         <div className="flex items-center gap-2 mb-8 bg-white/60 dark:bg-gray-800/60 rounded-full px-4 py-2 shadow-sm max-w-lg mx-auto">
@@ -225,8 +513,18 @@ export default function MarketplacePage() {
           />
         </div>
 
-        {/* Card Grid */}
-        <div className="mb-2 text-right text-xs text-gray-400">จำนวนแถว: {rowCount}</div>
+        {/* Result Count */}
+        <div className="mb-4 flex items-center justify-between">
+          <div className="text-sm text-gray-600 dark:text-gray-400">
+            แสดงผล {isRequestsTab ? filteredRequests.length : filteredOffers.length} รายการ
+            {hasActiveFilters && (
+              <span className="text-blue-600 dark:text-blue-400 ml-2">
+                (จากทั้งหมด {isRequestsTab ? requests.length : offers.length} รายการ)
+              </span>
+            )}
+          </div>
+          <div className="text-xs text-gray-400">จำนวนแถว: {rowCount}</div>
+        </div>
         <div className="grid gap-8 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 justify-center">
           {isRequestsTab ? (
             validRequests.length === 0 ? (
