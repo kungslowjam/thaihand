@@ -92,7 +92,7 @@ services:
       nofile:
         soft: 65536
         hard: 65536
-    extra_hosts:
+
     healthcheck:
       test: ["CMD", "curl", "-f", "https://thaihand.shop/api/health"]
       interval: 30s
