@@ -46,6 +46,8 @@ const handler = NextAuth({
       authorization: {
         params: {
           scope: 'profile openid email',
+          response_type: 'code',
+          bot_prompt: 'normal',
         },
       },
     }),
