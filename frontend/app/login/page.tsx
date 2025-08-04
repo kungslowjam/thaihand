@@ -24,7 +24,6 @@ function LoginForm() {
   useEffect(() => {
     const errorParam = searchParams.get('error');
     const messageParam = searchParams.get('message');
-    const providerParam = searchParams.get('provider');
     
     if (errorParam) {
       let errorMsg = messageParam || 'เกิดข้อผิดพลาดในการเข้าสู่ระบบ';
@@ -40,7 +39,11 @@ function LoginForm() {
       }
       
       setErrorMessage(errorMsg);
-      console.error('Login error:', errorMsg);
+      
+      // Production: ลด console logs
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Login error:', errorMsg);
+      }
     }
   }, [searchParams]);
 
@@ -50,13 +53,18 @@ function LoginForm() {
     setLoginProvider('google');
     
     try {
-      console.log('Starting Google login...');
+      if (process.env.NODE_ENV === 'development') {
+        console.log('Starting Google login...');
+      }
+      
       await signIn("google", { 
         callbackUrl: "/dashboard",
         redirect: true
       });
     } catch (error) {
-      console.error('Google login error:', error);
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Google login error:', error);
+      }
       setErrorMessage('เกิดข้อผิดพลาดในการเข้าสู่ระบบ Google กรุณาลองใหม่อีกครั้ง');
       setIsLoading(false);
       setLoginProvider(null);
@@ -69,13 +77,18 @@ function LoginForm() {
     setLoginProvider('line');
     
     try {
-      console.log('Starting Line login...');
+      if (process.env.NODE_ENV === 'development') {
+        console.log('Starting Line login...');
+      }
+      
       await signIn("line", { 
         callbackUrl: "/dashboard",
         redirect: true
       });
     } catch (error) {
-      console.error('Line login error:', error);
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Line login error:', error);
+      }
       setErrorMessage('เกิดข้อผิดพลาดในการเข้าสู่ระบบ Line กรุณาลองใหม่อีกครั้ง');
       setIsLoading(false);
       setLoginProvider(null);
