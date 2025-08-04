@@ -36,6 +36,11 @@ const handler = NextAuth({
     LineProvider({
       clientId: process.env.LINE_CLIENT_ID!,
       clientSecret: process.env.LINE_CLIENT_SECRET!,
+      authorization: {
+        params: {
+          scope: 'profile openid email',
+        },
+      },
     }),
   ],
   pages: {
@@ -67,6 +72,15 @@ const handler = NextAuth({
       console.log('Environment - NEXTAUTH_URL:', process.env.NEXTAUTH_URL);
       console.log('Environment - NODE_ENV:', process.env.NODE_ENV);
       console.log('getBaseUrl():', getBaseUrl());
+      
+      // สำหรับ LINE provider
+      if (account?.provider === 'line') {
+        console.log('LINE SignIn - Processing LINE user');
+        // LINE อาจไม่มี email ให้ใช้ LINE ID แทน
+        if (!user.email && profile?.sub) {
+          user.email = `${profile.sub}@line.me`;
+        }
+      }
       
       return true;
     },
@@ -134,6 +148,13 @@ const handler = NextAuth({
         }
       }
       
+      // สำหรับ LINE provider
+      if (account?.provider === 'line' && profile) {
+        console.log("JWT callback - Processing LINE profile:", profile);
+        // บันทึก LINE profile data
+        token.lineProfile = profile;
+      }
+      
       console.log("JWT callback - Final token:", token);
       return token;
     },
@@ -141,6 +162,13 @@ const handler = NextAuth({
   events: {
     async signIn({ user, account, profile, isNewUser }) {
       console.log('SignIn Event - Provider:', account?.provider, 'User:', user?.name, 'IsNewUser:', isNewUser);
+      
+      // สำหรับ LINE provider
+      if (account?.provider === 'line') {
+        console.log('LINE SignIn Event - LINE Profile:', profile);
+        console.log('LINE SignIn Event - User Email:', user?.email);
+        console.log('LINE SignIn Event - User Name:', user?.name);
+      }
     },
     async signOut({ session, token }) {
       console.log('SignOut Event - Session:', session?.user?.name);
