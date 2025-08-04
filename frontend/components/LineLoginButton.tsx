@@ -17,6 +17,9 @@ export function LineLoginButton({ onError, className = "" }: LineLoginButtonProp
     
     try {
       console.log('Starting Line login...');
+      console.log('NEXTAUTH_URL:', process.env.NEXTAUTH_URL);
+      console.log('LINE_CLIENT_ID:', process.env.LINE_CLIENT_ID);
+      
       await signIn("line", { 
         callbackUrl: "/dashboard",
         redirect: true

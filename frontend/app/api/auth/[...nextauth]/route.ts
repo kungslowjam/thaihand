@@ -13,6 +13,7 @@ declare module "next-auth" {
       name?: string | null;
       email?: string | null;
       image?: string | null;
+      provider?: string;
     };
   }
 }
@@ -76,9 +77,24 @@ const handler = NextAuth({
       // สำหรับ LINE provider
       if (account?.provider === 'line') {
         console.log('LINE SignIn - Processing LINE user');
+        console.log('LINE Profile:', profile);
+        
         // LINE อาจไม่มี email ให้ใช้ LINE ID แทน
         if (!user.email && profile?.sub) {
           user.email = `${profile.sub}@line.me`;
+          console.log('LINE - Generated email:', user.email);
+        }
+        
+        // ใช้ LINE display name ถ้าไม่มี name
+        if (!user.name && (profile as any)?.name) {
+          user.name = (profile as any).name;
+          console.log('LINE - Set name from profile:', user.name);
+        }
+        
+        // ใช้ LINE picture ถ้าไม่มี image
+        if (!user.image && (profile as any)?.picture) {
+          user.image = (profile as any).picture;
+          console.log('LINE - Set image from profile:', user.image);
         }
       }
       
@@ -93,7 +109,7 @@ const handler = NextAuth({
       // จัดการ error URLs
       if (url.includes('error=')) {
         console.log('OAuth Error detected, redirecting to login');
-        return `${baseUrl}/login?error=OAuthSignin&message=เกิดข้อผิดพลาดในการเข้าสู่ระบบ`;
+        return `${baseUrl}/login?error=OAuthSignin&message=เกิดข้อผิดพลาดในการเข้าสู่ระบบ กรุณาลองใหม่อีกครั้ง`;
       }
       
       // ถ้าเป็น callback ให้ไป dashboard
@@ -120,7 +136,7 @@ const handler = NextAuth({
         session.user.id = token.sub;
       }
       if (token.provider) {
-        (session as any).provider = token.provider;
+        session.user.provider = token.provider as string;
       }
       if (token.accessToken) {
         (session as any).accessToken = token.accessToken;
@@ -153,6 +169,17 @@ const handler = NextAuth({
         console.log("JWT callback - Processing LINE profile:", profile);
         // บันทึก LINE profile data
         token.lineProfile = profile;
+        
+        // บันทึก LINE specific data
+        if (profile.sub) {
+          token.lineId = profile.sub;
+        }
+        if ((profile as any).name) {
+          token.lineName = (profile as any).name;
+        }
+        if ((profile as any).picture) {
+          token.linePicture = (profile as any).picture;
+        }
       }
       
       console.log("JWT callback - Final token:", token);
@@ -168,6 +195,7 @@ const handler = NextAuth({
         console.log('LINE SignIn Event - LINE Profile:', profile);
         console.log('LINE SignIn Event - User Email:', user?.email);
         console.log('LINE SignIn Event - User Name:', user?.name);
+        console.log('LINE SignIn Event - User Image:', user?.image);
       }
     },
     async signOut({ session, token }) {
