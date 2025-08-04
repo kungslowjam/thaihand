@@ -18,13 +18,9 @@ declare module "next-auth" {
   }
 }
 
-// Dynamic URL detection
+// Dynamic URL detection - ใช้ HTTPS เสมอ
 const getBaseUrl = () => {
-  // ใช้ NEXTAUTH_URL เสมอถ้ามี
-  if (process.env.NEXTAUTH_URL) return process.env.NEXTAUTH_URL;
-  if (process.env.NEXT_PUBLIC_FORCE_DOMAIN) return process.env.NEXT_PUBLIC_FORCE_DOMAIN;
-  if (process.env.NODE_ENV === 'production') return 'https://thaihand.shop';
-  // ถ้าไม่มี environment variables ให้ใช้ production URL เป็น default
+  // ใช้ HTTPS URL เสมอใน production
   return 'https://thaihand.shop';
 };
 

@@ -14,12 +14,13 @@ export async function GET(request: NextRequest) {
     console.log('LINE OAuth - Redirect URI:', redirectUri);
     console.log('LINE OAuth - State:', state);
     console.log('LINE OAuth - Scope:', scope);
+    console.log('LINE OAuth - URL:', request.url);
 
     // ตรวจสอบ parameters ที่จำเป็น
     if (!responseType || !clientId || !redirectUri || !state) {
       console.error('LINE OAuth - Missing required parameters');
       return NextResponse.redirect(
-        `${process.env.NEXTAUTH_URL}/login?error=invalid_request&message=พารามิเตอร์ไม่ครบถ้วน`
+        `https://thaihand.shop/login?error=invalid_request&message=พารามิเตอร์ไม่ครบถ้วน`
       );
     }
 
@@ -38,7 +39,7 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     console.error('LINE OAuth Error:', error);
     return NextResponse.redirect(
-      `${process.env.NEXTAUTH_URL}/login?error=OAuthSignin&message=เกิดข้อผิดพลาดในการเริ่มต้น LINE OAuth`
+      `https://thaihand.shop/login?error=OAuthSignin&message=เกิดข้อผิดพลาดในการเริ่มต้น LINE OAuth`
     );
   }
 }
