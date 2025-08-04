@@ -35,18 +35,17 @@ export function useBackendToken() {
       console.log("SESSION_USER", session?.user);
       console.log("myUserId", (session as any)?.user?.id);
       
-             // Use environment variable for API URL
-       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://thaihand.shop/api';
-       console.log("API URL:", apiUrl);
-      
-      const requestBody = { 
-        accessToken, 
-        provider,
-        email: session?.user?.email 
-      };
-      console.log("Request body for auth exchange:", requestBody);
-      
-             fetch(`${apiUrl}/auth/exchange`, {
+                    // Use Next.js proxy instead of direct API call
+       console.log("NEXT_PUBLIC_API_URL from env:", process.env.NEXT_PUBLIC_API_URL);
+       
+       const requestBody = { 
+         accessToken, 
+         provider,
+         email: session?.user?.email 
+       };
+       console.log("Request body for auth exchange:", requestBody);
+       
+       fetch('/api/auth/exchange', {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(requestBody)
