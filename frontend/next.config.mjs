@@ -49,10 +49,8 @@ const nextConfig = {
       // API อื่นๆ proxy ไป backend
       {
         source: '/api/:path*',
-        destination: process.env.NEXT_PUBLIC_API_URL
-          ? `${process.env.NEXT_PUBLIC_API_URL}/api/:path*`
-          : process.env.NEXT_PUBLIC_BACKEND_URL
-          ? `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/:path*`
+        destination: process.env.NODE_ENV === 'development' 
+          ? 'http://localhost:8000/api/:path*'
           : 'https://thaihand.shop/api/:path*',
       },
     ]

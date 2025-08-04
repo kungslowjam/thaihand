@@ -1,7 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://backend:8000';
-
 // Force dynamic rendering
 export const dynamic = 'force-dynamic';
 
@@ -15,8 +13,10 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'user_email is required' }, { status: 400 });
     }
 
+    // ใช้ proxy ผ่าน Next.js API routes แทนการเรียกตรงไป backend
+    const backendUrl = process.env.NEXT_PUBLIC_API_URL || '/api';
     const response = await fetch(
-      `${BACKEND_URL}/notifications/longpoll?user_email=${encodeURIComponent(user_email)}&last_time=${encodeURIComponent(last_time)}`
+      `${backendUrl}/notifications/longpoll?user_email=${encodeURIComponent(user_email)}&last_time=${encodeURIComponent(last_time)}`
     );
     
     if (!response.ok) {
