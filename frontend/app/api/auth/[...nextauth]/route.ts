@@ -19,8 +19,12 @@ declare module "next-auth" {
 
 // Production URL detection
 const getBaseUrl = () => {
-  // ใช้ NEXTAUTH_URL จาก .env หรือ fallback
-  return process.env.NEXTAUTH_URL || 'https://thaihand.shop';
+  // Production environment
+  if (process.env.NODE_ENV === 'production') {
+    return process.env.NEXTAUTH_URL || 'https://thaihand.shop';
+  }
+  // Development environment - ใช้ http ไม่ใช่ https
+  return process.env.NEXTAUTH_URL || 'http://localhost:3000';
 };
 
 const handler = NextAuth({
@@ -43,7 +47,7 @@ const handler = NextAuth({
     strategy: "jwt",
     maxAge: 30 * 24 * 60 * 60, // 30 วัน
   },
-  debug: process.env.DEBUG === 'True',
+  debug: process.env.NODE_ENV === 'development' && process.env.NEXTAUTH_DEBUG === 'true',
   logger: {
     error(code, ...message) {
       console.error(`[NextAuth][${code}]`, ...message);
@@ -52,7 +56,7 @@ const handler = NextAuth({
       console.warn(`[NextAuth][${code}]`, ...message);
     },
     debug(code, ...message) {
-      if (process.env.DEBUG === 'True') {
+      if (process.env.NODE_ENV === 'development') {
         console.log(`[NextAuth][${code}]`, ...message);
       }
     },
@@ -60,46 +64,35 @@ const handler = NextAuth({
   callbacks: {
     async signIn({ user, account, profile }) {
       // เพิ่ม debug logs เพื่อแก้ปัญหา
-      if (process.env.DEBUG === 'True') {
-        console.log('SignIn - Provider:', account?.provider, 'User:', user?.name);
-        console.log('Environment - NEXTAUTH_URL:', process.env.NEXTAUTH_URL);
-        console.log('getBaseUrl():', getBaseUrl());
-      }
+      console.log('SignIn - Provider:', account?.provider, 'User:', user?.name);
+      console.log('Environment - NODE_ENV:', process.env.NODE_ENV);
+      console.log('Environment - NEXTAUTH_URL:', process.env.NEXTAUTH_URL);
+      console.log('getBaseUrl():', getBaseUrl());
       
       return true;
     },
     async redirect({ url, baseUrl }) {
-      if (process.env.DEBUG === 'True') {
-        console.log('Redirect - URL:', url, 'Base URL:', baseUrl);
-      }
+      console.log('Redirect - URL:', url, 'Base URL:', baseUrl);
       
       // จัดการ error URLs
       if (url.includes('error=')) {
-        if (process.env.DEBUG === 'True') {
-          console.log('OAuth Error detected, redirecting to login');
-        }
+        console.log('OAuth Error detected, redirecting to login');
         return `${baseUrl}/login?error=OAuthSignin&message=เกิดข้อผิดพลาดในการเข้าสู่ระบบ`;
       }
       
       // ถ้าเป็น callback ให้ไป dashboard
       if (url.includes('/api/auth/callback/')) {
-        if (process.env.DEBUG === 'True') {
-          console.log('OAuth Callback detected, redirecting to dashboard');
-        }
+        console.log('OAuth Callback detected, redirecting to dashboard');
         return `${baseUrl}/dashboard`;
       }
       
       // ถ้าเป็น internal URL ให้ไป dashboard
       if (url.startsWith(baseUrl)) {
-        if (process.env.DEBUG === 'True') {
-          console.log('Internal URL detected, redirecting to dashboard');
-        }
+        console.log('Internal URL detected, redirecting to dashboard');
         return `${baseUrl}/dashboard`;
       }
       
-      if (process.env.DEBUG === 'True') {
-        console.log('Default redirect to:', url);
-      }
+      console.log('Default redirect to:', url);
       return url;
     },
     async session({ session, token }) {
@@ -131,14 +124,10 @@ const handler = NextAuth({
   },
   events: {
     async signIn({ user, account, profile, isNewUser }) {
-      if (process.env.DEBUG === 'True') {
-        console.log('SignIn Event - Provider:', account?.provider, 'User:', user?.name, 'IsNewUser:', isNewUser);
-      }
+      console.log('SignIn Event - Provider:', account?.provider, 'User:', user?.name, 'IsNewUser:', isNewUser);
     },
     async signOut({ session, token }) {
-      if (process.env.DEBUG === 'True') {
-        console.log('SignOut Event - Session:', session?.user?.name);
-      }
+      console.log('SignOut Event - Session:', session?.user?.name);
     }
   },
   // เพิ่ม CSRF protection
