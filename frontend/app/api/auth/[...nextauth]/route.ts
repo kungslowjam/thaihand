@@ -23,9 +23,9 @@ const getBaseUrl = () => {
   // ใช้ NEXTAUTH_URL เสมอถ้ามี
   if (process.env.NEXTAUTH_URL) return process.env.NEXTAUTH_URL;
   if (process.env.NEXT_PUBLIC_FORCE_DOMAIN) return process.env.NEXT_PUBLIC_FORCE_DOMAIN;
-  if (process.env.NODE_ENV === 'production') return process.env.NEXTAUTH_URL || process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') || 'https://thaihand.shop';
+  if (process.env.NODE_ENV === 'production') return 'https://thaihand.shop';
   // ถ้าไม่มี environment variables ให้ใช้ production URL เป็น default
-  return process.env.NEXTAUTH_URL || process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') || 'https://thaihand.shop';
+  return 'https://thaihand.shop';
 };
 
 const handler = NextAuth({
