@@ -128,4 +128,27 @@ nginx/ssl/
 *.sqlite3
 
 # Alembic
-alembic.ini.bak 
+alembic.ini.bak
+
+# GitLab CI/CD
+.gitlab-ci.yml.bak
+
+# Deployment scripts
+scripts/deploy.sh.bak
+scripts/setup-droplet.sh.bak
+
+# Production environment
+docker-compose.prod.yml.bak
+
+# Logs
+/var/log/thaihand/
+*.log
+
+# Backups
+/opt/backups/
+backups/
+
+# SSH keys
+*.pem
+id_rsa
+id_rsa.pub 
