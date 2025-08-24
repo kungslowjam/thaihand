@@ -1,0 +1,145 @@
+name: Deploy to Staging
+
+on:
+  push:
+    branches: [ develop, staging ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+env:
+  DEPLOY_HOST: ${{ secrets.STAGING_HOST }}
+  DEPLOY_USER: ${{ secrets.STAGING_USER }}
+  DEPLOY_PATH: /opt/thaihand-staging
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        cache-dependency-path: frontend/package-lock.json
+    
+    - name: Install frontend dependencies
+      working-directory: ./frontend
+      run: npm ci
+    
+    - name: Run frontend tests
+      working-directory: ./frontend
+      run: npm test --if-present
+    
+    - name: Run frontend linting
+      working-directory: ./frontend
+      run: npm run lint --if-present
+    
+    - name: Setup Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+    
+    - name: Install backend dependencies
+      working-directory: ./backend
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+    
+    - name: Run backend tests
+      working-directory: ./backend
+      run: |
+        python -m pytest tests/ --if-present
+        python -m flake8 . --if-present
+
+  build-staging:
+    needs: test
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+    
+    - name: Login to Docker Hub
+      uses: docker/login-action@v3
+      with:
+        username: ${{ secrets.DOCKER_USERNAME }}
+        password: ${{ secrets.DOCKER_PASSWORD }}
+    
+    - name: Build and push frontend staging image
+      uses: docker/build-push-action@v5
+      with:
+        context: ./frontend
+        file: ./frontend/Dockerfile
+        push: true
+        tags: ${{ secrets.DOCKER_USERNAME }}/thaihand-frontend:staging,${{ secrets.DOCKER_USERNAME }}/thaihand-frontend:${{ github.sha }}
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
+    
+    - name: Build and push backend staging image
+      uses: docker/build-push-action@v5
+      with:
+        context: ./backend
+        file: ./backend/Dockerfile
+        push: true
+        tags: ${{ secrets.DOCKER_USERNAME }}/thaihand-backend:staging,${{ secrets.DOCKER_USERNAME }}/thaihand-backend:${{ github.sha }}
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
+
+  deploy-staging:
+    needs: build-staging
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/staging')
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Deploy to Staging
+      uses: appleboy/ssh-action@v1.0.3
+      with:
+        host: ${{ secrets.STAGING_HOST }}
+        username: ${{ secrets.STAGING_USER }}
+        key: ${{ secrets.STAGING_SSH_KEY }}
+        script: |
+          # Navigate to staging directory
+          cd ${{ env.DEPLOY_PATH }}
+          
+          # Pull latest code
+          git pull origin ${{ github.ref_name }}
+          
+          # Update docker-compose to use staging images
+          sed -i 's/:latest/:staging/g' docker-compose.yml
+          
+          # Deploy
+          sudo -u thaihand docker-compose down
+          sudo -u thaihand docker-compose pull
+          sudo -u thaihand docker-compose up -d
+          
+          # Health check
+          sleep 30
+          if curl -f http://localhost:8080/health >/dev/null 2>&1; then
+            echo "✅ Staging deployment successful"
+          else
+            echo "❌ Staging deployment failed"
+            exit 1
+          fi
+
+  notify-staging:
+    needs: [deploy-staging]
+    runs-on: ubuntu-latest
+    if: always()
+    
+    steps:
+    - name: Notify staging deployment status
+      uses: 8398a7/action-slack@v3
+      with:
+        status: ${{ job.status }}
+        channel: '#staging-deployments'
+        webhook_url: ${{ secrets.SLACK_WEBHOOK }}
+      env:
+        SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
