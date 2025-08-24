@@ -1,7 +1,7 @@
 #!/bin/bash
 
-# Setup script for Digital Ocean droplets
-# This script should be run once on a fresh Digital Ocean droplet
+# Setup script for Digital Ocean droplet
+# This script should be run as root on a fresh Ubuntu server
 
 set -e
 
@@ -9,6 +9,7 @@ set -e
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
 # Logging function
@@ -24,173 +25,138 @@ warning() {
     echo -e "${YELLOW}[$(date +'%Y-%m-%d %H:%M:%S')] WARNING:${NC} $1"
 }
 
+info() {
+    echo -e "${BLUE}[$(date +'%Y-%m-%d %H:%M:%S')] INFO:${NC} $1"
+}
+
 # Check if running as root
 if [[ $EUID -ne 0 ]]; then
    error "This script must be run as root"
    exit 1
 fi
 
-log "Starting Digital Ocean droplet setup for ThaiHand..."
+log "🚀 Starting server setup for ThaiHand application..."
 
 # Update system
-log "Updating system packages..."
-apt-get update
-apt-get upgrade -y
+log "📦 Updating system packages..."
+apt update && apt upgrade -y
 
 # Install required packages
-log "Installing required packages..."
-apt-get install -y \
-    apt-transport-https \
-    ca-certificates \
+log "📦 Installing required packages..."
+apt install -y \
     curl \
-    gnupg \
-    lsb-release \
-    software-properties-common \
+    wget \
     git \
     unzip \
-    htop \
+    software-properties-common \
+    apt-transport-https \
+    ca-certificates \
+    gnupg \
+    lsb-release \
     nginx \
     certbot \
-    python3-certbot-nginx \
-    fail2ban \
-    ufw
+    python3-certbot-nginx
 
 # Install Docker
-log "Installing Docker..."
+log "🐳 Installing Docker..."
 curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
-echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null
-apt-get update
-apt-get install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
+
+echo \
+  "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu \
+  $(lsb_release -cs) stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null
+
+apt update
+apt install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
 
 # Install Docker Compose
-log "Installing Docker Compose..."
-curl -L "https://github.com/docker/compose/releases/download/v2.20.0/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+log "🐳 Installing Docker Compose..."
+curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
 chmod +x /usr/local/bin/docker-compose
 
-# Create application user
-log "Creating application user..."
-useradd -m -s /bin/bash thaihand
+# Create thaihand user
+log "👤 Creating thaihand user..."
+useradd -m -s /bin/bash thaihand || true
 usermod -aG docker thaihand
 
-# Create application directory
-log "Creating application directory..."
+# Create project directory
+log "📁 Creating project directory..."
 mkdir -p /opt/thaihand
-mkdir -p /opt/backups
-mkdir -p /var/log/thaihand
-chown -R thaihand:thaihand /opt/thaihand
-chown -R thaihand:thaihand /opt/backups
-chown -R thaihand:thaihand /var/log/thaihand
+chown thaihand:thaihand /opt/thaihand
 
-# Configure firewall
-log "Configuring firewall..."
-ufw --force enable
-ufw default deny incoming
-ufw default allow outgoing
+# Create backup directory
+log "📁 Creating backup directory..."
+mkdir -p /opt/backups
+chown thaihand:thaihand /opt/backups
+
+# Setup firewall
+log "🔥 Setting up firewall..."
 ufw allow ssh
 ufw allow 80/tcp
 ufw allow 443/tcp
-ufw allow 22/tcp
+ufw --force enable
 
-# Configure fail2ban
-log "Configuring fail2ban..."
-cat > /etc/fail2ban/jail.local << EOF
-[DEFAULT]
-bantime = 3600
-findtime = 600
-maxretry = 3
-
-[sshd]
-enabled = true
-port = ssh
-filter = sshd
-logpath = /var/log/auth.log
-maxretry = 3
-
-[nginx-http-auth]
-enabled = true
-filter = nginx-http-auth
-port = http,https
-logpath = /var/log/nginx/error.log
-maxretry = 3
-EOF
-
-systemctl enable fail2ban
-systemctl restart fail2ban
-
-# Configure nginx
-log "Configuring nginx..."
-cat > /etc/nginx/sites-available/thaihand << EOF
+# Setup Nginx
+log "🌐 Setting up Nginx..."
+cat > /etc/nginx/sites-available/thaihand << 'EOF'
 server {
     listen 80;
     server_name thaihand.shop www.thaihand.shop;
     
-    # Redirect to HTTPS
-    return 301 https://\$server_name\$request_uri;
-}
-
-server {
-    listen 443 ssl http2;
-    server_name thaihand.shop www.thaihand.shop;
-    
-    # SSL configuration will be added by certbot
-    
-    # Security headers
-    add_header X-Frame-Options "SAMEORIGIN" always;
-    add_header X-XSS-Protection "1; mode=block" always;
-    add_header X-Content-Type-Options "nosniff" always;
-    add_header Referrer-Policy "no-referrer-when-downgrade" always;
-    add_header Content-Security-Policy "default-src 'self' http: https: data: blob: 'unsafe-inline'" always;
-    
-    # Proxy to Docker containers
     location / {
         proxy_pass http://localhost:3000;
         proxy_http_version 1.1;
-        proxy_set_header Upgrade \$http_upgrade;
+        proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Connection 'upgrade';
-        proxy_set_header Host \$host;
-        proxy_set_header X-Real-IP \$remote_addr;
-        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto \$scheme;
-        proxy_cache_bypass \$http_upgrade;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_cache_bypass $http_upgrade;
     }
     
-    location /api/ {
-        proxy_pass http://localhost:8000/;
+    location /api {
+        proxy_pass http://localhost:8000;
         proxy_http_version 1.1;
-        proxy_set_header Upgrade \$http_upgrade;
+        proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Connection 'upgrade';
-        proxy_set_header Host \$host;
-        proxy_set_header X-Real-IP \$remote_addr;
-        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto \$scheme;
-        proxy_cache_bypass \$http_upgrade;
-    }
-    
-    # Health check endpoint
-    location /health {
-        proxy_pass http://localhost:8000/health;
-        proxy_set_header Host \$host;
-        proxy_set_header X-Real-IP \$remote_addr;
-        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto \$scheme;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_cache_bypass $http_upgrade;
     }
 }
 EOF
 
-# Enable the site
+# Enable site
 ln -sf /etc/nginx/sites-available/thaihand /etc/nginx/sites-enabled/
 rm -f /etc/nginx/sites-enabled/default
+nginx -t && systemctl reload nginx
 
-# Test nginx configuration
-nginx -t
+# Setup log rotation
+log "📝 Setting up log rotation..."
+cat > /etc/logrotate.d/thaihand << 'EOF'
+/opt/thaihand/logs/*.log {
+    daily
+    missingok
+    rotate 52
+    compress
+    delaycompress
+    notifempty
+    create 644 thaihand thaihand
+    postrotate
+        systemctl reload nginx
+    endscript
+}
+EOF
 
-# Create systemd service for automatic startup
-log "Creating systemd service..."
-cat > /etc/systemd/system/thaihand.service << EOF
+# Create systemd service for auto-restart
+log "⚙️ Creating systemd service..."
+cat > /etc/systemd/system/thaihand.service << 'EOF'
 [Unit]
 Description=ThaiHand Application
-Requires=docker.service
 After=docker.service
+Requires=docker.service
 
 [Service]
 Type=oneshot
@@ -205,86 +171,190 @@ Group=thaihand
 WantedBy=multi-user.target
 EOF
 
-# Enable the service
+systemctl daemon-reload
 systemctl enable thaihand.service
 
-# Create log rotation
-log "Configuring log rotation..."
-cat > /etc/logrotate.d/thaihand << EOF
-/var/log/thaihand/*.log {
-    daily
-    missingok
-    rotate 52
-    compress
-    delaycompress
-    notifempty
-    create 644 thaihand thaihand
-    postrotate
-        systemctl reload nginx
-    endscript
-}
-EOF
-
-# Create monitoring script
-log "Creating monitoring script..."
-cat > /opt/thaihand/monitor.sh << 'EOF'
+# Setup monitoring script
+log "📊 Setting up monitoring..."
+cat > /opt/monitor.sh << 'EOF'
 #!/bin/bash
 
 # Simple monitoring script
-LOG_FILE="/var/log/thaihand/monitor.log"
+LOG_FILE="/var/log/thaihand-monitor.log"
 
 log() {
     echo "[$(date +'%Y-%m-%d %H:%M:%S')] $1" >> $LOG_FILE
 }
 
 # Check if containers are running
-if ! docker-compose -f /opt/thaihand/docker-compose.yml ps | grep -q "Up"; then
-    log "ERROR: Containers are not running"
-    systemctl restart thaihand.service
+if ! docker ps | grep -q "thaihand"; then
+    log "WARNING: ThaiHand containers are not running"
+    cd /opt/thaihand && docker-compose up -d
+    log "Attempted to restart containers"
 fi
 
 # Check disk space
 DISK_USAGE=$(df / | awk 'NR==2 {print $5}' | sed 's/%//')
-if [ $DISK_USAGE -gt 90 ]; then
+if [ $DISK_USAGE -gt 80 ]; then
     log "WARNING: Disk usage is ${DISK_USAGE}%"
 fi
 
 # Check memory usage
-MEMORY_USAGE=$(free | awk 'NR==2{printf "%.2f", $3*100/$2}')
-if (( $(echo "$MEMORY_USAGE > 90" | bc -l) )); then
-    log "WARNING: Memory usage is ${MEMORY_USAGE}%"
+MEM_USAGE=$(free | awk 'NR==2{printf "%.0f", $3*100/$2}')
+if [ $MEM_USAGE -gt 80 ]; then
+    log "WARNING: Memory usage is ${MEM_USAGE}%"
 fi
 EOF
 
-chmod +x /opt/thaihand/monitor.sh
-chown thaihand:thaihand /opt/thaihand/monitor.sh
+chmod +x /opt/monitor.sh
 
 # Add monitoring to crontab
-(crontab -u thaihand -l 2>/dev/null; echo "*/5 * * * * /opt/thaihand/monitor.sh") | crontab -u thaihand -
+(crontab -l 2>/dev/null; echo "*/5 * * * * /opt/monitor.sh") | crontab -
 
-# Create SSL certificate (will be configured later)
-log "SSL certificate will be configured after domain is pointed to this server"
+# Setup backup script
+log "💾 Setting up backup script..."
+cat > /opt/backup.sh << 'EOF'
+#!/bin/bash
 
-# Final configuration
-log "Finalizing setup..."
+# Backup script
+BACKUP_DIR="/opt/backups"
+PROJECT_DIR="/opt/thaihand"
+DATE=$(date +%Y%m%d-%H%M%S)
+BACKUP_NAME="thaihand-backup-$DATE"
 
-# Set proper permissions
-chown -R thaihand:thaihand /opt/thaihand
+mkdir -p $BACKUP_DIR/$BACKUP_NAME
 
-# Restart services
-systemctl restart nginx
-systemctl restart docker
+# Backup docker-compose files
+cp $PROJECT_DIR/docker-compose.yml $BACKUP_DIR/$BACKUP_NAME/ 2>/dev/null || true
+cp $PROJECT_DIR/docker-compose.prod.yml $BACKUP_DIR/$BACKUP_NAME/ 2>/dev/null || true
 
-log "Setup completed successfully!"
+# Backup environment files
+cp $PROJECT_DIR/.env* $BACKUP_DIR/$BACKUP_NAME/ 2>/dev/null || true
+
+# Backup nginx config
+cp -r $PROJECT_DIR/nginx $BACKUP_DIR/$BACKUP_NAME/ 2>/dev/null || true
+
+# Clean up old backups (keep last 7 days)
+find $BACKUP_DIR -name "thaihand-backup-*" -type d -mtime +7 -exec rm -rf {} \;
+
+echo "Backup completed: $BACKUP_NAME"
+EOF
+
+chmod +x /opt/backup.sh
+
+# Add backup to crontab (daily at 2 AM)
+(crontab -l 2>/dev/null; echo "0 2 * * * /opt/backup.sh") | crontab -
+
+# Create deployment script
+log "🚀 Creating deployment script..."
+cat > /opt/deploy.sh << 'EOF'
+#!/bin/bash
+
+# Deployment script
+set -e
+
+PROJECT_DIR="/opt/thaihand"
+BACKUP_DIR="/opt/backups"
+
+log() {
+    echo "[$(date +'%Y-%m-%d %H:%M:%S')] $1"
+}
+
+# Create backup
+log "Creating backup..."
+/opt/backup.sh
+
+# Navigate to project directory
+cd $PROJECT_DIR
+
+# Pull latest code
+log "Pulling latest code..."
+git pull origin main
+
+# Stop containers
+log "Stopping containers..."
+docker-compose down
+
+# Build and start containers
+log "Building and starting containers..."
+docker-compose build --no-cache
+docker-compose up -d
+
+# Wait for containers to be ready
+log "Waiting for containers to be ready..."
+sleep 30
+
+# Health check
+log "Performing health check..."
+if curl -f http://localhost:8000/health >/dev/null 2>&1; then
+    log "✅ Deployment successful"
+else
+    log "❌ Health check failed"
+    docker-compose logs --tail=20
+    exit 1
+fi
+
+# Clean up old images
+log "Cleaning up old images..."
+docker image prune -f
+EOF
+
+chmod +x /opt/deploy.sh
+chown thaihand:thaihand /opt/deploy.sh
+
+# Set up environment file template
+log "📝 Creating environment file template..."
+cat > /opt/thaihand/.env.example << 'EOF'
+# Database
+DATABASE_URL=postgresql://username:password@localhost:5432/thaihand
+
+# Supabase
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
+
+# NextAuth
+NEXTAUTH_URL=https://thaihand.shop
+NEXTAUTH_SECRET=your_nextauth_secret
+
+# API
+NEXT_PUBLIC_API_URL=https://thaihand.shop/api
+
+# Line Login
+LINE_CLIENT_ID=your_line_client_id
+LINE_CLIENT_SECRET=your_line_client_secret
+
+# Google Login
+GOOGLE_CLIENT_ID=your_google_client_id
+GOOGLE_CLIENT_SECRET=your_google_client_secret
+EOF
+
+chown thaihand:thaihand /opt/thaihand/.env.example
+
+# Final setup
+log "🎉 Server setup completed!"
 log ""
 log "Next steps:"
-log "1. Point your domain (thaihand.shop) to this server's IP address"
-log "2. Run: sudo certbot --nginx -d thaihand.shop -d www.thaihand.shop"
-log "3. Copy your application files to /opt/thaihand/"
-log "4. Create .env file with your environment variables"
-log "5. Run: sudo -u thaihand docker-compose up -d"
+log "1. Clone your repository: cd /opt/thaihand && git clone <your-repo-url> ."
+log "2. Copy .env.example to .env and configure your environment variables"
+log "3. Run: docker-compose up -d"
+log "4. Set up SSL certificate: certbot --nginx -d thaihand.shop"
 log ""
-log "For GitLab CI/CD deployment:"
-log "1. Add SSH key to GitLab CI/CD variables"
-log "2. Configure environment variables in GitLab"
-log "3. Push to main branch to trigger deployment"
+log "Useful commands:"
+log "- Check status: systemctl status thaihand"
+log "- View logs: docker-compose logs -f"
+log "- Manual deploy: /opt/deploy.sh"
+log "- Manual backup: /opt/backup.sh"
+log ""
+
+# Show system info
+log "📊 System Information:"
+echo "OS: $(lsb_release -d | cut -f2)"
+echo "Kernel: $(uname -r)"
+echo "Docker: $(docker --version)"
+echo "Docker Compose: $(docker-compose --version)"
+echo "Nginx: $(nginx -v 2>&1)"
+echo "Disk Usage: $(df -h / | awk 'NR==2 {print $5}')"
+echo "Memory Usage: $(free -h | awk 'NR==2 {print $3 "/" $2}')"
+
+log "✅ Server setup completed successfully!"

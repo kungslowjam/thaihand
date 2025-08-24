@@ -1,208 +1,196 @@
-# ThaiHand - แพลตฟอร์มขนส่งสินค้า
+# ThaiHand - ระบบฝากหิ้วออนไลน์
 
-แพลตฟอร์มขนส่งสินค้าที่เชื่อมต่อระหว่างผู้ส่งและผู้ขนส่งสินค้า
+ระบบฝากหิ้วออนไลน์ที่เชื่อมต่อผู้ซื้อกับผู้ขนส่งสินค้าจากต่างประเทศ
 
-## 🚀 Features
+## 🚀 Quick Start
 
-- **ระบบจัดการคำขอขนส่ง**: สร้างและจัดการคำขอขนส่งสินค้า
-- **ระบบจัดการเส้นทาง**: จัดการเส้นทางขนส่งและตารางเวลา
-- **ระบบแจ้งเตือน**: แจ้งเตือนแบบ real-time
-- **ระบบ Authentication**: เข้าสู่ระบบด้วย Google และ LINE
-- **ระบบจัดการรายได้**: ติดตามรายได้และสถิติการทำงาน
-- **ระบบ Marketplace**: ตลาดกลางสำหรับผู้ขนส่งและผู้ส่ง
+### สำหรับการ Deploy อย่างรวดเร็ว
+
+```bash
+# 1. Connect to your VPS
+ssh root@your-server-ip
+
+# 2. Run quick deploy script
+curl -fsSL https://raw.githubusercontent.com/your-username/thaihand/main/scripts/quick-deploy.sh | bash
+```
+
+### สำหรับการ Deploy แบบ Step-by-Step
+
+ดูคู่มือการ deploy อย่างละเอียดได้ที่ [Deployment Guide](docs/deployment-guide.md)
+
+## 📋 Features
+
+### สำหรับผู้ซื้อ
+- 📦 สร้างคำขอฝากหิ้วสินค้า
+- 🗺️ ระบุประเทศต้นทางและปลายทาง
+- 💰 กำหนดงบประมาณ
+- ⏰ ตั้งเวลาที่ต้องการรับของ
+- 🔍 ค้นหาและติดต่อผู้ขนส่ง
+
+### สำหรับผู้ขนส่ง
+- 📋 ดูรายการคำขอฝากหิ้ว
+- 💼 สร้างข้อเสนอราคา
+- 📱 ติดต่อลูกค้า
+- 📊 จัดการคำสั่งซื้อ
+- 💰 ติดตามรายได้
+
+### ระบบทั่วไป
+- 🔐 ระบบ Authentication (Google, Line)
+- 💬 ระบบแจ้งเตือน Real-time
+- 📱 Responsive Design
+- 🔒 ระบบความปลอดภัย
+- 📊 Dashboard สำหรับติดตาม
 
 ## 🛠️ Tech Stack
 
 ### Frontend
-- **Next.js 14** - React framework
-- **TypeScript** - Type safety
+- **Next.js 14** - React Framework
+- **TypeScript** - Type Safety
 - **Tailwind CSS** - Styling
+- **Shadcn/ui** - UI Components
 - **NextAuth.js** - Authentication
-- **Supabase** - File storage
+- **Socket.io** - Real-time communication
 
 ### Backend
-- **FastAPI** - Python web framework
+- **FastAPI** - Python Web Framework
 - **PostgreSQL** - Database
-- **Alembic** - Database migrations
-- **Docker** - Containerization
+- **SQLAlchemy** - ORM
+- **Alembic** - Database Migrations
+- **JWT** - Authentication
+- **Supabase** - File Storage
 
 ### Infrastructure
-- **Digital Ocean** - Cloud hosting
-- **GitLab CI/CD** - Continuous deployment
-- **Nginx** - Reverse proxy
-- **Let's Encrypt** - SSL certificates
+- **Docker** - Containerization
+- **Nginx** - Reverse Proxy
+- **Let's Encrypt** - SSL Certificates
+- **Digital Ocean** - Cloud Hosting
+- **GitHub Actions** - CI/CD
 
-## 📦 การติดตั้ง
+## 📁 Project Structure
+
+```
+thaihand/
+├── frontend/                 # Next.js Frontend
+│   ├── app/                 # App Router
+│   ├── components/          # React Components
+│   ├── lib/                 # Utilities
+│   └── store/               # State Management
+├── backend/                 # FastAPI Backend
+│   ├── routers/             # API Routes
+│   ├── models.py            # Database Models
+│   ├── schemas.py           # Pydantic Schemas
+│   └── crud.py              # Database Operations
+├── scripts/                 # Deployment Scripts
+│   ├── setup-droplet.sh     # Server Setup
+│   ├── quick-deploy.sh      # Quick Deployment
+│   └── deploy.sh            # Manual Deployment
+├── docs/                    # Documentation
+└── docker-compose.yml       # Docker Configuration
+```
+
+## 🔧 Development Setup
 
 ### Prerequisites
 - Node.js 18+
 - Python 3.11+
 - Docker & Docker Compose
-- Git
+- PostgreSQL
 
-### Development Setup
+### Local Development
 
-1. **Clone repository:**
+1. **Clone Repository**
 ```bash
-git clone https://gitlab.com/YOUR_USERNAME/thaihand.git
+git clone https://github.com/your-username/thaihand.git
 cd thaihand
 ```
 
-2. **Setup environment variables:**
+2. **Setup Environment**
 ```bash
+# Copy environment files
 cp backend/env.example backend/.env
 cp frontend/.env.example frontend/.env
+
+# Edit environment variables
+nano backend/.env
+nano frontend/.env
 ```
 
-3. **Start development environment:**
+3. **Start with Docker**
 ```bash
+# Start all services
 docker-compose up -d
+
+# View logs
+docker-compose logs -f
+
+# Stop services
+docker-compose down
 ```
 
-4. **Run database migrations:**
+4. **Database Migrations**
 ```bash
+# Run migrations
 docker-compose exec backend alembic upgrade head
+
+# Create new migration
+docker-compose exec backend alembic revision --autogenerate -m "description"
 ```
 
-5. **Access the application:**
-- Frontend: http://localhost:3000
-- Backend API: http://localhost:8000
-- Database: localhost:5432
+### Manual Development
 
-## 🚀 Production Deployment
-
-### GitLab CI/CD Setup
-
-โปรเจคนี้ใช้ GitLab CI/CD สำหรับ Continuous Deployment บน Digital Ocean droplets
-
-#### ขั้นตอนการตั้งค่า:
-
-1. **เตรียม Digital Ocean Droplet:**
+1. **Backend Setup**
 ```bash
-# Clone โปรเจคบน droplet
-git clone https://gitlab.com/YOUR_USERNAME/thaihand.git /opt/thaihand
-
-# รัน setup script
-chmod +x scripts/setup-droplet.sh
-./scripts/setup-droplet.sh
+cd backend
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+pip install -r requirements.txt
+uvicorn main:app --reload
 ```
 
-2. **ตั้งค่า GitLab CI/CD Variables:**
-ไปที่ GitLab repository → Settings → CI/CD → Variables
-
-เพิ่ม variables ต่อไปนี้:
-- `SSH_PRIVATE_KEY` - SSH private key สำหรับเชื่อมต่อ droplet
-- `SSH_HOST` - IP address ของ droplet
-- `SSH_USER` - username (thaihand)
-- `SSH_KNOWN_HOSTS` - SSH known hosts
-
-3. **ตั้งค่า Environment Variables:**
-สร้างไฟล์ `.env` บน droplet:
+2. **Frontend Setup**
 ```bash
-sudo -u thaihand nano /opt/thaihand/.env
+cd frontend
+npm install
+npm run dev
 ```
 
-4. **Deploy:**
-```bash
-# Push ไปยัง main branch เพื่อ trigger deployment
-git push origin main
-```
+## 🚀 Deployment
 
-#### การจัดการ Deployment:
+### Automated Deployment (Recommended)
 
-```bash
-# ตรวจสอบสถานะ
-sudo -u thaihand /opt/thaihand/scripts/deploy.sh status
+1. **Setup GitHub Secrets**
+   - `HOST`: Server IP address
+   - `USERNAME`: SSH username
+   - `SSH_KEY`: Private SSH key
 
-# Deploy ใหม่
-sudo -u thaihand /opt/thaihand/scripts/deploy.sh deploy
-
-# Rollback
-sudo -u thaihand /opt/thaihand/scripts/deploy.sh rollback
-```
+2. **Push to main branch**
+   - Automatic deployment will be triggered
 
 ### Manual Deployment
 
-หากไม่ใช้ GitLab CI/CD สามารถ deploy แบบ manual ได้:
-
 ```bash
-# บน droplet
+# On your server
 cd /opt/thaihand
-docker-compose -f docker-compose.prod.yml up -d
+git pull origin main
+docker-compose down
+docker-compose build --no-cache
+docker-compose up -d
 ```
 
-## 📁 โครงสร้างโปรเจค
-
-```
-thaihand/
-├── backend/                 # FastAPI backend
-│   ├── main.py             # FastAPI application
-│   ├── models.py           # Database models
-│   ├── schemas.py          # Pydantic schemas
-│   ├── crud.py            # Database operations
-│   ├── auth.py            # Authentication
-│   ├── routers.py         # API routes
-│   └── requirements.txt   # Python dependencies
-├── frontend/               # Next.js frontend
-│   ├── app/               # Next.js app directory
-│   ├── components/        # React components
-│   ├── lib/              # Utility functions
-│   └── package.json      # Node.js dependencies
-├── nginx/                 # Nginx configuration
-├── scripts/               # Deployment scripts
-│   ├── deploy.sh         # Deployment script
-│   └── setup-droplet.sh  # Droplet setup script
-├── docs/                  # Documentation
-├── docker-compose.yml     # Development environment
-├── docker-compose.prod.yml # Production environment
-└── .gitlab-ci.yml        # GitLab CI/CD pipeline
-```
-
-## 🔧 การพัฒนา
-
-### การรัน Tests
-
-```bash
-# Frontend tests
-cd frontend
-npm test
-
-# Backend tests
-cd backend
-pytest
-```
-
-### การรัน Linting
-
-```bash
-# Frontend linting
-cd frontend
-npm run lint
-
-# Backend linting
-cd backend
-flake8 .
-```
-
-### Database Migrations
-
-```bash
-# สร้าง migration ใหม่
-docker-compose exec backend alembic revision --autogenerate -m "Description"
-
-# รัน migrations
-docker-compose exec backend alembic upgrade head
-
-# Rollback migration
-docker-compose exec backend alembic downgrade -1
-```
-
-## 📊 Monitoring
+## 📊 Monitoring & Maintenance
 
 ### Health Checks
-- Application: `https://thaihand.shop/health`
-- Container status: `docker-compose ps`
-- System resources: `htop`, `df -h`
+```bash
+# Application health
+curl http://localhost:8000/health
+
+# Container status
+docker-compose ps
+
+# System resources
+htop
+df -h
+```
 
 ### Logs
 ```bash
@@ -213,49 +201,79 @@ docker-compose logs -f
 sudo tail -f /var/log/nginx/access.log
 
 # System logs
-journalctl -u thaihand.service
+journalctl -u thaihand -f
+```
+
+### Backup
+```bash
+# Manual backup
+/opt/backup.sh
+
+# List backups
+ls -la /opt/backups/
 ```
 
 ## 🔒 Security
 
-- **SSL/TLS**: Let's Encrypt certificates
-- **Firewall**: UFW configuration
-- **Fail2ban**: Brute force protection
-- **Docker**: Container isolation
-- **Environment variables**: Secure configuration
+- 🔐 JWT Authentication
+- 🛡️ CORS Protection
+- 🔒 HTTPS/SSL
+- 🚫 SQL Injection Protection
+- 🔑 Environment Variables
+- 🛡️ Input Validation
 
-## 📝 Contributing
+## 📱 API Documentation
+
+### Authentication Endpoints
+- `POST /auth/login` - User login
+- `POST /auth/register` - User registration
+- `GET /auth/me` - Get current user
+
+### Request Endpoints
+- `GET /requests` - List requests
+- `POST /requests` - Create request
+- `GET /requests/{id}` - Get request details
+- `PUT /requests/{id}` - Update request
+- `DELETE /requests/{id}` - Delete request
+
+### Offer Endpoints
+- `GET /offers` - List offers
+- `POST /offers` - Create offer
+- `GET /offers/{id}` - Get offer details
+- `PUT /offers/{id}` - Update offer
+
+### Notification Endpoints
+- `GET /notifications` - List notifications
+- `POST /notifications` - Create notification
+- `PUT /notifications/{id}/read` - Mark as read
+
+## 🤝 Contributing
 
 1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests if applicable
-5. Submit a merge request
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
 
 ## 📄 License
 
-This project is licensed under the MIT License.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## 🆘 Support
+## 📞 Support
 
-หากมีปัญหาหรือคำถาม:
-- สร้าง issue ใน GitLab repository
-- ติดต่อทีมพัฒนา
-- ดูเอกสารใน `/docs/` directory
+- 📧 Email: support@thaihand.shop
+- 📱 Line: @thaihand
+- 🌐 Website: https://thaihand.shop
+- 📖 Documentation: [docs/](docs/)
 
-## 🔄 CI/CD Pipeline
+## 🙏 Acknowledgments
 
-### Stages:
-1. **Test** - รัน tests และ linting
-2. **Build** - Build Docker images และ push ไปยัง GitLab registry
-3. **Deploy** - Deploy ไปยัง Digital Ocean droplet
+- [Next.js](https://nextjs.org/) - React Framework
+- [FastAPI](https://fastapi.tiangolo.com/) - Python Web Framework
+- [Tailwind CSS](https://tailwindcss.com/) - CSS Framework
+- [Shadcn/ui](https://ui.shadcn.com/) - UI Components
+- [Digital Ocean](https://www.digitalocean.com/) - Cloud Hosting
 
-### Triggers:
-- Push ไปยัง `main` branch
-- Manual deployment จาก GitLab UI
+---
 
-### Features:
-- Automatic backup ก่อน deployment
-- Health checks หลัง deployment
-- Rollback capability
-- Logging และ monitoring
+**ThaiHand** - เชื่อมต่อโลกการซื้อขายสินค้าจากต่างประเทศ 🇹🇭

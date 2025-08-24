@@ -8,7 +8,7 @@ on:
 env:
   DEPLOY_HOST: ${{ secrets.HOST }}
   DEPLOY_USER: ${{ secrets.USERNAME }}
-  DEPLOY_PATH: /opt/thaihand
+  DEPLOY_PATH: /root/thaihand
 
 jobs:
   deploy:
@@ -27,23 +27,42 @@ jobs:
           # Navigate to project directory
           cd ${{ env.DEPLOY_PATH }}
           
+          # Check if directory exists, if not clone the repository
+          if [ ! -d ".git" ]; then
+            echo "📦 Repository not found. Cloning from GitHub..."
+            git clone https://github.com/${{ github.repository }}.git .
+          fi
+          
           # Pull latest code
+          echo "📥 Pulling latest code..."
           git pull origin main
           
           # Stop existing containers
-          sudo -u thaihand docker-compose down || true
+          echo "🛑 Stopping existing containers..."
+          docker-compose down || true
           
           # Build and deploy locally
-          sudo -u thaihand docker-compose build --no-cache
-          sudo -u thaihand docker-compose up -d
+          echo "🔨 Building containers..."
+          docker-compose build --no-cache
+          
+          echo "🚀 Starting containers..."
+          docker-compose up -d
           
           # Wait for containers to be ready
+          echo "⏳ Waiting for containers to be ready..."
           sleep 30
           
           # Health check
+          echo "🏥 Performing health check..."
           if curl -f http://localhost:8000/health >/dev/null 2>&1; then
             echo "✅ Deployment successful - Application is healthy"
           else
             echo "❌ Deployment failed - Health check failed"
+            echo "📋 Container logs:"
+            docker-compose logs --tail=20
             exit 1
           fi
+          
+          # Clean up old images
+          echo "🧹 Cleaning up old images..."
+          docker image prune -f
