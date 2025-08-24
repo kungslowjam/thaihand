@@ -1,5 +1,5 @@
 "use client";
-import { ShoppingBag, CheckCircle, Edit2, Trash2 } from "lucide-react";
+import { ShoppingBag, CheckCircle, Edit2, Trash2, Search, Filter, Plus, Calendar, MapPin, DollarSign, User, Phone, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { useState, useEffect } from "react";
@@ -22,6 +22,7 @@ export default function MyItemsPage() {
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState("all");
   const [page, setPage] = useState(1);
+  const [activeTab, setActiveTab] = useState<"requests" | "offers">("requests");
   const pageSize = 5;
 
   useEffect(() => {
@@ -191,242 +192,574 @@ export default function MyItemsPage() {
 
   return (
     <>
-      <div className="min-h-screen bg-gradient-to-br from-blue-100 via-indigo-100 to-white py-10 px-2">
-        <div className="max-w-2xl mx-auto">
-          <h1 className="text-2xl font-extrabold text-gray-900 mb-8 text-center tracking-tight">รายการของฉัน</h1>
-          {/* Search & Filter */}
-          <div className="flex flex-col sm:flex-row gap-2 mb-6 sticky top-0 z-20 bg-gradient-to-br from-blue-100/80 via-indigo-100/80 to-white/80 py-2 px-2 rounded-xl shadow-sm">
-            <input
-              type="text"
-              placeholder="ค้นหารายการ..."
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-              className="flex-1 rounded-lg border border-gray-200 px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-200 bg-white/80"
-            />
-            <select
-              value={filter}
-              onChange={e => setFilter(e.target.value)}
-              className="rounded-lg border border-gray-200 px-3 py-2 text-sm bg-white/80"
-            >
-              <option value="all">ทั้งหมด</option>
-              <option value="รอรับหิ้ว">รอรับหิ้ว</option>
-              <option value="สำเร็จ">สำเร็จ</option>
-              <option value="เปิดรับฝาก">เปิดรับฝาก</option>
-              <option value="ปิดรับฝาก">ปิดรับฝาก</option>
-            </select>
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 py-8 px-4">
+        <div className="max-w-6xl mx-auto">
+          {/* Header Section */}
+          <div className="text-center mb-8">
+            <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent mb-2">
+              รายการของฉัน
+            </h1>
+            <p className="text-gray-600 text-lg">จัดการรายการฝากหิ้วและข้อเสนอรับหิ้วของคุณ</p>
           </div>
-          {/* ฝากหิ้วของฉัน */}
-          <section className="mb-10">
-            <div className="flex items-center gap-2 mb-4 sticky top-14 z-10 bg-gradient-to-br from-blue-100/80 to-white/80 py-1 px-2 rounded-xl">
-              <ShoppingBag className="h-5 w-5 text-blue-400" />
-              <h2 className="text-base font-bold text-gray-800">ฝากหิ้วของฉัน</h2>
-            </div>
-            {/* Section: รายการที่ฉันสร้างเอง */}
-            <div className="mb-6">
-              <h3 className="font-semibold text-blue-600 mb-2">รายการที่ฉันสร้างเอง</h3>
-              {myOwnRequests.length === 0 ? (
-                <div className="flex flex-col items-center justify-center py-4 animate-fade-in">
-                  <span className="text-3xl mb-2">🛍️</span>
-                  <div className="text-gray-400 mb-2">ยังไม่มีรายการที่ฉันสร้างเอง</div>
+
+          {/* Stats Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+            <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-white/20">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-600">รายการทั้งหมด</p>
+                  <p className="text-2xl font-bold text-gray-900">{requests.length}</p>
                 </div>
-              ) : (
-                <div className="grid gap-3">
-                  {myOwnRequests.map((req: any) => (
-                    <div key={req.id} className="bg-white/90 rounded-xl shadow flex flex-col md:flex-row md:items-center md:justify-between gap-3 border border-white/30 hover:shadow-xl hover:scale-[1.01] transition-all duration-200 animate-fade-in px-4 py-3">
-                      <div className="flex items-center gap-3 min-w-0">
-                        {/* แสดงธงประเทศต้นทางและปลายทาง ถ้ามีข้อมูล */}
-                        <div className="flex items-center gap-1 mr-2">
-                          {req.from_location && <img
-                            src={`https://flagcdn.com/48x36/${getCountryCode(req.from_location)}.png`}
-                            alt={getCountryCode(req.from_location)}
-                            className="w-7 h-7 rounded-full border shadow"
-                            onError={e => { e.currentTarget.src = "/thaihand-logo.png"; }}
-                          />}
-                          <span className="mx-1">→</span>
-                          {req.to_location && <img
-                            src={`https://flagcdn.com/48x36/${getCountryCode(req.to_location)}.png`}
-                            alt={getCountryCode(req.to_location)}
-                            className="w-7 h-7 rounded-full border shadow"
-                            onError={e => { e.currentTarget.src = "/thaihand-logo.png"; }}
-                          />}
-                        </div>
-                        {/* รูปสินค้า (ถ้ามี) */}
-                        <img
-                          src={req.image || "/thaihand-logo.png"}
-                          alt={req.title}
-                          className="h-14 w-14 rounded-lg object-cover border border-gray-200 bg-white shadow-sm"
-                          onError={e => { e.currentTarget.src = "/thaihand-logo.png"; }}
-                        />
-                        <div className="min-w-0">
-                          <div className="font-semibold text-gray-900 truncate">{req.title}</div>
-                          <div className="text-xs text-gray-500 truncate flex items-center gap-2">
-                            <Badge className={`px-2 py-0.5 text-xs rounded-full ${req.status === "สำเร็จ" ? "bg-green-100 text-green-700" : "bg-blue-100 text-blue-700"}`}>{req.status}</Badge>
-                            {req.date}
-                          </div>
-                          {/* เพิ่มรายละเอียด */}
-                                                      <div className="text-xs text-gray-600 mt-1">
-                              <div>ต้นทาง: {req.from_location || 'ไม่ระบุ'}</div>
-                              <div>ปลายทาง: {req.to_location || 'ไม่ระบุ'}</div>
-                              <div>งบประมาณ: {req.budget && req.budget > 0 ? `${req.budget} บาท` : 'ไม่ระบุ'}</div>
-                              <div>หมายเหตุ: {req.description || 'ไม่มีรายละเอียดเพิ่มเติม'}</div>
+                <div className="p-3 bg-blue-100 rounded-xl">
+                  <ShoppingBag className="h-6 w-6 text-blue-600" />
+                </div>
+              </div>
+            </div>
+            <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-white/20">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-600">ข้อเสนอรับหิ้ว</p>
+                  <p className="text-2xl font-bold text-gray-900">{offers.length}</p>
+                </div>
+                <div className="p-3 bg-green-100 rounded-xl">
+                  <CheckCircle className="h-6 w-6 text-green-600" />
+                </div>
+              </div>
+            </div>
+            <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-white/20">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-600">รอรับหิ้ว</p>
+                  <p className="text-2xl font-bold text-gray-900">{requests.filter(r => r.status === "รอรับหิ้ว").length}</p>
+                </div>
+                <div className="p-3 bg-yellow-100 rounded-xl">
+                  <Calendar className="h-6 w-6 text-yellow-600" />
+                </div>
+              </div>
+            </div>
+            <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-white/20">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-600">สำเร็จ</p>
+                  <p className="text-2xl font-bold text-gray-900">{requests.filter(r => r.status === "สำเร็จ").length}</p>
+                </div>
+                <div className="p-3 bg-emerald-100 rounded-xl">
+                  <CheckCircle className="h-6 w-6 text-emerald-600" />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Search & Filter Bar */}
+          <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg border border-white/20 p-6 mb-8">
+            <div className="flex flex-col lg:flex-row gap-4">
+              <div className="flex-1 relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
+                <input
+                  type="text"
+                  placeholder="ค้นหารายการ..."
+                  value={search}
+                  onChange={e => setSearch(e.target.value)}
+                  className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white/50"
+                />
+              </div>
+              <div className="flex gap-2">
+                <select
+                  value={filter}
+                  onChange={e => setFilter(e.target.value)}
+                  className="px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white/50"
+                >
+                  <option value="all">ทั้งหมด</option>
+                  <option value="รอรับหิ้ว">รอรับหิ้ว</option>
+                  <option value="สำเร็จ">สำเร็จ</option>
+                  <option value="เปิดรับฝาก">เปิดรับฝาก</option>
+                  <option value="ปิดรับฝาก">ปิดรับฝาก</option>
+                </select>
+                <Button className="px-6 py-3 rounded-xl bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white shadow-lg">
+                  <Plus className="h-4 w-4 mr-2" />
+                  สร้างใหม่
+                </Button>
+              </div>
+            </div>
+          </div>
+
+          {/* Tab Navigation */}
+          <div className="flex bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-white/20 p-2 mb-8">
+            <button
+              onClick={() => setActiveTab("requests")}
+              className={`flex-1 py-3 px-6 rounded-xl font-medium transition-all duration-200 ${
+                activeTab === "requests"
+                  ? "bg-gradient-to-r from-blue-500 to-indigo-500 text-white shadow-lg"
+                  : "text-gray-600 hover:text-gray-900"
+              }`}
+            >
+              <ShoppingBag className="h-5 w-5 inline mr-2" />
+              ฝากหิ้วของฉัน ({requests.length})
+            </button>
+            <button
+              onClick={() => setActiveTab("offers")}
+              className={`flex-1 py-3 px-6 rounded-xl font-medium transition-all duration-200 ${
+                activeTab === "offers"
+                  ? "bg-gradient-to-r from-green-500 to-emerald-500 text-white shadow-lg"
+                  : "text-gray-600 hover:text-gray-900"
+              }`}
+            >
+              <CheckCircle className="h-5 w-5 inline mr-2" />
+              ข้อเสนอรับหิ้ว ({offers.length})
+            </button>
+          </div>
+
+          {/* Content Sections */}
+          {activeTab === "requests" && (
+            <div className="space-y-8">
+              {/* รายการที่ฉันสร้างเอง */}
+              <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg border border-white/20 p-6">
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="p-2 bg-blue-100 rounded-xl">
+                    <ShoppingBag className="h-6 w-6 text-blue-600" />
+                  </div>
+                  <div>
+                    <h2 className="text-xl font-bold text-gray-900">รายการที่ฉันสร้างเอง</h2>
+                    <p className="text-gray-600">รายการฝากหิ้วที่คุณสร้างขึ้นมาเอง</p>
+                  </div>
+                </div>
+                
+                {myOwnRequests.length === 0 ? (
+                  <div className="text-center py-12">
+                    <div className="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                      <ShoppingBag className="h-10 w-10 text-blue-600" />
+                    </div>
+                    <h3 className="text-lg font-semibold text-gray-900 mb-2">ยังไม่มีรายการ</h3>
+                    <p className="text-gray-600 mb-4">เริ่มสร้างรายการฝากหิ้วแรกของคุณ</p>
+                    <Button className="bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white">
+                      <Plus className="h-4 w-4 mr-2" />
+                      สร้างรายการใหม่
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="grid gap-4">
+                    {myOwnRequests.map((req: any, index: number) => (
+                      <div 
+                        key={req.id} 
+                        className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-6 border border-blue-100 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1"
+                        style={{ animationDelay: `${index * 100}ms` }}
+                      >
+                        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+                          <div className="flex items-start gap-4 flex-1">
+                            {/* Flags */}
+                            <div className="flex items-center gap-2">
+                              {req.from_location && (
+                                <img
+                                  src={`https://flagcdn.com/48x36/${getCountryCode(req.from_location)}.png`}
+                                  alt={getCountryCode(req.from_location)}
+                                  className="w-8 h-6 rounded shadow-sm"
+                                  onError={e => { e.currentTarget.src = "/thaihand-logo.png"; }}
+                                />
+                              )}
+                              <MapPin className="h-4 w-4 text-gray-400" />
+                              {req.to_location && (
+                                <img
+                                  src={`https://flagcdn.com/48x36/${getCountryCode(req.to_location)}.png`}
+                                  alt={getCountryCode(req.to_location)}
+                                  className="w-8 h-6 rounded shadow-sm"
+                                  onError={e => { e.currentTarget.src = "/thaihand-logo.png"; }}
+                                />
+                              )}
                             </div>
+                            
+                            {/* Content */}
+                            <div className="flex-1">
+                              <div className="flex items-center gap-3 mb-2">
+                                <h3 className="text-lg font-semibold text-gray-900">{req.title}</h3>
+                                <Badge className={`px-3 py-1 rounded-full text-xs font-medium ${
+                                  req.status === "สำเร็จ" 
+                                    ? "bg-emerald-100 text-emerald-700" 
+                                    : "bg-blue-100 text-blue-700"
+                                }`}>
+                                  {req.status}
+                                </Badge>
+                              </div>
+                              
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm text-gray-600">
+                                <div className="flex items-center gap-2">
+                                  <MapPin className="h-4 w-4 text-gray-400" />
+                                  <span>ต้นทาง: {req.from_location || 'ไม่ระบุ'}</span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <MapPin className="h-4 w-4 text-gray-400" />
+                                  <span>ปลายทาง: {req.to_location || 'ไม่ระบุ'}</span>
+                                </div>
+                                {req.budget && req.budget > 0 && (
+                                  <div className="flex items-center gap-2">
+                                    <DollarSign className="h-4 w-4 text-gray-400" />
+                                    <span>งบประมาณ: {req.budget.toLocaleString()} บาท</span>
+                                  </div>
+                                )}
+                                <div className="flex items-center gap-2">
+                                  <Calendar className="h-4 w-4 text-gray-400" />
+                                  <span>วันที่: {req.date || 'ไม่ระบุ'}</span>
+                                </div>
+                              </div>
+                              
+                              {req.description && (
+                                <p className="text-sm text-gray-500 mt-2 italic">"{req.description}"</p>
+                              )}
+                            </div>
+                          </div>
+                          
+                          {/* Actions */}
+                          <div className="flex gap-2">
+                            <Link href={`/request/${req.id}`}>
+                              <Button variant="outline" size="sm" className="rounded-lg">
+                                <Edit2 className="h-4 w-4 mr-2" />
+                                แก้ไข
+                              </Button>
+                            </Link>
+                            <Button 
+                              variant="destructive" 
+                              size="sm" 
+                              className="rounded-lg"
+                              onClick={() => setShowDelete({ type: "request", id: req.id })}
+                            >
+                              <Trash2 className="h-4 w-4 mr-2" />
+                              ลบ
+                            </Button>
+                          </div>
                         </div>
                       </div>
-                      <div className="flex gap-1 items-center">
-                        <Link href={`/request/${req.id}`}><Button size="icon" variant="outline" title="แก้ไข"><Edit2 className="h-4 w-4" /></Button></Link>
-                        <Button size="icon" variant="destructive" title="ลบ" onClick={() => setShowDelete({ type: "request", id: req.id })}><Trash2 className="h-4 w-4" /></Button>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* รายการที่ฉันไปฝากกับคนอื่น */}
+              <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg border border-white/20 p-6">
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="p-2 bg-indigo-100 rounded-xl">
+                    <User className="h-6 w-6 text-indigo-600" />
+                  </div>
+                  <div>
+                    <h2 className="text-xl font-bold text-gray-900">รายการที่ฉันไปฝากกับคนอื่น</h2>
+                    <p className="text-gray-600">รายการฝากหิ้วที่คุณไปฝากกับผู้รับหิ้วคนอื่น</p>
+                  </div>
+                </div>
+                
+                {myRequestsToOthers.length === 0 ? (
+                  <div className="text-center py-12">
+                    <div className="w-20 h-20 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                      <User className="h-10 w-10 text-indigo-600" />
+                    </div>
+                    <h3 className="text-lg font-semibold text-gray-900 mb-2">ยังไม่มีรายการ</h3>
+                    <p className="text-gray-600">คุณยังไม่ได้ไปฝากหิ้วกับใคร</p>
+                  </div>
+                ) : (
+                  <div className="grid gap-4">
+                    {myRequestsToOthers.map((req: any, index: number) => {
+                      const carrierName = req.carrier_name || req.carrier_email || "-";
+                      const carrierEmail = req.carrier_email || "-";
+                      const carrierPhone = req.carrier_phone || "-";
+                      const carrierImage = req.carrier_image || "/thaihand-logo.png";
+                      
+                      return (
+                        <div 
+                          key={req.id} 
+                          className="bg-gradient-to-r from-indigo-50 to-purple-50 rounded-xl p-6 border border-indigo-100 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1"
+                          style={{ animationDelay: `${index * 100}ms` }}
+                        >
+                          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+                            <div className="flex items-start gap-4 flex-1">
+                              {/* Flags */}
+                              <div className="flex items-center gap-2">
+                                {req.from_location && (
+                                  <img
+                                    src={`https://flagcdn.com/48x36/${getCountryCode(req.from_location)}.png`}
+                                    alt={getCountryCode(req.from_location)}
+                                    className="w-8 h-6 rounded shadow-sm"
+                                    onError={e => { e.currentTarget.src = "/thaihand-logo.png"; }}
+                                  />
+                                )}
+                                <MapPin className="h-4 w-4 text-gray-400" />
+                                {req.to_location && (
+                                  <img
+                                    src={`https://flagcdn.com/48x36/${getCountryCode(req.to_location)}.png`}
+                                    alt={getCountryCode(req.to_location)}
+                                    className="w-8 h-6 rounded shadow-sm"
+                                    onError={e => { e.currentTarget.src = "/thaihand-logo.png"; }}
+                                  />
+                                )}
+                              </div>
+                              
+                              {/* Content */}
+                              <div className="flex-1">
+                                <div className="flex items-center gap-3 mb-2">
+                                  <h3 className="text-lg font-semibold text-gray-900">{req.title}</h3>
+                                  <Badge className={`px-3 py-1 rounded-full text-xs font-medium ${
+                                    req.status === "สำเร็จ" 
+                                      ? "bg-emerald-100 text-emerald-700" 
+                                      : "bg-blue-100 text-blue-700"
+                                  }`}>
+                                    {req.status}
+                                  </Badge>
+                                </div>
+                                
+                                {/* Carrier Info */}
+                                <div className="bg-white/50 rounded-lg p-3 mb-3">
+                                  <div className="flex items-center gap-3 mb-2">
+                                    <img 
+                                      src={carrierImage} 
+                                      alt="carrier" 
+                                      className="w-8 h-8 rounded-full border-2 border-indigo-200" 
+                                      onError={e => { e.currentTarget.src = "/thaihand-logo.png"; }} 
+                                    />
+                                    <div>
+                                      <p className="font-medium text-gray-900">{carrierName}</p>
+                                      <p className="text-sm text-gray-600">{carrierEmail}</p>
+                                    </div>
+                                  </div>
+                                  {carrierPhone && carrierPhone !== "-" && (
+                                    <div className="flex items-center gap-2 text-sm text-gray-600">
+                                      <Phone className="h-4 w-4" />
+                                      <span>{carrierPhone}</span>
+                                    </div>
+                                  )}
+                                </div>
+                                
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm text-gray-600">
+                                  <div className="flex items-center gap-2">
+                                    <MapPin className="h-4 w-4 text-gray-400" />
+                                    <span>ต้นทาง: {req.from_location || 'ไม่ระบุ'}</span>
+                                  </div>
+                                  <div className="flex items-center gap-2">
+                                    <MapPin className="h-4 w-4 text-gray-400" />
+                                    <span>ปลายทาง: {req.to_location || 'ไม่ระบุ'}</span>
+                                  </div>
+                                  {req.budget && req.budget > 0 && (
+                                    <div className="flex items-center gap-2">
+                                      <DollarSign className="h-4 w-4 text-gray-400" />
+                                      <span>งบประมาณ: {req.budget.toLocaleString()} บาท</span>
+                                    </div>
+                                  )}
+                                  <div className="flex items-center gap-2">
+                                    <Calendar className="h-4 w-4 text-gray-400" />
+                                    <span>วันที่: {req.date || 'ไม่ระบุ'}</span>
+                                  </div>
+                                </div>
+                                
+                                {req.description && (
+                                  <p className="text-sm text-gray-500 mt-2 italic">"{req.description}"</p>
+                                )}
+                              </div>
+                            </div>
+                            
+                            {/* Actions */}
+                            <div className="flex gap-2">
+                              <Link href={`/request/${req.id}`}>
+                                <Button variant="outline" size="sm" className="rounded-lg">
+                                  <Edit2 className="h-4 w-4 mr-2" />
+                                  แก้ไข
+                                </Button>
+                              </Link>
+                              <Button 
+                                variant="destructive" 
+                                size="sm" 
+                                className="rounded-lg"
+                                onClick={() => setShowDelete({ type: "request", id: req.id })}
+                              >
+                                <Trash2 className="h-4 w-4 mr-2" />
+                                ลบ
+                              </Button>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {activeTab === "offers" && (
+            <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg border border-white/20 p-6">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="p-2 bg-green-100 rounded-xl">
+                  <CheckCircle className="h-6 w-6 text-green-600" />
+                </div>
+                <div>
+                  <h2 className="text-xl font-bold text-gray-900">ข้อเสนอรับหิ้วของฉัน</h2>
+                  <p className="text-gray-600">ข้อเสนอรับหิ้วที่คุณสร้างขึ้นมา</p>
+                </div>
+              </div>
+              
+              {pagedOffers.length === 0 ? (
+                <div className="text-center py-12">
+                  <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <CheckCircle className="h-10 w-10 text-green-600" />
+                  </div>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">ยังไม่มีข้อเสนอ</h3>
+                  <p className="text-gray-600 mb-4">เริ่มสร้างข้อเสนอรับหิ้วแรกของคุณ</p>
+                  <Button className="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white">
+                    <Plus className="h-4 w-4 mr-2" />
+                    สร้างข้อเสนอใหม่
+                  </Button>
+                </div>
+              ) : (
+                <div className="grid gap-4">
+                  {pagedOffers.map((offer, index) => (
+                    <div 
+                      key={offer.id} 
+                      className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl p-6 border border-green-100 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1"
+                      style={{ animationDelay: `${index * 100}ms` }}
+                    >
+                      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+                        <div className="flex items-start gap-4 flex-1">
+                          {/* Flags */}
+                          <div className="flex items-center gap-2">
+                            {(offer.route_from || offer.routeFrom) && (
+                              <img
+                                src={`https://flagcdn.com/48x36/${getCountryCode(offer.route_from || offer.routeFrom)}.png`}
+                                alt={getCountryCode(offer.route_from || offer.routeFrom)}
+                                className="w-8 h-6 rounded shadow-sm"
+                                onError={e => { e.currentTarget.src = "/thaihand-logo.png"; }}
+                              />
+                            )}
+                            <MapPin className="h-4 w-4 text-gray-400" />
+                            {(offer.route_to || offer.routeTo) && (
+                              <img
+                                src={`https://flagcdn.com/48x36/${getCountryCode(offer.route_to || offer.routeTo)}.png`}
+                                alt={getCountryCode(offer.route_to || offer.routeTo)}
+                                className="w-8 h-6 rounded shadow-sm"
+                                onError={e => { e.currentTarget.src = "/thaihand-logo.png"; }}
+                              />
+                            )}
+                          </div>
+                          
+                          {/* Content */}
+                          <div className="flex-1">
+                            <div className="flex items-center gap-3 mb-2">
+                              <h3 className="text-lg font-semibold text-gray-900">{offer.route}</h3>
+                              <Badge className={`px-3 py-1 rounded-full text-xs font-medium ${
+                                offer.status === "เปิดรับฝาก" 
+                                  ? "bg-green-100 text-green-700" 
+                                  : "bg-gray-100 text-gray-500"
+                              }`}>
+                                {offer.status}
+                              </Badge>
+                            </div>
+                            
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm text-gray-600">
+                              <div className="flex items-center gap-2">
+                                <MapPin className="h-4 w-4 text-gray-400" />
+                                <span>ต้นทาง: {offer.route_from || offer.routeFrom || 'ไม่ระบุ'}</span>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <MapPin className="h-4 w-4 text-gray-400" />
+                                <span>ปลายทาง: {offer.route_to || offer.routeTo || 'ไม่ระบุ'}</span>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <Calendar className="h-4 w-4 text-gray-400" />
+                                <span>วันที่: {offer.date || 'ไม่ระบุ'}</span>
+                              </div>
+                            </div>
+                            
+                            {offer.description && (
+                              <p className="text-sm text-gray-500 mt-2 italic">"{offer.description}"</p>
+                            )}
+                          </div>
+                        </div>
+                        
+                        {/* Actions */}
+                        <div className="flex gap-2">
+                          <Link href={`/my-routes/management/${offer.id}`}>
+                            <Button variant="outline" size="sm" className="rounded-lg">
+                              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536M9 11l6 6M3 21h6v-6l9.293-9.293a1 1 0 00-1.414-1.414L9 9.586V3H3v6h6v6H3v6z" />
+                              </svg>
+                              จัดการ
+                            </Button>
+                          </Link>
+                          <Link href={`/offer/${offer.id}`}>
+                            <Button variant="outline" size="sm" className="rounded-lg">
+                              <Edit2 className="h-4 w-4 mr-2" />
+                              แก้ไข
+                            </Button>
+                          </Link>
+                          <Button 
+                            variant="destructive" 
+                            size="sm" 
+                            className="rounded-lg"
+                            onClick={() => setShowDelete({ type: "offer", id: offer.id })}
+                          >
+                            <Trash2 className="h-4 w-4 mr-2" />
+                            ลบ
+                          </Button>
+                        </div>
                       </div>
                     </div>
                   ))}
                 </div>
               )}
             </div>
-            {/* Section: รายการที่ฉันไปฝากกับคนอื่น */}
-            <div>
-              <h3 className="font-semibold text-indigo-600 mb-2">รายการที่ฉันไปฝากกับคนอื่น</h3>
-              {myRequestsToOthers.length === 0 ? (
-                <div className="flex flex-col items-center justify-center py-4 animate-fade-in">
-                  <span className="text-3xl mb-2">🛍️</span>
-                  <div className="text-gray-400 mb-2">ยังไม่มีรายการที่ฉันไปฝากกับคนอื่น</div>
-                </div>
-              ) : (
-                <div className="grid gap-3">
-                  {myRequestsToOthers.map((req: any) => {
-                    const carrierName = req.carrier_name || req.carrier_email || "-";
-                    const carrierEmail = req.carrier_email || "-";
-                    const carrierPhone = req.carrier_phone || "-";
-                    const carrierImage = req.carrier_image || "/thaihand-logo.png";
-                    return (
-                      <div key={req.id} className="bg-white/90 rounded-xl shadow flex flex-col md:flex-row md:items-center md:justify-between gap-3 border border-white/30 hover:shadow-xl hover:scale-[1.01] transition-all duration-200 animate-fade-in px-4 py-3">
-                        <div className="flex items-center gap-3 min-w-0">
-                          {/* แสดงธงประเทศต้นทางและปลายทาง ถ้ามีข้อมูล */}
-                          <div className="flex items-center gap-1 mr-2">
-                            {req.from_location && <img
-                              src={`https://flagcdn.com/48x36/${getCountryCode(req.from_location)}.png`}
-                              alt={getCountryCode(req.from_location)}
-                              className="w-7 h-7 rounded-full border shadow"
-                              onError={e => { e.currentTarget.src = "/thaihand-logo.png"; }}
-                            />}
-                            <span className="mx-1">→</span>
-                            {req.to_location && <img
-                              src={`https://flagcdn.com/48x36/${getCountryCode(req.to_location)}.png`}
-                              alt={getCountryCode(req.to_location)}
-                              className="w-7 h-7 rounded-full border shadow"
-                              onError={e => { e.currentTarget.src = "/thaihand-logo.png"; }}
-                            />}
-                          </div>
-                          {/* รูปสินค้า (ถ้ามี) */}
-                          <img
-                            src={req.image || "/thaihand-logo.png"}
-                            alt={req.title}
-                            className="h-14 w-14 rounded-lg object-cover border border-gray-200 bg-white shadow-sm"
-                            onError={e => { e.currentTarget.src = "/thaihand-logo.png"; }}
-                          />
-                          <div className="min-w-0">
-                            <div className="font-semibold text-gray-900 truncate">{req.title}</div>
-                            <div className="text-xs text-gray-500 truncate flex items-center gap-2">
-                              <Badge className={`px-2 py-0.5 text-xs rounded-full ${req.status === "สำเร็จ" ? "bg-green-100 text-green-700" : "bg-blue-100 text-blue-700"}`}>{req.status}</Badge>
-                              {req.date}
-                            </div>
-                            {/* เพิ่มรายละเอียด */}
-                            <div className="text-xs text-gray-600 mt-1">
-                              <div className="flex items-center gap-2">
-                                <span>ไปฝากกับ:</span>
-                                <img src={carrierImage} alt="carrier" className="w-6 h-6 rounded-full border" onError={e => { e.currentTarget.src = "/thaihand-logo.png"; }} />
-                                <span>{carrierName || carrierEmail}</span>
-                                {carrierName && <span>({carrierEmail})</span>}
-                                {req.carrier_phone && <span>โทร: {carrierPhone}</span>}
-                              </div>
-                              <div>ต้นทาง: {req.from_location || 'ไม่ระบุ'}</div>
-                              <div>ปลายทาง: {req.to_location || 'ไม่ระบุ'}</div>
-                              <div>งบประมาณ: {req.budget && req.budget > 0 ? `${req.budget} บาท` : 'ไม่ระบุ'}</div>
-                              <div>หมายเหตุ: {req.description || 'ไม่มีรายละเอียดเพิ่มเติม'}</div>
-                            </div>
-                          </div>
-                        </div>
-                        <div className="flex gap-1 items-center">
-                          <Link href={`/request/${req.id}`}><Button size="icon" variant="outline" title="แก้ไข"><Edit2 className="h-4 w-4" /></Button></Link>
-                          <Button size="icon" variant="destructive" title="ลบ" onClick={() => setShowDelete({ type: "request", id: req.id })}><Trash2 className="h-4 w-4" /></Button>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
-          </section>
-          {/* ข้อเสนอรับหิ้วของฉัน */}
-          <section>
-            <div className="flex items-center gap-2 mb-4 sticky top-28 z-10 bg-gradient-to-br from-green-100/80 to-white/80 py-1 px-2 rounded-xl">
-              <CheckCircle className="h-5 w-5 text-green-400" />
-              <h2 className="text-base font-bold text-gray-800">ข้อเสนอรับหิ้วของฉัน</h2>
-            </div>
-            {pagedOffers.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-10 animate-fade-in">
-                <span className="text-5xl mb-2">✈️</span>
-                <div className="text-gray-400 mb-2">ยังไม่มีข้อเสนอรับหิ้ว</div>
-              </div>
-            ) : (
-              <div className="grid gap-3">
-                {pagedOffers.map(offer => (
-                  <div key={offer.id} className="bg-white/90 rounded-xl shadow flex flex-col md:flex-row md:items-center md:justify-between gap-3 border border-white/30 hover:shadow-xl hover:scale-[1.01] transition-all duration-200 animate-fade-in px-4 py-3">
-                    <div className="flex items-center gap-3 min-w-0">
-                      {/* แสดงธงประเทศต้นทาง → ปลายทาง */}
-                      <div className="flex items-center gap-1 mr-2">
-                        {((offer.route_from || offer.routeFrom) &&
-                          <img
-                            src={`https://flagcdn.com/48x36/${getCountryCode(offer.route_from || offer.routeFrom)}.png`}
-                            alt={getCountryCode(offer.route_from || offer.routeFrom)}
-                            className="w-7 h-7 rounded-full border shadow"
-                            onError={e => { e.currentTarget.src = "/thaihand-logo.png"; }}
-                          />)}
-                        <span className="mx-1">→</span>
-                        {((offer.route_to || offer.routeTo) &&
-                          <img
-                            src={`https://flagcdn.com/48x36/${getCountryCode(offer.route_to || offer.routeTo)}.png`}
-                            alt={getCountryCode(offer.route_to || offer.routeTo)}
-                            className="w-7 h-7 rounded-full border shadow"
-                            onError={e => { e.currentTarget.src = "/thaihand-logo.png"; }}
-                          />)}
-                      </div>
-                      <div className="min-w-0">
-                        <div className="font-semibold text-gray-900 truncate">{offer.route}</div>
-                        <div className="text-xs text-gray-500 truncate flex items-center gap-2">
-                          <Badge className={`px-2 py-0.5 text-xs rounded-full ${offer.status === "เปิดรับฝาก" ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-500"}`}>{offer.status}</Badge>
-                          {offer.date}
-                        </div>
-                      </div>
-                    </div>
-                    <div className="flex gap-1 items-center">
-                      <Link href={`/my-routes/management/${offer.id}`}><Button size="icon" variant="outline" title="จัดการ"><svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536M9 11l6 6M3 21h6v-6l9.293-9.293a1 1 0 00-1.414-1.414L9 9.586V3H3v6h6v6H3v6z" /></svg></Button></Link>
-                      <Link href={`/offer/${offer.id}`}><Button size="icon" variant="outline" title="แก้ไข"><Edit2 className="h-4 w-4" /></Button></Link>
-                      <Button size="icon" variant="destructive" title="ลบ" onClick={() => setShowDelete({ type: "offer", id: offer.id })}><Trash2 className="h-4 w-4" /></Button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </section>
-          {/* Pagination (mock) */}
+          )}
+
+          {/* Pagination */}
           {totalPages > 1 && (
             <div className="flex justify-center gap-2 mt-8">
-              <Button size="sm" variant="outline" disabled={page === 1} onClick={() => setPage(page-1)}>ก่อนหน้า</Button>
-              <span className="text-sm text-gray-500 px-2">หน้า {page} / {totalPages}</span>
-              <Button size="sm" variant="outline" disabled={page === totalPages} onClick={() => setPage(page+1)}>ถัดไป</Button>
+              <Button 
+                size="sm" 
+                variant="outline" 
+                disabled={page === 1} 
+                onClick={() => setPage(page-1)}
+                className="rounded-lg"
+              >
+                ก่อนหน้า
+              </Button>
+              <span className="text-sm text-gray-500 px-4 py-2 bg-white/50 rounded-lg">หน้า {page} / {totalPages}</span>
+              <Button 
+                size="sm" 
+                variant="outline" 
+                disabled={page === totalPages} 
+                onClick={() => setPage(page+1)}
+                className="rounded-lg"
+              >
+                ถัดไป
+              </Button>
             </div>
           )}
-          {/* Modal ยืนยันลบ */}
+
+          {/* Delete Confirmation Modal */}
           {showDelete && (
-            <div className="fixed inset-0 flex items-center justify-center z-50 bg-black/30 animate-fade-in">
-              <div className="bg-white rounded-2xl shadow-xl p-8 max-w-xs w-full text-center border-t-4 border-red-200 animate-fade-in">
-                <Trash2 className="h-10 w-10 text-red-300 mx-auto mb-2 animate-bounce" />
-                <div className="text-lg font-semibold mb-2">ยืนยันการลบรายการนี้?</div>
-                <div className="text-gray-400 mb-4 text-sm">การลบนี้ไม่สามารถย้อนกลับได้</div>
-                <div className="flex gap-2 justify-center mt-4">
-                  <Button variant="destructive" onClick={handleDelete} disabled={deleting} className="px-6">
-                    {deleting && <span className="animate-spin mr-2">⏳</span>} ยืนยัน
+            <div className="fixed inset-0 flex items-center justify-center z-50 bg-black/50 backdrop-blur-sm">
+              <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full mx-4 text-center border-t-4 border-red-200 animate-in zoom-in-95">
+                <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Trash2 className="h-8 w-8 text-red-600" />
+                </div>
+                <h3 className="text-xl font-bold text-gray-900 mb-2">ยืนยันการลบ</h3>
+                <p className="text-gray-600 mb-6">การลบรายการนี้ไม่สามารถย้อนกลับได้</p>
+                <div className="flex gap-3 justify-center">
+                  <Button 
+                    variant="destructive" 
+                    onClick={handleDelete} 
+                    disabled={deleting}
+                    className="px-6 py-2 rounded-lg"
+                  >
+                    {deleting ? (
+                      <>
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                        กำลังลบ...
+                      </>
+                    ) : (
+                      'ยืนยัน'
+                    )}
                   </Button>
-                  <Button variant="outline" onClick={() => setShowDelete(null)} disabled={deleting} className="px-6">ยกเลิก</Button>
+                  <Button 
+                    variant="outline" 
+                    onClick={() => setShowDelete(null)} 
+                    disabled={deleting}
+                    className="px-6 py-2 rounded-lg"
+                  >
+                    ยกเลิก
+                  </Button>
                 </div>
               </div>
             </div>
