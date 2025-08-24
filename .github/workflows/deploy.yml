@@ -23,7 +23,6 @@ jobs:
         host: ${{ secrets.HOST }}
         username: ${{ secrets.USERNAME }}
         key: ${{ secrets.SSH_KEY }}
-        port: ${{ secrets.PORT }}
         script: |
           # Navigate to project directory
           cd ${{ env.DEPLOY_PATH }}
