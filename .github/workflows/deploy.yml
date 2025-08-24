@@ -73,6 +73,18 @@ jobs:
         tags: thaihand-frontend:latest
         cache-from: type=gha
         cache-to: type=gha,mode=max
+        build-args: |
+          NEXT_PUBLIC_API_URL=http://localhost:8000
+          NEXTAUTH_URL=http://localhost:3000
+          NEXTAUTH_SECRET=dummy-secret
+          NEXT_PUBLIC_SUPABASE_URL=https://dummy.supabase.co
+          NEXT_PUBLIC_SUPABASE_ANON_KEY=dummy-key
+          GOOGLE_CLIENT_ID=dummy
+          GOOGLE_CLIENT_SECRET=dummy
+          NEXT_PUBLIC_GOOGLE_CLIENT_ID=dummy
+          LINE_CLIENT_ID=dummy
+          LINE_CLIENT_SECRET=dummy
+          NEXT_PUBLIC_LINE_CLIENT_ID=dummy
     
     - name: Build and push backend image
       uses: docker/build-push-action@v5
@@ -124,15 +136,4 @@ jobs:
             exit 1
           fi
 
-  notify:
-    needs: [deploy]
-    runs-on: ubuntu-latest
-    if: always()
-    
-    steps:
-    - name: Notify deployment status
-      uses: 8398a7/action-slack@v3
-      with:
-        status: ${{ job.status }}
-        channel: '#deployments'
-        webhook_url: ${{ secrets.SLACK_WEBHOOK_URL }}
+
