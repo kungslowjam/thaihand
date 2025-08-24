@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useMemo, useState } from "react";
-import { ShoppingBag, CheckCircle, Search, BadgeDollarSign, Globe, BadgeCheck, SortAsc, Eye, Star, MessageCircle, X, Sparkles, Plus, Plane } from "lucide-react";
+import { ShoppingBag, CheckCircle, Search, BadgeDollarSign, Globe, BadgeCheck, SortAsc, Eye, Star, MessageCircle, X, Sparkles, Plus, Plane, MapPin, Calendar, Clock, TrendingUp, Filter } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useSession } from "next-auth/react";
@@ -178,354 +178,653 @@ export default function MarketplacePage() {
 
   try {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-pink-50 dark:from-gray-900 dark:to-gray-800">
-      <main className="pt-24 max-w-7xl mx-auto px-4">
-        {/* Filter/Sort Bar */}
-        <div className="sticky top-16 z-20 flex flex-wrap gap-2 bg-white/70 dark:bg-gray-900/70 rounded-xl px-3 py-2 shadow-sm border border-white/30 dark:border-gray-800 backdrop-blur-xl mb-4">
-          <div className="flex items-center bg-transparent rounded-full px-2 py-0.5">
-            <Globe className="w-4 h-4 text-gray-400 mr-1" />
-            <select className="bg-transparent outline-none text-xs" value={filterCountry} onChange={e => { setFilterCountry(e.target.value); setPage(1); }}>
-              <option value="">ทุกประเทศ</option>
-              <option value="Osaka">Osaka</option>
-              <option value="Sydney">Sydney</option>
-            </select>
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
+        <main className="pt-24 max-w-7xl mx-auto px-4">
+          {/* Header Section */}
+          <div className="text-center mb-8">
+            <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent mb-2">
+              Marketplace
+            </h1>
+            <p className="text-gray-600 text-lg">ค้นหาและเชื่อมต่อกับผู้รับหิ้วและผู้ฝากหิ้ว</p>
           </div>
-          <div className="flex items-center bg-transparent rounded-full px-2 py-0.5">
-            <BadgeCheck className="w-4 h-4 text-gray-400 mr-1" />
-            <select className="bg-transparent outline-none text-xs" value={filterStatus} onChange={e => { setFilterStatus(e.target.value); setPage(1); }}>
-              <option value="">ทุกสถานะ</option>
-              <option value="รอรับหิ้ว">รอรับหิ้ว</option>
-              <option value="สำเร็จ">สำเร็จ</option>
-            </select>
-          </div>
-          <div className="flex items-center bg-transparent rounded-full px-2 py-0.5">
-            <SortAsc className="w-4 h-4 text-gray-400 mr-1" />
-            <select className="bg-transparent outline-none text-xs" value={sortBy} onChange={e => setSortBy(e.target.value)}>
-              <option value="newest">ใหม่สุด</option>
-              <option value="lowestPrice">ราคาต่ำสุด</option>
-              <option value="nearestDate">ใกล้วันเดินทาง</option>
-            </select>
-          </div>
-          <div className="flex-1" />
-          <div className="flex gap-1">
-            <Button size="sm" variant={tab === "requests" ? "default" : "outline"} className={`rounded-full px-4 py-1 text-xs font-semibold`} onClick={() => { setTab("requests"); setPage(1); }}>ฝากหิ้ว</Button>
-            <Button size="sm" variant={tab === "offers" ? "default" : "outline"} className={`rounded-full px-4 py-1 text-xs font-semibold`} onClick={() => { setTab("offers"); setPage(1); }}>รับหิ้ว</Button>
-          </div>
-        </div>
 
-        {/* Search Bar */}
-        <div className="flex items-center gap-2 mb-8 bg-white/60 dark:bg-gray-800/60 rounded-full px-4 py-2 shadow-sm max-w-lg mx-auto">
-          <Search className="h-5 w-5 text-gray-400" />
-          <input
-            type="text"
-            placeholder={tab === "requests" ? "ค้นหาของฝาก..." : "ค้นหาเส้นทาง..."}
-            value={search}
-            onChange={e => { setSearch(e.target.value); setPage(1); }}
-            className="flex-1 bg-transparent outline-none px-2 py-1 text-sm"
-          />
-        </div>
-
-        {/* Card Grid */}
-        <div className="mb-2 text-right text-xs text-gray-400">จำนวนแถว: {rowCount}</div>
-        <div className="grid gap-8 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 justify-center">
-          {isRequestsTab ? (
-            validRequests.length === 0 ? (
-              <div className="col-span-full flex flex-col items-center justify-center py-16 animate-fade-in">
-                <span className="text-5xl mb-2">🛍️</span>
-                <h3 className="text-lg font-semibold text-gray-500 mb-2">ยังไม่มีรายการฝากหิ้ว</h3>
-                <p className="text-gray-400 mb-4">เริ่มฝากหิ้วของชิ้นแรกของคุณได้เลย!</p>
-              </div>
-            ) : validRequests.map((req: any) => (
-              <div key={req.id} className="bg-white/90 dark:bg-gray-900/90 rounded-2xl shadow border border-white/30 dark:border-gray-800 flex flex-col overflow-hidden min-w-[260px] animate-fade-in">
-                {/* รูปภาพ + badge + ปุ่ม action */}
-                <div className="relative">
-                  <img src={req.image} alt={req.routeFrom + " → " + req.routeTo} className="w-full h-40 object-cover" />
-                  <div className="absolute top-2 right-2 flex gap-1 z-10">
-                    {req.urgent && <Badge className="bg-pink-100 text-pink-600 rounded-full px-2 py-0.5 text-xs flex items-center gap-1"><Sparkles className="w-3 h-3" />ด่วน</Badge>}
-                    {/* ปุ่ม bookmark/chat (mock) */}
-                    <button className="rounded-full bg-white/90 dark:bg-gray-900/90 shadow p-1.5 hover:bg-blue-100 dark:hover:bg-blue-900 transition" title="บันทึกรายการ"><Star className="w-4 h-4 text-pink-400" /></button>
-                    <button className="rounded-full bg-white/90 dark:bg-gray-900/90 shadow p-1.5 hover:bg-green-100 dark:hover:bg-green-900 transition" title="ติดต่อ"><MessageCircle className="w-4 h-4 text-green-400" /></button>
-                  </div>
+          {/* Stats Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+            <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-white/20">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-600">รายการฝากหิ้ว</p>
+                  <p className="text-2xl font-bold text-gray-900">{validRequests.length}</p>
                 </div>
-                <div className="p-5 flex-1 flex flex-col">
-                  {/* ชื่อสินค้า */}
-                  <div className="font-bold text-lg text-gray-900 dark:text-white mb-1 truncate flex items-center gap-2">
-                    <Plane className="h-5 w-5 text-indigo-400" />
-                    {req.title || "สินค้าทั่วไป"}
-                  </div>
-                  {/* เส้นทาง */}
-                  <div className="text-sm text-gray-500 mb-1">
-                    {shortenLocation(req.routeFrom)} → {shortenLocation(req.routeTo)}
-                  </div>
-                  {/* badge ประเภท/สถานะ */}
-                  <div className="flex gap-2 mb-2">
-                    <Badge className="bg-gradient-to-r from-pink-200 to-purple-400 text-purple-800 px-2 py-0.5 text-xs rounded-full flex items-center gap-1"><ShoppingBag className="h-3 w-3 mr-1" /> ฝากหิ้ว</Badge>
-                  </div>
-                  {/* เส้นทาง + วันที่ */}
-                  <div className="text-sm text-gray-500 mb-2">บิน {req.flightDate} • ปิดรับ {req.closeDate}</div>
-                  {/* ราคา + สถานะ */}
-                  <div className="flex items-center gap-2 mb-2">
-                    <span className="text-blue-700 dark:text-blue-300 font-semibold text-lg flex items-center gap-1"><BadgeDollarSign className="h-4 w-4" />
-                      {req.rates?.[0] ? `${req.rates[0].price} บาท/${req.rates[0].weight}` : "-"}
-                    </span>
-                    <Badge className={`px-2 py-0.5 text-xs rounded-full flex items-center gap-1 bg-indigo-100 text-indigo-700`}><span className='mr-1'>✈️</span>{req.status}</Badge>
-                  </div>
-
-                  {/* ผู้ใช้ */}
-                  <div className="flex items-center gap-2 mt-auto mb-2">
-                    <div className="w-7 h-7 rounded-full bg-gray-200 flex items-center justify-center text-gray-500 text-sm font-bold">{req.user?.[0] ?? "-"}</div>
-                    <span className="text-sm text-gray-700 dark:text-gray-200">{req.user ?? "-"}</span>
-                  </div>
-                  <div className="border-t border-gray-100 dark:border-gray-800 my-2" />
-                  <Button size="lg" variant="outline" className="w-full rounded-b-2xl py-2 text-base font-semibold shadow hover:bg-pink-50/60 hover:scale-105 transition flex items-center gap-2" title={tab === "requests" ? "รับหิ้ว" : "ฝากหิ้ว"} onClick={() => setOpenRequestModal(req.id.toString())}>
-                    <span>{tab === "requests" ? "รับหิ้ว" : "ฝากหิ้ว"}</span>
-                  </Button>
+                <div className="p-3 bg-blue-100 rounded-xl">
+                  <ShoppingBag className="h-6 w-6 text-blue-600" />
                 </div>
               </div>
-            ))
-          ) : (
-            paginatedOffers.length === 0 ? (
-              <div className="col-span-full flex flex-col items-center justify-center py-16 animate-fade-in">
-                <span className="text-5xl mb-2">✈️</span>
-                <h3 className="text-lg font-semibold text-gray-500 mb-2">ยังไม่มีรายการรับหิ้ว</h3>
-                <p className="text-gray-400 mb-4">ยังไม่มีรอบเดินทางรับหิ้วในขณะนี้</p>
+            </div>
+            <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-white/20">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-600">ข้อเสนอรับหิ้ว</p>
+                  <p className="text-2xl font-bold text-gray-900">{offers.length}</p>
+                </div>
+                <div className="p-3 bg-green-100 rounded-xl">
+                  <CheckCircle className="h-6 w-6 text-green-600" />
+                </div>
               </div>
-            ) : paginatedOffers.map((offer: any) => {
-              // ใช้ข้อมูลจริงจาก offer object
-              const maxWeight = offer?.maxWeight || 10; // fallback ถ้าไม่มีข้อมูล
-              const usedWeight = offer?.usedWeight || 0;
-              const remainingWeight = maxWeight - usedWeight;
-              return (
-                <div key={offer.id} className="bg-white/90 rounded-3xl shadow-2xl border-0 p-6 flex flex-col w-full max-w-[320px] mx-auto transition-transform hover:scale-105 hover:shadow-[0_8px_32px_rgba(80,80,200,0.15)] duration-200">
-                  <div className="flex items-center gap-2 mb-4">
-                    {/* ธงชาติแบบ flex row ไม่ absolute */}
-                    <img src={`https://flagcdn.com/48x36/${offer.routeFrom?.split(',').pop()?.trim().toLowerCase()}.png`} alt="" className="w-7 h-7 rounded-full border-2 border-white shadow" />
-                    <img src={`https://flagcdn.com/48x36/${offer.routeTo?.split(',').pop()?.trim().toLowerCase()}.png`} alt="" className="w-7 h-7 rounded-full border-2 border-white shadow -ml-2" />
-                    <div className="ml-2 flex-1 truncate font-bold text-lg text-gray-900">
-                      {offer.title || "สินค้าทั่วไป"} 
-                      <span className="text-sm text-gray-500 font-normal block">
-                        {shortenLocation(offer.routeFrom)} → {shortenLocation(offer.routeTo)}
-                      </span>
+            </div>
+            <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-white/20">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-600">รอรับหิ้ว</p>
+                  <p className="text-2xl font-bold text-gray-900">{requests.filter(r => r.status === "รอรับหิ้ว").length}</p>
+                </div>
+                <div className="p-3 bg-yellow-100 rounded-xl">
+                  <Clock className="h-6 w-6 text-yellow-600" />
+                </div>
+              </div>
+            </div>
+            <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-white/20">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-600">สำเร็จ</p>
+                  <p className="text-2xl font-bold text-gray-900">{requests.filter(r => r.status === "สำเร็จ").length}</p>
+                </div>
+                <div className="p-3 bg-emerald-100 rounded-xl">
+                  <TrendingUp className="h-6 w-6 text-emerald-600" />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Search & Filter Bar */}
+          <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg border border-white/20 p-6 mb-8">
+            <div className="flex flex-col lg:flex-row gap-4">
+              <div className="flex-1 relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
+                <input
+                  type="text"
+                  placeholder={tab === "requests" ? "ค้นหาของฝาก..." : "ค้นหาเส้นทาง..."}
+                  value={search}
+                  onChange={e => { setSearch(e.target.value); setPage(1); }}
+                  className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white/50"
+                />
+              </div>
+              <div className="flex gap-2">
+                <select
+                  value={filterCountry}
+                  onChange={e => { setFilterCountry(e.target.value); setPage(1); }}
+                  className="px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white/50"
+                >
+                  <option value="">ทุกประเทศ</option>
+                  <option value="Osaka">Osaka</option>
+                  <option value="Sydney">Sydney</option>
+                </select>
+                <select
+                  value={filterStatus}
+                  onChange={e => { setFilterStatus(e.target.value); setPage(1); }}
+                  className="px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white/50"
+                >
+                  <option value="">ทุกสถานะ</option>
+                  <option value="รอรับหิ้ว">รอรับหิ้ว</option>
+                  <option value="สำเร็จ">สำเร็จ</option>
+                </select>
+                <select
+                  value={sortBy}
+                  onChange={e => setSortBy(e.target.value)}
+                  className="px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white/50"
+                >
+                  <option value="newest">ใหม่สุด</option>
+                  <option value="lowestPrice">ราคาต่ำสุด</option>
+                  <option value="nearestDate">ใกล้วันเดินทาง</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          {/* Tab Navigation */}
+          <div className="flex bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-white/20 p-2 mb-8">
+            <button
+              onClick={() => { setTab("requests"); setPage(1); }}
+              className={`flex-1 py-3 px-6 rounded-xl font-medium transition-all duration-200 ${
+                tab === "requests"
+                  ? "bg-gradient-to-r from-blue-500 to-indigo-500 text-white shadow-lg"
+                  : "text-gray-600 hover:text-gray-900"
+              }`}
+            >
+              <ShoppingBag className="h-5 w-5 inline mr-2" />
+              ฝากหิ้ว ({validRequests.length})
+            </button>
+            <button
+              onClick={() => { setTab("offers"); setPage(1); }}
+              className={`flex-1 py-3 px-6 rounded-xl font-medium transition-all duration-200 ${
+                tab === "offers"
+                  ? "bg-gradient-to-r from-green-500 to-emerald-500 text-white shadow-lg"
+                  : "text-gray-600 hover:text-gray-900"
+              }`}
+            >
+              <CheckCircle className="h-5 w-5 inline mr-2" />
+              รับหิ้ว ({offers.length})
+            </button>
+          </div>
+
+          {/* Card Grid */}
+          <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 justify-center">
+            {isRequestsTab ? (
+              validRequests.length === 0 ? (
+                <div className="col-span-full flex flex-col items-center justify-center py-16 animate-fade-in">
+                  <div className="w-24 h-24 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <ShoppingBag className="h-12 w-12 text-blue-600" />
+                  </div>
+                  <h3 className="text-xl font-semibold text-gray-900 mb-2">ยังไม่มีรายการฝากหิ้ว</h3>
+                  <p className="text-gray-600 mb-6 text-center">เริ่มฝากหิ้วของชิ้นแรกของคุณได้เลย!</p>
+                  <Link href="/create-request">
+                    <Button className="bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white">
+                      <Plus className="h-4 w-4 mr-2" />
+                      สร้างรายการใหม่
+                    </Button>
+                  </Link>
+                </div>
+              ) : validRequests.map((req: any, index: number) => (
+                <div 
+                  key={req.id} 
+                  className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg border border-white/20 overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 animate-fade-in"
+                  style={{ animationDelay: `${index * 100}ms` }}
+                >
+                  {/* Image Section */}
+                  <div className="relative h-48 overflow-hidden">
+                    <img 
+                      src={req.image || "/thaihand-logo.png"} 
+                      alt={req.routeFrom + " → " + req.routeTo} 
+                      className="w-full h-full object-cover transition-transform duration-300 hover:scale-110" 
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
+                    
+                    {/* Action Buttons */}
+                    <div className="absolute top-3 right-3 flex gap-2">
+                      {req.urgent && (
+                        <Badge className="bg-gradient-to-r from-pink-400 to-red-500 text-white rounded-full px-3 py-1 text-xs flex items-center gap-1">
+                          <Sparkles className="w-3 h-3" />
+                          ด่วน
+                        </Badge>
+                      )}
+                      <button 
+                        className="rounded-full bg-white/90 shadow-lg p-2 hover:bg-blue-100 transition-colors" 
+                        title="บันทึกรายการ"
+                        onClick={() => toggleBookmark(req.id)}
+                      >
+                        <Star className={`w-4 h-4 ${bookmarks.includes(req.id) ? 'text-yellow-500 fill-current' : 'text-gray-400'}`} />
+                      </button>
+                      <button 
+                        className="rounded-full bg-white/90 shadow-lg p-2 hover:bg-green-100 transition-colors" 
+                        title="ติดต่อ"
+                      >
+                        <MessageCircle className="w-4 h-4 text-green-500" />
+                      </button>
                     </div>
-                    {offer.urgent === "true" && (
-                      <span className="ml-auto bg-gradient-to-r from-pink-400 to-pink-600 text-white rounded-full px-3 py-0.5 text-xs font-semibold shadow flex items-center gap-1">
-                        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 2v2m6.364 1.636l-1.414 1.414M22 12h-2m-1.636 6.364l-1.414-1.414M12 22v-2m-6.364-1.636l1.414-1.414M2 12h2m1.636-6.364l1.414 1.414" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
-                        ด่วน
-                      </span>
-                    )}
+
+                    {/* Route Flags */}
+                    <div className="absolute bottom-3 left-3 flex items-center gap-2">
+                      {req.routeFrom && (
+                        <img
+                          src={`https://flagcdn.com/48x36/${req.routeFrom.split(',').pop()?.trim().toLowerCase()}.png`}
+                          alt=""
+                          className="w-8 h-6 rounded shadow-lg"
+                          onError={e => { e.currentTarget.src = "/thaihand-logo.png"; }}
+                        />
+                      )}
+                      <MapPin className="h-4 w-4 text-white drop-shadow-lg" />
+                      {req.routeTo && (
+                        <img
+                          src={`https://flagcdn.com/48x36/${req.routeTo.split(',').pop()?.trim().toLowerCase()}.png`}
+                          alt=""
+                          className="w-8 h-6 rounded shadow-lg"
+                          onError={e => { e.currentTarget.src = "/thaihand-logo.png"; }}
+                        />
+                      )}
+                    </div>
                   </div>
-                  <div className="flex items-center text-xs text-gray-500 mb-2 gap-2">
-                    <span>✈️ {offer.flightDate}</span>
-                    <span>•</span>
-                    <span>ปิดรับ {offer.closeDate}</span>
+
+                  {/* Content Section */}
+                  <div className="p-6">
+                    {/* Title */}
+                    <div className="flex items-center gap-2 mb-3">
+                      <Plane className="h-5 w-5 text-blue-500" />
+                      <h3 className="font-bold text-lg text-gray-900 truncate">
+                        {req.title || "สินค้าทั่วไป"}
+                      </h3>
+                    </div>
+
+                    {/* Route */}
+                    <div className="text-sm text-gray-600 mb-3">
+                      {shortenLocation(req.routeFrom)} → {shortenLocation(req.routeTo)}
+                    </div>
+
+                    {/* Status Badge */}
+                    <div className="flex gap-2 mb-3">
+                      <Badge className="bg-gradient-to-r from-blue-100 to-indigo-100 text-blue-700 px-3 py-1 text-xs rounded-full">
+                        <ShoppingBag className="h-3 w-3 mr-1" />
+                        ฝากหิ้ว
+                      </Badge>
+                      <Badge className={`px-3 py-1 text-xs rounded-full ${
+                        req.status === "สำเร็จ" 
+                          ? "bg-emerald-100 text-emerald-700" 
+                          : "bg-blue-100 text-blue-700"
+                      }`}>
+                        {req.status}
+                      </Badge>
+                    </div>
+
+                    {/* Date & Price */}
+                    <div className="space-y-2 mb-4">
+                      <div className="flex items-center gap-2 text-sm text-gray-600">
+                        <Calendar className="h-4 w-4 text-gray-400" />
+                        <span>บิน {req.flightDate}</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-sm text-gray-600">
+                        <Clock className="h-4 w-4 text-gray-400" />
+                        <span>ปิดรับ {req.closeDate}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <BadgeDollarSign className="h-4 w-4 text-green-500" />
+                        <span className="text-green-600 font-semibold text-lg">
+                          {req.rates?.[0] ? `${req.rates[0].price} บาท/${req.rates[0].weight}` : "-"}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* User Info */}
+                    <div className="flex items-center gap-3 mb-4 p-3 bg-gray-50 rounded-xl">
+                      <div className="w-8 h-8 rounded-full bg-gradient-to-r from-blue-400 to-indigo-500 flex items-center justify-center text-white font-bold text-sm">
+                        {req.user?.[0] ?? "U"}
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-gray-900">{req.user ?? "ผู้ใช้"}</p>
+                        <p className="text-xs text-gray-500">ผู้ฝากหิ้ว</p>
+                      </div>
+                    </div>
+
+                    {/* Action Button */}
+                    <Button 
+                      className="w-full bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white rounded-xl py-3 font-semibold transition-all duration-200 hover:scale-105"
+                      onClick={() => setOpenRequestModal(req.id.toString())}
+                    >
+                      รับหิ้ว
+                    </Button>
                   </div>
-                  <div className="flex items-center gap-2 mb-3">
-                    <span className="text-indigo-700 font-bold text-xl">
-                      {Array.isArray(offer.rates) && offer.rates.length > 0 && offer.rates[0].price
-                        ? `${offer.rates[0].price} บาท/${offer.rates[0].weight}`
-                        : "-"}
-                    </span>
-                  </div>
-                  <div className="flex flex-col gap-1 text-sm text-gray-600 mb-3">
-                    <div className="flex items-center gap-2"><span className="text-blue-400">📍</span> <span>จุดนัดรับ: {offer.pickupPlace || "-"}</span></div>
-                    <div className="flex items-center gap-2"><span className="text-green-400">📞</span> <span>ติดต่อ: {offer.contact || "-"}</span></div>
-                    <div className="flex items-center gap-2"><span className="text-yellow-400">📝</span> <span>หมายเหตุ: {offer.description || "-"}</span></div>
-                  </div>
-                  <button
-                    className="mt-auto w-full bg-gradient-to-r from-blue-500 to-pink-500 text-white font-bold py-2.5 rounded-2xl shadow-lg text-base hover:scale-105 transition"
-                    onClick={() => setOpenRequestModal(offer.id.toString())}
-                  >
-                    {tab === "offers" ? "ฝากหิ้ว" : "รับหิ้ว"}
-                  </button>
                 </div>
-              );
-            })
-          )}
-        </div>
+              ))
+            ) : (
+              paginatedOffers.length === 0 ? (
+                <div className="col-span-full flex flex-col items-center justify-center py-16 animate-fade-in">
+                  <div className="w-24 h-24 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <CheckCircle className="h-12 w-12 text-green-600" />
+                  </div>
+                  <h3 className="text-xl font-semibold text-gray-900 mb-2">ยังไม่มีรายการรับหิ้ว</h3>
+                  <p className="text-gray-600 mb-6 text-center">ยังไม่มีรอบเดินทางรับหิ้วในขณะนี้</p>
+                  <Link href="/my-routes">
+                    <Button className="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white">
+                      <Plus className="h-4 w-4 mr-2" />
+                      สร้างข้อเสนอใหม่
+                    </Button>
+                  </Link>
+                </div>
+              ) : paginatedOffers.map((offer: any, index: number) => {
+                const maxWeight = offer?.maxWeight || 10;
+                const usedWeight = offer?.usedWeight || 0;
+                const remainingWeight = maxWeight - usedWeight;
+                
+                return (
+                  <div 
+                    key={offer.id} 
+                    className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg border border-white/20 overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 animate-fade-in"
+                    style={{ animationDelay: `${index * 100}ms` }}
+                  >
+                    {/* Header with Flags */}
+                    <div className="p-6 pb-4">
+                      <div className="flex items-center gap-3 mb-4">
+                        <div className="flex items-center gap-2">
+                          {(offer.routeFrom) && (
+                            <img
+                              src={`https://flagcdn.com/48x36/${offer.routeFrom.split(',').pop()?.trim().toLowerCase()}.png`}
+                              alt=""
+                              className="w-8 h-6 rounded shadow-lg"
+                              onError={e => { e.currentTarget.src = "/thaihand-logo.png"; }}
+                            />
+                          )}
+                          <MapPin className="h-4 w-4 text-gray-400" />
+                          {(offer.routeTo) && (
+                            <img
+                              src={`https://flagcdn.com/48x36/${offer.routeTo.split(',').pop()?.trim().toLowerCase()}.png`}
+                              alt=""
+                              className="w-8 h-6 rounded shadow-lg"
+                              onError={e => { e.currentTarget.src = "/thaihand-logo.png"; }}
+                            />
+                          )}
+                        </div>
+                        {offer.urgent === "true" && (
+                          <Badge className="bg-gradient-to-r from-pink-400 to-red-500 text-white rounded-full px-3 py-1 text-xs flex items-center gap-1">
+                            <Sparkles className="w-3 h-3" />
+                            ด่วน
+                          </Badge>
+                        )}
+                      </div>
 
-        {/* Pagination */}
-        <div className="flex justify-center mt-8 gap-2">
-          <Button size="sm" variant="outline" className="px-3 py-1 text-xs" disabled={page === 1} onClick={() => setPage(page - 1)}>ก่อนหน้า</Button>
-          <span className="mx-2 text-xs">หน้า {page}</span>
-          <Button size="sm" variant="outline" className="px-3 py-1 text-xs" disabled={page * pageSize >= (isRequestsTab ? filteredRequests.length : filteredOffers.length)} onClick={() => setPage(page + 1)}>ถัดไป</Button>
-        </div>
-      </main>
+                      {/* Title & Route */}
+                      <h3 className="font-bold text-lg text-gray-900 mb-2">
+                        {offer.title || "ข้อเสนอรับหิ้ว"}
+                      </h3>
+                      <div className="text-sm text-gray-600 mb-4">
+                        {shortenLocation(offer.routeFrom)} → {shortenLocation(offer.routeTo)}
+                      </div>
 
-      {/* Floating Action Button */}
-      <Link href="/create-request">
-        <button className="fixed bottom-8 right-8 z-50 rounded-full bg-gradient-to-r from-blue-400 via-indigo-400 to-pink-400 text-white shadow-2xl p-4 hover:scale-110 transition-all flex items-center gap-2" title="สร้างรายการใหม่">
-          <Plus className="w-6 h-6" />
-          <span className="hidden md:inline font-semibold">สร้างรายการใหม่</span>
-        </button>
-      </Link>
+                      {/* Date Info */}
+                      <div className="space-y-2 mb-4">
+                        <div className="flex items-center gap-2 text-sm text-gray-600">
+                          <Calendar className="h-4 w-4 text-gray-400" />
+                          <span>บิน {offer.flightDate}</span>
+                        </div>
+                        <div className="flex items-center gap-2 text-sm text-gray-600">
+                          <Clock className="h-4 w-4 text-gray-400" />
+                          <span>ปิดรับ {offer.closeDate}</span>
+                        </div>
+                      </div>
 
-      {/* Modal/Quick View */}
-      {selectedRequest && (
-        <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50 animate-fade-in">
-          <div className="bg-white/90 dark:bg-gray-900/90 rounded-2xl p-8 max-w-md w-full shadow-2xl relative animate-fade-in border border-blue-100 dark:border-blue-900 scale-95 animate-modal-in">
-            <button className="absolute top-3 right-3 rounded-full bg-gray-100 dark:bg-gray-800 hover:bg-pink-200 dark:hover:bg-pink-900 p-2 transition" onClick={() => setSelectedRequest(null)}><X className="w-5 h-5 text-gray-400" /></button>
-            <h2 className="text-xl font-bold mb-2 text-gray-900 dark:text-white">{selectedRequest.title || "สินค้าทั่วไป"}</h2>
-            <p className="text-sm text-gray-500 mb-2">{shortenLocation(selectedRequest.routeFrom)} → {shortenLocation(selectedRequest.routeTo)}</p>
-            <img src={selectedRequest.image} className="w-full h-40 object-cover rounded mb-3" />
-            <div className="border-b border-gray-200 dark:border-gray-700 mb-3" />
-            <div className="space-y-1">
-              <p>บิน {selectedRequest.flightDate} • ปิดรับ {selectedRequest.closeDate}</p>
-              <p>ราคา: <span className="font-semibold text-blue-700 dark:text-blue-300">{selectedRequest.rates[0].price} บาท/{selectedRequest.rates[0].weight}</span></p>
-              <p>สถานะ: <span className="font-semibold">{selectedRequest.status}</span></p>
-              <p>ผู้ใช้: <span className="font-semibold">{selectedRequest.user}</span></p>
+                      {/* Price */}
+                      <div className="mb-4">
+                        <div className="flex items-center gap-2">
+                          <BadgeDollarSign className="h-5 w-5 text-green-500" />
+                          <span className="text-green-600 font-bold text-xl">
+                            {Array.isArray(offer.rates) && offer.rates.length > 0 && offer.rates[0].price
+                              ? `${offer.rates[0].price} บาท/${offer.rates[0].weight}`
+                              : "-"}
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Details */}
+                      <div className="space-y-2 mb-4 text-sm text-gray-600">
+                        <div className="flex items-center gap-2">
+                          <MapPin className="h-4 w-4 text-blue-400" />
+                          <span>จุดนัดรับ: {offer.pickupPlace || "-"}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <MessageCircle className="h-4 w-4 text-green-400" />
+                          <span>ติดต่อ: {offer.contact || "-"}</span>
+                        </div>
+                        {offer.description && (
+                          <div className="flex items-start gap-2">
+                            <span className="text-yellow-400 mt-1">📝</span>
+                            <span className="text-xs">{offer.description}</span>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Action Button */}
+                      <Button 
+                        className="w-full bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white rounded-xl py-3 font-semibold transition-all duration-200 hover:scale-105"
+                        onClick={() => setOpenRequestModal(offer.id.toString())}
+                      >
+                        ฝากหิ้ว
+                      </Button>
+                    </div>
+                  </div>
+                );
+              })
+            )}
+          </div>
+
+          {/* Pagination */}
+          {Math.max(filteredRequests.length, filteredOffers.length) > pageSize && (
+            <div className="flex justify-center gap-2 mt-8">
+              <Button 
+                size="sm" 
+                variant="outline" 
+                disabled={page === 1} 
+                onClick={() => setPage(page - 1)}
+                className="rounded-lg"
+              >
+                ก่อนหน้า
+              </Button>
+              <span className="px-4 py-2 text-sm text-gray-600 bg-white/50 rounded-lg">
+                หน้า {page} / {Math.ceil((isRequestsTab ? filteredRequests.length : filteredOffers.length) / pageSize)}
+              </span>
+              <Button 
+                size="sm" 
+                variant="outline" 
+                disabled={page * pageSize >= (isRequestsTab ? filteredRequests.length : filteredOffers.length)} 
+                onClick={() => setPage(page + 1)}
+                className="rounded-lg"
+              >
+                ถัดไป
+              </Button>
             </div>
-            <div className="flex gap-2 mt-4">
-              <button className="rounded-full bg-white/80 dark:bg-gray-900/80 shadow p-2 hover:bg-green-100 dark:hover:bg-green-900 transition" title="ติดต่อ" onClick={() => alert(`ติดต่อ ${selectedRequest.user}`)}><MessageCircle className="w-5 h-5 text-green-400" /></button>
-              <button className="rounded-full bg-white/80 dark:bg-gray-900/80 shadow p-2 hover:bg-pink-100 dark:hover:bg-pink-900 transition" title="บันทึกรายการ" onClick={() => toggleBookmark(selectedRequest.id)}>{bookmarks.includes(selectedRequest.id) ? <Star className="w-5 h-5 text-pink-400" /> : <Star className="w-5 h-5 text-gray-300" />}</button>
+          )}
+        </main>
+
+        {/* Floating Action Button */}
+        <Link href="/create-request">
+          <button className="fixed bottom-8 right-8 z-50 rounded-full bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500 text-white shadow-2xl p-4 hover:scale-110 transition-all duration-200 flex items-center gap-2 group" title="สร้างรายการใหม่">
+            <Plus className="w-6 h-6 group-hover:rotate-90 transition-transform duration-200" />
+            <span className="hidden md:inline font-semibold">สร้างรายการใหม่</span>
+          </button>
+        </Link>
+
+        {/* Modal/Quick View */}
+        {selectedRequest && (
+          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 animate-fade-in">
+            <div className="bg-white/95 backdrop-blur-sm rounded-2xl p-8 max-w-md w-full mx-4 shadow-2xl relative animate-fade-in border border-white/20">
+              <button 
+                className="absolute top-4 right-4 rounded-full bg-gray-100 hover:bg-red-100 p-2 transition-colors" 
+                onClick={() => setSelectedRequest(null)}
+              >
+                <X className="w-5 h-5 text-gray-400" />
+              </button>
+              <h2 className="text-xl font-bold mb-2 text-gray-900">{selectedRequest.title || "สินค้าทั่วไป"}</h2>
+              <p className="text-sm text-gray-500 mb-2">{shortenLocation(selectedRequest.routeFrom)} → {shortenLocation(selectedRequest.routeTo)}</p>
+              <img src={selectedRequest.image} className="w-full h-40 object-cover rounded-lg mb-3" />
+              <div className="border-b border-gray-200 mb-3" />
+              <div className="space-y-1">
+                <p>บิน {selectedRequest.flightDate} • ปิดรับ {selectedRequest.closeDate}</p>
+                <p>ราคา: <span className="font-semibold text-blue-700">{selectedRequest.rates[0].price} บาท/{selectedRequest.rates[0].weight}</span></p>
+                <p>สถานะ: <span className="font-semibold">{selectedRequest.status}</span></p>
+                <p>ผู้ใช้: <span className="font-semibold">{selectedRequest.user}</span></p>
+              </div>
+              <div className="flex gap-2 mt-4">
+                <button className="rounded-full bg-white/80 shadow p-2 hover:bg-green-100 transition-colors" title="ติดต่อ" onClick={() => alert(`ติดต่อ ${selectedRequest.user}`)}>
+                  <MessageCircle className="w-5 h-5 text-green-400" />
+                </button>
+                <button className="rounded-full bg-white/80 shadow p-2 hover:bg-pink-100 transition-colors" title="บันทึกรายการ" onClick={() => toggleBookmark(selectedRequest.id)}>
+                  <Star className={`w-5 h-5 ${bookmarks.includes(selectedRequest.id) ? 'text-yellow-500 fill-current' : 'text-gray-300'}`} />
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-      )}
-
-      {/* เพิ่ม modal ฟอร์มรับหิ้ว */}
-      {openRequestModal && typeof window !== 'undefined' && createPortal(
-        <div 
-          style={{
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            width: '100%',
-            height: '100%',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            zIndex: 9999,
-            backgroundColor: 'rgba(0, 0, 0, 0.5)'
-          }}
-          onClick={() => setOpenRequestModal(null)}
-        >
-          <div 
-            style={{
-              position: 'relative',
-              maxWidth: '28rem',
-              width: '90%',
-              maxHeight: '80vh',
-              overflowY: 'auto',
-              backgroundColor: 'rgba(255, 255, 255, 0.95)',
-              borderRadius: '1.5rem',
-              padding: '2.5rem',
-              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
-              border: 'none',
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center'
-            }}
-            onClick={(e) => e.stopPropagation()}
-          >
-              <h2 className="text-2xl font-bold mb-6 text-center text-blue-700">
-                {tab === "requests" ? "รับหิ้วสินค้า" : "ฝากหิ้วสินค้า"}
-              </h2>
-              <button
-                className="absolute top-4 right-4 rounded-full bg-gray-100 hover:bg-pink-200 p-2 transition"
-                onClick={() => setOpenRequestModal(null)}
-                type="button"
-              >
-                <span className="text-gray-400 text-xl">✕</span>
-              </button>
-              <p className="text-sm text-gray-500 mb-4 text-center">
-                {tab === "requests" 
-                  ? "กรุณากรอกข้อมูลสินค้าที่ต้องการรับหิ้ว" 
-                  : "กรุณากรอกข้อมูลสินค้าที่ต้องการฝากหิ้ว"
-                }
-              </p>
-              <form onSubmit={async e => {
-                e.preventDefault();
-                try {
-                  if (!backendToken) {
-                    alert("กรุณาเข้าสู่ระบบก่อนส่งคำขอ");
-                    return;
-                  }
-                  
-                  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || '/api'}/requests`, {
-                    method: "POST",
-                    headers: {
-                      "Content-Type": "application/json",
-                      "Authorization": `Bearer ${backendToken}`
-                    },
-                    body: JSON.stringify({
-                      title: requestForm.itemName || "สินค้าทั่วไป",
-                      from_location: "", // เพิ่มค่าจริงตามที่ต้องการ
-                      to_location: "",   // เพิ่มค่าจริงตามที่ต้องการ
-                      deadline: "",      // เพิ่มค่าจริงตามที่ต้องการ
-                      budget: parseInt(requestForm.amount) || 0,
-                      description: requestForm.note || "ไม่มีรายละเอียดเพิ่มเติม",
-                      image: requestForm.image,
-                      offer_id: openRequestModal ? parseInt(openRequestModal) : undefined,
-                      source: "marketplace"
-                    })
-                  });
-                  if (res.ok) {
-                    setOpenRequestModal(null);
-                    setRequestForm({ image: '', itemName: '', weight: '', amount: '', note: '' });
-                    if (fileInputRef.current) fileInputRef.current.value = '';
-                    alert(tab === "requests" ? "ส่งคำขอรับหิ้วสำเร็จ!" : "ส่งคำขอฝากหิ้วสำเร็จ!");
-                  } else if (res.status === 401) {
-                    alert("กรุณาเข้าสู่ระบบก่อนส่งคำขอ");
-                  } else {
-                    const text = await res.text();
-                    alert("เกิดข้อผิดพลาด: " + text);
-                  }
-                } catch (err) {
-                  alert("เกิดข้อผิดพลาดในการเชื่อมต่อเซิร์ฟเวอร์");
-                }
-              }} className="w-full flex flex-col gap-4">
-                <div>
-                  <label className="block text-sm font-semibold mb-1">รูปสินค้า</label>
-                  <Input type="file" accept="image/*" ref={fileInputRef} className="mb-2" onChange={e => {
-                    const file = e.target.files?.[0];
-                    if (file) {
-                      const reader = new FileReader();
-                      reader.onload = ev => setRequestForm(f => ({ ...f, image: ev.target?.result as string }));
-                      reader.readAsDataURL(file);
-                    }
-                  }} />
-                  {requestForm.image && <img src={requestForm.image} alt="preview" className="w-full h-32 object-cover rounded-lg border mb-2" />}
-                </div>
-                <div>
-                  <label className="block text-sm font-semibold mb-1">ชื่อสินค้า</label>
-                  <Input placeholder="เช่น ไดฟูกุ, ช็อกโกแลต, เสื้อผ้า" className="rounded-xl border px-3 py-2" value={requestForm.itemName} onChange={e => setRequestForm(f => ({ ...f, itemName: e.target.value }))} required />
-                </div>
-                <div className="flex gap-3">
-                  <div className="flex-1">
-                    <label className="block text-sm font-semibold mb-1">น้ำหนัก (กก.)</label>
-                    <Input type="number" placeholder="น้ำหนัก (กก.)" className="rounded-xl border px-3 py-2" value={requestForm.weight} onChange={e => setRequestForm(f => ({ ...f, weight: e.target.value }))} required />
-                  </div>
-                  <div className="flex-1">
-                    <label className="block text-sm font-semibold mb-1">จำนวน</label>
-                    <Input type="number" placeholder="จำนวน" className="rounded-xl border px-3 py-2" value={requestForm.amount} onChange={e => setRequestForm(f => ({ ...f, amount: e.target.value }))} required />
-                  </div>
-                </div>
-                <div>
-                  <label className="block text-sm font-semibold mb-1">หมายเหตุ (ถ้ามี)</label>
-                  <Textarea placeholder="หมายเหตุ (ถ้ามี)" className="rounded-xl border px-3 py-2" value={requestForm.note} onChange={e => setRequestForm(f => ({ ...f, note: e.target.value }))} />
-                </div>
-                <button type="submit" className="w-full bg-gradient-to-r from-blue-500 via-indigo-500 to-pink-500 text-white font-bold py-3 rounded-2xl shadow-lg text-lg hover:scale-105 transition">
-                  {tab === "requests" ? "ส่งคำขอรับหิ้ว" : "ส่งคำขอฝากหิ้ว"}
-                </button>
-              </form>
-            </div>
-          </div>,
-          document.body
         )}
 
+        {/* เพิ่ม modal ฟอร์มรับหิ้ว */}
+        {openRequestModal && typeof window !== 'undefined' && createPortal(
+          <div 
+            style={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              width: '100%',
+              height: '100%',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              zIndex: 9999,
+              backgroundColor: 'rgba(0, 0, 0, 0.5)',
+              backdropFilter: 'blur(8px)'
+            }}
+            onClick={() => setOpenRequestModal(null)}
+          >
+            <div 
+              style={{
+                position: 'relative',
+                maxWidth: '28rem',
+                width: '90%',
+                maxHeight: '80vh',
+                overflowY: 'auto',
+                backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                borderRadius: '1.5rem',
+                padding: '2.5rem',
+                boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+                border: 'none',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                backdropFilter: 'blur(16px)'
+              }}
+              onClick={(e) => e.stopPropagation()}
+            >
+                <h2 className="text-2xl font-bold mb-6 text-center bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+                  {tab === "requests" ? "รับหิ้วสินค้า" : "ฝากหิ้วสินค้า"}
+                </h2>
+                <button
+                  className="absolute top-4 right-4 rounded-full bg-gray-100 hover:bg-red-100 p-2 transition-colors"
+                  onClick={() => setOpenRequestModal(null)}
+                  type="button"
+                >
+                  <X className="w-5 h-5 text-gray-400" />
+                </button>
+                <p className="text-sm text-gray-500 mb-6 text-center">
+                  {tab === "requests" 
+                    ? "กรุณากรอกข้อมูลสินค้าที่ต้องการรับหิ้ว" 
+                    : "กรุณากรอกข้อมูลสินค้าที่ต้องการฝากหิ้ว"
+                  }
+                </p>
+                <form onSubmit={async e => {
+                  e.preventDefault();
+                  try {
+                    if (!backendToken) {
+                      alert("กรุณาเข้าสู่ระบบก่อนส่งคำขอ");
+                      return;
+                    }
+                    
+                    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || '/api'}/requests`, {
+                      method: "POST",
+                      headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${backendToken}`
+                      },
+                      body: JSON.stringify({
+                        title: requestForm.itemName || "สินค้าทั่วไป",
+                        from_location: "", // เพิ่มค่าจริงตามที่ต้องการ
+                        to_location: "",   // เพิ่มค่าจริงตามที่ต้องการ
+                        deadline: "",      // เพิ่มค่าจริงตามที่ต้องการ
+                        budget: parseInt(requestForm.amount) || 0,
+                        description: requestForm.note || "ไม่มีรายละเอียดเพิ่มเติม",
+                        image: requestForm.image,
+                        offer_id: openRequestModal ? parseInt(openRequestModal) : undefined,
+                        source: "marketplace"
+                      })
+                    });
+                    if (res.ok) {
+                      setOpenRequestModal(null);
+                      setRequestForm({ image: '', itemName: '', weight: '', amount: '', note: '' });
+                      if (fileInputRef.current) fileInputRef.current.value = '';
+                      alert(tab === "requests" ? "ส่งคำขอรับหิ้วสำเร็จ!" : "ส่งคำขอฝากหิ้วสำเร็จ!");
+                    } else if (res.status === 401) {
+                      alert("กรุณาเข้าสู่ระบบก่อนส่งคำขอ");
+                    } else {
+                      const text = await res.text();
+                      alert("เกิดข้อผิดพลาด: " + text);
+                    }
+                  } catch (err) {
+                    alert("เกิดข้อผิดพลาดในการเชื่อมต่อเซิร์ฟเวอร์");
+                  }
+                }} className="w-full flex flex-col gap-4">
+                  <div>
+                    <label className="block text-sm font-semibold mb-2 text-gray-700">รูปสินค้า</label>
+                    <Input 
+                      type="file" 
+                      accept="image/*" 
+                      ref={fileInputRef} 
+                      className="mb-2 rounded-xl border-2 border-gray-200 focus:border-blue-500" 
+                      onChange={e => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          const reader = new FileReader();
+                          reader.onload = ev => setRequestForm(f => ({ ...f, image: ev.target?.result as string }));
+                          reader.readAsDataURL(file);
+                        }
+                      }} 
+                    />
+                    {requestForm.image && (
+                      <img src={requestForm.image} alt="preview" className="w-full h-32 object-cover rounded-xl border-2 border-gray-200 mb-2" />
+                    )}
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold mb-2 text-gray-700">ชื่อสินค้า</label>
+                    <Input 
+                      placeholder="เช่น ไดฟูกุ, ช็อกโกแลต, เสื้อผ้า" 
+                      className="rounded-xl border-2 border-gray-200 focus:border-blue-500 px-4 py-3" 
+                      value={requestForm.itemName} 
+                      onChange={e => setRequestForm(f => ({ ...f, itemName: e.target.value }))} 
+                      required 
+                    />
+                  </div>
+                  <div className="flex gap-3">
+                    <div className="flex-1">
+                      <label className="block text-sm font-semibold mb-2 text-gray-700">น้ำหนัก (กก.)</label>
+                      <Input 
+                        type="number" 
+                        placeholder="น้ำหนัก (กก.)" 
+                        className="rounded-xl border-2 border-gray-200 focus:border-blue-500 px-4 py-3" 
+                        value={requestForm.weight} 
+                        onChange={e => setRequestForm(f => ({ ...f, weight: e.target.value }))} 
+                        required 
+                      />
+                    </div>
+                    <div className="flex-1">
+                      <label className="block text-sm font-semibold mb-2 text-gray-700">จำนวน</label>
+                      <Input 
+                        type="number" 
+                        placeholder="จำนวน" 
+                        className="rounded-xl border-2 border-gray-200 focus:border-blue-500 px-4 py-3" 
+                        value={requestForm.amount} 
+                        onChange={e => setRequestForm(f => ({ ...f, amount: e.target.value }))} 
+                        required 
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold mb-2 text-gray-700">หมายเหตุ (ถ้ามี)</label>
+                    <Textarea 
+                      placeholder="หมายเหตุ (ถ้ามี)" 
+                      className="rounded-xl border-2 border-gray-200 focus:border-blue-500 px-4 py-3" 
+                      value={requestForm.note} 
+                      onChange={e => setRequestForm(f => ({ ...f, note: e.target.value }))} 
+                    />
+                  </div>
+                  <button 
+                    type="submit" 
+                    className="w-full bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500 text-white font-bold py-4 rounded-xl shadow-lg text-lg hover:scale-105 transition-all duration-200"
+                  >
+                    {tab === "requests" ? "ส่งคำขอรับหิ้ว" : "ส่งคำขอฝากหิ้ว"}
+                  </button>
+                </form>
+              </div>
+            </div>,
+            document.body
+          )}
 
-    </div>
-  );
+      </div>
+    );
   } catch (error) {
     console.error('Error in MarketplacePage:', error);
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-pink-50 dark:from-gray-900 dark:to-gray-800 flex items-center justify-center">
-        <div className="text-center">
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 flex items-center justify-center">
+        <div className="text-center bg-white/90 backdrop-blur-sm rounded-2xl p-8 shadow-lg border border-white/20">
+          <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <X className="h-8 w-8 text-red-600" />
+          </div>
           <h2 className="text-2xl font-bold text-gray-900 mb-4">เกิดข้อผิดพลาด</h2>
-          <p className="text-gray-600 mb-4">ขออภัย เกิดข้อผิดพลาดที่ไม่คาดคิด</p>
+          <p className="text-gray-600 mb-6">ขออภัย เกิดข้อผิดพลาดที่ไม่คาดคิด</p>
           <button
             onClick={() => window.location.reload()}
-            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+            className="bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white font-bold py-3 px-6 rounded-xl transition-all duration-200"
           >
             ลองใหม่
           </button>
