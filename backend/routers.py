@@ -391,6 +391,46 @@ def my_carry_orders(email: str, db: Session = Depends(get_db)):
         return []
     return crud.get_my_carry_orders(db, user.id)
 
+@router.get("/offers/my", response_model=list[schemas.OfferOut])
+def my_offers(db: Session = Depends(get_db), user=Depends(verify_jwt_token)):
+    user_id = user.get("sub") or user.get("id")
+    if not user_id:
+        raise HTTPException(status_code=401, detail="User not authenticated")
+    
+    # แปลง user_id เป็น int ถ้าเป็น string
+    user_id = int(user_id) if isinstance(user_id, str) else user_id
+    
+    offers = crud.get_my_carry_orders(db, user_id)
+    
+    # แปลงข้อมูลให้ตรงกับ schema
+    result = []
+    for offer in offers:
+        try:
+            rates = json.loads(offer.rates) if offer.rates else []
+        except Exception:
+            rates = []
+        
+        result.append({
+            "id": offer.id,
+            "route_from": offer.route_from,
+            "route_to": offer.route_to,
+            "flight_date": offer.flight_date,
+            "close_date": offer.close_date,
+            "delivery_date": offer.delivery_date,
+            "rates": offer.rates,
+            "pickup_place": offer.pickup_place,
+            "item_types": offer.item_types,
+            "restrictions": offer.restrictions,
+            "description": offer.description,
+            "contact": offer.contact,
+            "urgent": offer.urgent,
+            "image": offer.image,
+            "user_id": offer.user_id,
+            "created_at": offer.created_at,
+        })
+    
+    return result
+
 @router.get("/my-carry-orders/{offer_id}", response_model=schemas.OfferOut)
 def my_carry_order_detail(offer_id: int, user_id: int, db: Session = Depends(get_db)):
     db_offer = crud.get_my_carry_order_detail(db, user_id, offer_id)

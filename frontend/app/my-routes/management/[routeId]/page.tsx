@@ -5,13 +5,14 @@ import { Badge } from '../../../../components/ui/badge';
 import { Button } from '../../../../components/ui/button';
 import { Card } from '../../../../components/ui/card';
 import { Input } from '../../../../components/ui/input';
-import { Select } from '../../../../components/ui/select';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../../../components/ui/select';
 import { useRouter, useParams } from 'next/navigation';
 import RequestDetailModal from '../../../../components/RequestDetailModal';
 import { ConfirmModal } from '../../../../components/ConfirmModal';
 import { useBackendToken } from "@/lib/useBackendToken";
-import { ShoppingBag, Loader2 } from 'lucide-react';
+import { ShoppingBag, Loader2, Edit, Trash2, ArrowLeft } from 'lucide-react';
 import { toast } from 'sonner';
+import { OfferForm } from '@/components/OfferForm';
 
 const statusOptions = ['ทั้งหมด', 'รออนุมัติ', 'อนุมัติ', 'ปฏิเสธ', 'สำเร็จ'];
 
@@ -27,6 +28,8 @@ export default function ManagementPage() {
   const [selected, setSelected] = useState<any>(null);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [rejectTarget, setRejectTarget] = useState<any>(null);
+  const [showEditForm, setShowEditForm] = useState(false);
+  const [offerData, setOfferData] = useState<any>(null);
   const { backendToken, loading: tokenLoading } = useBackendToken();
 
   // สรุปสถิติ
@@ -49,6 +52,96 @@ export default function ManagementPage() {
     totalRequests: requests.length,
     totalEarnings: totalEarnings,
   };
+
+  // ดึงข้อมูลรอบเดินทาง
+  useEffect(() => {
+    if (routeId && backendToken) {
+      fetchOfferData();
+    }
+  }, [routeId, backendToken]);
+
+  async function fetchOfferData() {
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || '/api'}/offers/${routeId}`, {
+        headers: {
+          "Authorization": `Bearer ${backendToken}`
+        }
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setOfferData(data);
+      }
+    } catch (error) {
+      console.error('Error fetching offer data:', error);
+    }
+  }
+
+  // แก้ไขรอบเดินทาง
+  async function handleEditOffer(data: any) {
+    try {
+      const payload = {
+        route_from: data.routeFrom,
+        route_to: data.routeTo,
+        flight_date: data.flightDate,
+        close_date: data.closeDate,
+        delivery_date: data.deliveryDate,
+        rates: JSON.stringify(data.rates ?? []),
+        pickup_place: data.pickupPlace,
+        item_types: JSON.stringify(data.itemTypes ?? []),
+        restrictions: JSON.stringify(data.restrictions ?? []),
+        description: data.description,
+        contact: data.contact,
+        urgent: data.urgent ? "true" : "false",
+        image: data.image ?? null,
+      };
+
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || '/api'}/offers/${routeId}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${backendToken}`
+        },
+        body: JSON.stringify(payload)
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.detail || 'เกิดข้อผิดพลาดในการแก้ไขรอบเดินทาง');
+      }
+
+      toast.success("แก้ไขรอบเดินทางสำเร็จ!");
+      setShowEditForm(false);
+      fetchOfferData(); // รีเฟรชข้อมูล
+    } catch (error: any) {
+      console.error('Error updating offer:', error);
+      toast.error(error.message || 'เกิดข้อผิดพลาดในการแก้ไขรอบเดินทาง');
+    }
+  }
+
+  // ลบรอบเดินทาง
+  async function handleDeleteOffer() {
+    if (!confirm('คุณต้องการลบรอบเดินทางนี้หรือไม่? การดำเนินการนี้ไม่สามารถยกเลิกได้')) return;
+
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || '/api'}/offers/${routeId}`, {
+        method: "DELETE",
+        headers: {
+          "Authorization": `Bearer ${backendToken}`
+        }
+      });
+
+      if (response.ok) {
+        toast.success("ลบรอบเดินทางสำเร็จ!");
+        router.push("/my-routes");
+      } else {
+        throw new Error('เกิดข้อผิดพลาดในการลบรอบเดินทาง');
+      }
+    } catch (error: any) {
+      console.error('Error deleting offer:', error);
+      toast.error(error.message || 'เกิดข้อผิดพลาดในการลบรอบเดินทาง');
+    }
+  }
 
   // Approve/Reject
   const handleApprove = async (requestId: number) => {
@@ -168,8 +261,78 @@ export default function ManagementPage() {
     );
   }
 
+  if (showEditForm && offerData) {
+    return (
+      <div className="max-w-4xl mx-auto py-8 px-4">
+        <div className="flex items-center gap-4 mb-6">
+          <Button 
+            variant="outline" 
+            onClick={() => setShowEditForm(false)}
+            className="flex items-center gap-2"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            กลับไปหน้าจัดการ
+          </Button>
+          <h1 className="text-2xl font-bold">แก้ไขรอบเดินทาง</h1>
+        </div>
+        
+        <Card className="p-6">
+          <OfferForm 
+            mode="edit" 
+            initialData={{
+              routeFrom: offerData.route_from,
+              routeTo: offerData.route_to,
+              flightDate: offerData.flight_date,
+              closeDate: offerData.close_date,
+              deliveryDate: offerData.delivery_date,
+              rate: offerData.rates,
+              pickupPlace: offerData.pickup_place,
+              description: offerData.description,
+              contact: offerData.contact,
+              urgent: offerData.urgent,
+            }}
+            onSubmit={handleEditOffer}
+          />
+        </Card>
+      </div>
+    );
+  }
+
   return (
     <div className="max-w-5xl mx-auto py-8 px-4">
+      {/* Header with actions */}
+      <div className="flex justify-between items-center mb-6">
+        <div className="flex items-center gap-4">
+          <Button 
+            variant="outline" 
+            onClick={() => router.push("/my-routes")}
+            className="flex items-center gap-2"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            กลับไปหน้ารายการ
+          </Button>
+          <h1 className="text-2xl font-bold">จัดการรอบเดินทาง</h1>
+        </div>
+        <div className="flex gap-2">
+          <Button 
+            variant="outline"
+            onClick={() => setShowEditForm(true)}
+            className="flex items-center gap-2"
+          >
+            <Edit className="h-4 w-4" />
+            แก้ไขรอบเดินทาง
+          </Button>
+          <Button 
+            variant="destructive"
+            onClick={handleDeleteOffer}
+            className="flex items-center gap-2"
+          >
+            <Trash2 className="h-4 w-4" />
+            ลบรอบเดินทาง
+          </Button>
+        </div>
+      </div>
+
       {/* Header summary */}
       <div className="flex flex-wrap gap-4 mb-6">
         <div className="bg-white rounded-xl shadow px-6 py-3 flex flex-col items-center min-w-[140px]">
@@ -197,6 +360,7 @@ export default function ManagementPage() {
           <div className="font-bold text-green-600">฿{routeSummary.totalEarnings.toLocaleString()}</div>
         </div>
       </div>
+      
       {/* Filter/Search */}
       <div className="flex flex-wrap gap-2 mb-4 items-center">
         <Input
@@ -206,14 +370,20 @@ export default function ManagementPage() {
           className="w-64"
         />
         <Select value={statusFilter} onValueChange={setStatusFilter}>
-          {statusOptions.map(opt => (
-            <option key={opt} value={opt}>{opt}</option>
-          ))}
+          <SelectTrigger className="w-32">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {statusOptions.map(opt => (
+              <SelectItem key={opt} value={opt}>{opt}</SelectItem>
+            ))}
+          </SelectContent>
         </Select>
         <Button variant="outline" size="sm" onClick={fetchRequests} disabled={loading}>
           {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : 'รีเฟรช'}
         </Button>
       </div>
+      
       {/* Table/List */}
       <div className="overflow-x-auto bg-white rounded-xl shadow">
         <table className="min-w-full text-sm">
