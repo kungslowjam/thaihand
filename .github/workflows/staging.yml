@@ -8,9 +8,9 @@ on:
   workflow_dispatch:
 
 env:
-  DEPLOY_HOST: ${{ secrets.STAGING_HOST }}
-  DEPLOY_USER: ${{ secrets.STAGING_USER }}
-  DEPLOY_PATH: /opt/thaihand-staging
+  DEPLOY_HOST: ${{ secrets.HOST }}
+  DEPLOY_USER: ${{ secrets.USERNAME }}
+  DEPLOY_PATH: /opt/thaihand
 
 jobs:
   test:
@@ -102,9 +102,10 @@ jobs:
     - name: Deploy to Staging
       uses: appleboy/ssh-action@v1.0.3
       with:
-        host: ${{ secrets.STAGING_HOST }}
-        username: ${{ secrets.STAGING_USER }}
-        key: ${{ secrets.STAGING_SSH_KEY }}
+        host: ${{ secrets.HOST }}
+        username: ${{ secrets.USERNAME }}
+        key: ${{ secrets.SSH_KEY }}
+        port: ${{ secrets.PORT }}
         script: |
           # Navigate to staging directory
           cd ${{ env.DEPLOY_PATH }}
