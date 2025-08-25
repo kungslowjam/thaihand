@@ -26,7 +26,7 @@ interface Offer {
 
 export default function MyRoutesPage() {
   const { data: session } = useSession();
-  const { backendToken } = useBackendToken();
+  const { backendToken, loading: tokenLoading } = useBackendToken();
   const router = useRouter();
   const [offers, setOffers] = useState<Offer[]>([]);
   const [loading, setLoading] = useState(true);
@@ -123,11 +123,29 @@ export default function MyRoutesPage() {
     }
   }
 
-  if (!session) {
+  // แสดง loading state ขณะที่กำลังโหลด token
+  if (tokenLoading) {
+    return (
+      <div className="max-w-xl mx-auto py-10">
+        <Card className="p-6 text-center">
+          <div className="flex items-center justify-center gap-2 mb-4">
+            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-500"></div>
+            <span>กำลังโหลด...</span>
+          </div>
+          <p>กำลังเชื่อมต่อกับเซิร์ฟเวอร์</p>
+        </Card>
+      </div>
+    );
+  }
+
+  // ตรวจสอบ session และ backendToken
+  if (!session || !backendToken) {
     return (
       <div className="max-w-xl mx-auto py-10">
         <Card className="p-6 text-center">
           <p>กรุณาเข้าสู่ระบบเพื่อดูรอบเดินทางของคุณ</p>
+          {!session && <p className="text-sm text-gray-500 mt-2">ยังไม่ได้เข้าสู่ระบบ</p>}
+          {session && !backendToken && <p className="text-sm text-gray-500 mt-2">ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้</p>}
         </Card>
       </div>
     );
