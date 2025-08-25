@@ -108,9 +108,11 @@ export interface RequestFormProps {
   onSubmit: (data: any) => void;
   onDelete?: () => void;
   offer_id?: number; // เพิ่ม field นี้ใน props
+  redirectToCreate?: boolean; // เพิ่ม prop ใหม่
 }
 
-export function RequestForm({ initialData, mode = 'create', onSubmit, onDelete, offer_id }: RequestFormProps) {
+export function RequestForm({ initialData, mode = 'create', onSubmit, onDelete, offer_id, redirectToCreate = false }: RequestFormProps) {
+  const router = useRouter();
   const [form, setForm] = useState({
     title: initialData?.title || "",
     fromLocation: initialData?.fromLocation || "",
@@ -434,14 +436,24 @@ export function RequestForm({ initialData, mode = 'create', onSubmit, onDelete, 
             <Label htmlFor="urgent" className="text-red-500">ต้องการด่วน</Label>
           </div>
           <div className="flex gap-2 mt-6">
-            <Button 
-              type="submit" 
-              className="bg-blue-600 hover:bg-blue-700 text-white rounded-xl flex items-center gap-2" 
-              disabled={submitting || !backendToken || loading}
-            >
-              {submitting && <Loader2 className="animate-spin h-5 w-5" />} 
-              {mode === 'edit' ? 'บันทึก' : 'สร้าง'}
-            </Button>
+            {mode === 'edit' ? (
+              <Button 
+                type="submit" 
+                className="bg-blue-600 hover:bg-blue-700 text-white rounded-xl flex items-center gap-2" 
+                disabled={submitting || !backendToken || loading}
+              >
+                {submitting && <Loader2 className="animate-spin h-5 w-5" />} 
+                บันทึก
+              </Button>
+            ) : (
+              <Button 
+                type="button" 
+                className="bg-blue-600 hover:bg-blue-700 text-white rounded-xl flex items-center gap-2" 
+                onClick={() => redirectToCreate ? router.push('/create-request') : onSubmit(form)}
+              >
+                สร้าง
+              </Button>
+            )}
             {mode === 'edit' && onDelete && (
               <Button type="button" variant="destructive" onClick={() => setShowDelete(true)}>ลบ</Button>
             )}
