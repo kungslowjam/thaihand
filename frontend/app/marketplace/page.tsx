@@ -512,7 +512,7 @@ export default function MarketplacePage() {
                   </div>
                   <h3 className="text-xl font-semibold text-gray-900 mb-2">ยังไม่มีรายการรับหิ้ว</h3>
                   <p className="text-gray-600 mb-6 text-center">ยังไม่มีรอบเดินทางรับหิ้วในขณะนี้</p>
-                  <Link href="/my-routes">
+                  <Link href="/create-request">
                     <Button className="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white">
                       <Plus className="h-4 w-4 mr-2" />
                       สร้างข้อเสนอใหม่
