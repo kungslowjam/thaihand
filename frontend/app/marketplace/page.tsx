@@ -494,7 +494,7 @@ export default function MarketplacePage() {
                     </div>
 
                     {/* Action Button */}
-                    <Link href="https://thaihand.shop/create-request?tab=offer">
+                    <Link href="https://thaihand.shop/create-request">
                       <Button 
                         className="w-full bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white rounded-xl py-3 font-semibold transition-all duration-200 hover:scale-105"
                       >
@@ -611,7 +611,7 @@ export default function MarketplacePage() {
                       </div>
 
                       {/* Action Button */}
-                      <Link href="https://thaihand.shop/create-request?tab=request">
+                      <Link href="https://thaihand.shop/create-request">
                         <Button 
                           className="w-full bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white rounded-xl py-3 font-semibold transition-all duration-200 hover:scale-105"
                         >
