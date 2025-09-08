@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -136,18 +136,28 @@ export default function RequestCard({
     return location;
   };
 
+  const [imageLoaded, setImageLoaded] = useState(false);
+
   return (
     <Card className="overflow-hidden bg-white/90 dark:bg-gray-900/90 rounded-2xl shadow-xl border border-white/30 dark:border-gray-800 hover:shadow-2xl transition-all duration-300 hover:scale-[1.02]">
       {/* Header with Image */}
       <div className="relative">
-        <img 
-          src={request.image || '/default-product.svg'} 
-          alt={request.title}
-          className="w-full h-48 object-cover"
-          onError={(e) => {
-            e.currentTarget.src = '/default-product.svg';
-          }}
-        />
+        <div className="relative w-full" style={{ paddingTop: '75%' }}>
+          {/* Skeleton */}
+          {!imageLoaded && (
+            <div className="absolute inset-0 animate-pulse bg-gray-100 dark:bg-gray-800" />
+          )}
+          <img
+            src={request.image || '/default-product.svg'}
+            alt={request.title}
+            className="absolute inset-0 w-full h-full object-cover"
+            onLoad={() => setImageLoaded(true)}
+            onError={(e) => {
+              e.currentTarget.src = '/default-product.svg';
+              setImageLoaded(true)
+            }}
+          />
+        </div>
         
         {/* Status Badge */}
         <div className="absolute top-3 left-3">

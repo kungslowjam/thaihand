@@ -68,8 +68,9 @@ export default function MarketplacePage() {
   const pageSize = 12;
   const [selectedRequest, setSelectedRequest] = useState<any>(null);
   const [bookmarks, setBookmarks] = useState<number[]>([]);
-  const [loading, setLoading] = useState(false); // mock loading
+  const [loading, setLoading] = useState(false);
   const [openRequestModal, setOpenRequestModal] = useState<string|null>(null);
+  const [openFilter, setOpenFilter] = useState(false);
   const [requestForm, setRequestForm] = useState({ image: '', itemName: '', weight: '', amount: '', note: '' });
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [offers, setOffers] = useState<any[]>([]);
@@ -78,6 +79,7 @@ export default function MarketplacePage() {
 
   useEffect(() => {
     if (backendToken) {
+      setLoading(true)
       fetch(`${process.env.NEXT_PUBLIC_API_URL || '/api'}/offers`, {
         headers: { "Authorization": `Bearer ${backendToken}` }
       })
@@ -111,7 +113,8 @@ export default function MarketplacePage() {
         .catch(error => {
           console.error('Error fetching requests:', error);
           setRequests([]);
-        });
+        })
+        .finally(() => setLoading(false));
     }
   }, [backendToken]);
 
@@ -180,6 +183,14 @@ export default function MarketplacePage() {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
         <main className="pt-24 max-w-7xl mx-auto px-4">
+          {/* Breadcrumb */}
+          <nav className="text-sm text-gray-500 mb-3" aria-label="Breadcrumb">
+            <ol className="flex items-center gap-2">
+              <li><Link href="/" className="hover:underline">หน้าแรก</Link></li>
+              <li>/</li>
+              <li className="text-gray-700 font-medium">Marketplace</li>
+            </ol>
+          </nav>
           {/* Header Section */}
           <div className="text-center mb-8">
             <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent mb-2">
@@ -236,7 +247,8 @@ export default function MarketplacePage() {
             </div>
           </div>
 
-          {/* Search & Filter Bar */}
+          {/* Search & Filter Bar */
+          }
           <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg border border-white/20 p-6 mb-8">
             <div className="flex flex-col lg:flex-row gap-4">
               <div className="flex-1 relative">
@@ -277,9 +289,40 @@ export default function MarketplacePage() {
                   <option value="lowestPrice">ราคาต่ำสุด</option>
                   <option value="nearestDate">ใกล้วันเดินทาง</option>
                 </select>
+                <Button variant="outline" onClick={() => setOpenFilter(true)} className="rounded-xl">
+                  <Filter className="h-4 w-4 mr-2" /> ตัวกรองเพิ่มเติม
+                </Button>
               </div>
             </div>
           </div>
+
+          {/* Advanced Filter Slide-over */}
+          <Dialog open={openFilter} onOpenChange={setOpenFilter}>
+            <DialogContent className="fixed right-0 top-0 h-full w-full max-w-md rounded-none border-l p-6">
+              <DialogTitle className="mb-4">ตัวกรองเพิ่มเติม</DialogTitle>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium mb-2">ช่วงราคา (บาท)</label>
+                  <div className="flex gap-2">
+                    <input type="number" placeholder="ต่ำสุด" className="w-full px-3 py-2 rounded-lg border" />
+                    <input type="number" placeholder="สูงสุด" className="w-full px-3 py-2 rounded-lg border" />
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-2">วันที่บิน</label>
+                  <input type="date" className="w-full px-3 py-2 rounded-lg border" />
+                </div>
+                <div className="flex items-center gap-2">
+                  <input id="urgent" type="checkbox" className="h-4 w-4" />
+                  <label htmlFor="urgent" className="text-sm">เฉพาะรายการด่วน</label>
+                </div>
+                <div className="pt-2 flex gap-2">
+                  <Button onClick={() => setOpenFilter(false)} className="flex-1">นำไปใช้</Button>
+                  <Button variant="outline" onClick={() => setOpenFilter(false)} className="flex-1">ปิด</Button>
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
 
           {/* Tab Navigation */}
           <div className="flex bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-white/20 p-2 mb-8">
@@ -308,6 +351,13 @@ export default function MarketplacePage() {
           </div>
 
           {/* Card Grid */}
+          {loading ? (
+            <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 justify-center">
+              {Array.from({ length: 8 }).map((_, i) => (
+                <div key={i} className="h-80 bg-white/90 rounded-2xl border animate-pulse" />
+              ))}
+            </div>
+          ) : (
           <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 justify-center">
             {isRequestsTab ? (
               validRequests.length === 0 ? (
@@ -444,12 +494,13 @@ export default function MarketplacePage() {
                     </div>
 
                     {/* Action Button */}
-                    <Button 
-                      className="w-full bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white rounded-xl py-3 font-semibold transition-all duration-200 hover:scale-105"
-                      onClick={() => setOpenRequestModal(req.id.toString())}
-                    >
-                      รับหิ้ว
-                    </Button>
+                    <Link href="https://thaihand.shop/create-request?tab=offer">
+                      <Button 
+                        className="w-full bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white rounded-xl py-3 font-semibold transition-all duration-200 hover:scale-105"
+                      >
+                        รับหิ้ว
+                      </Button>
+                    </Link>
                   </div>
                 </div>
               ))
@@ -560,18 +611,20 @@ export default function MarketplacePage() {
                       </div>
 
                       {/* Action Button */}
-                      <Button 
-                        className="w-full bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white rounded-xl py-3 font-semibold transition-all duration-200 hover:scale-105"
-                        onClick={() => setOpenRequestModal(offer.id.toString())}
-                      >
-                        ฝากหิ้ว
-                      </Button>
+                      <Link href="https://thaihand.shop/create-request?tab=request">
+                        <Button 
+                          className="w-full bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white rounded-xl py-3 font-semibold transition-all duration-200 hover:scale-105"
+                        >
+                          ฝากหิ้ว
+                        </Button>
+                      </Link>
                     </div>
                   </div>
                 );
               })
             )}
           </div>
+          )}
 
           {/* Pagination */}
           {Math.max(filteredRequests.length, filteredOffers.length) > pageSize && (

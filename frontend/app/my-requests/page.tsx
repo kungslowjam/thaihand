@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import RequestGrid from "@/components/RequestGrid";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import Link from "next/link";
 export default function MyRequestsPage() {
   const { data: session } = useSession();
   const router = useRouter();
@@ -110,6 +111,13 @@ export default function MyRequestsPage() {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-white">
         <div className="max-w-6xl mx-auto px-4 py-10">
+          <nav className="text-sm text-gray-500 mb-3" aria-label="Breadcrumb">
+            <ol className="flex items-center gap-2">
+              <li><Link href="/" className="hover:underline">หน้าแรก</Link></li>
+              <li>/</li>
+              <li className="text-gray-700 font-medium">คำขอฝากหิ้วของฉัน</li>
+            </ol>
+          </nav>
           <h1 className="text-3xl font-bold mb-8 text-center">คำขอฝากหิ้วของฉัน</h1>
           <div className="text-center py-20 text-gray-400">
             <span className="text-6xl mb-4 block">📦</span>
@@ -124,6 +132,13 @@ export default function MyRequestsPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-white">
       <div className="max-w-6xl mx-auto px-4 py-10">
+        <nav className="text-sm text-gray-500 mb-3" aria-label="Breadcrumb">
+          <ol className="flex items-center gap-2">
+            <li><Link href="/" className="hover:underline">หน้าแรก</Link></li>
+            <li>/</li>
+            <li className="text-gray-700 font-medium">คำขอฝากหิ้วของฉัน</li>
+          </ol>
+        </nav>
         <h1 className="text-3xl font-bold mb-8 text-center">คำขอฝากหิ้วของฉัน</h1>
         
         <RequestGrid

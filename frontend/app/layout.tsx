@@ -3,6 +3,7 @@ import type { Metadata } from "next"
 import { Inter } from "next/font/google"
 import "./globals.css"
 import SessionProviderWrapper from "@/components/SessionProviderWrapper"
+import { Toaster } from "sonner"
 import { useNotificationStore } from "@/store/notificationStore";
 import ToastNotification from "@/components/ToastNotification";
 import ClientNavigation from "@/components/ClientNavigation";
@@ -28,6 +29,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             {children}
           </main>
           <ToastNotification enable={true} />
+          <Toaster richColors position="top-center" duration={2500} />
         </SessionProviderWrapper>
       </body>
     </html>

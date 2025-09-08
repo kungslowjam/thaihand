@@ -13,7 +13,7 @@ import { RequestForm } from "@/components/RequestForm";
 import { OfferForm } from "@/components/OfferForm";
 import { useBackendToken } from "@/lib/useBackendToken";
 import { toast } from "sonner";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
 // Force dynamic rendering
 export const dynamic = 'force-dynamic';
@@ -23,6 +23,17 @@ export default function CreateRequestPage() {
   const [mode, setMode] = useState<'request' | 'offer'>('request');
   const { backendToken, loading, error } = useBackendToken();
   const router = useRouter();
+  const searchParams = useSearchParams();
+
+  // set initial tab from query: ?tab=offer | ?tab=carry => offer, ?tab=request => request
+  useEffect(() => {
+    const tab = searchParams?.get('tab');
+    if (tab) {
+      const lower = tab.toLowerCase();
+      if (lower === 'offer' || lower === 'carry') setMode('offer');
+      else if (lower === 'request' || lower === 'send') setMode('request');
+    }
+  }, [searchParams]);
 
   async function handleRequestSubmit(data: any) {
     if (!backendToken) {

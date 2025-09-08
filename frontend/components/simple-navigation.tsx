@@ -3,7 +3,7 @@
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { ThaiHandLogo } from "@/components/thai-hand-logo"
-import { Plus, User, LogOut, ShoppingBag, Plane, CheckCircle } from "lucide-react"
+import { Plus, User, LogOut, ShoppingBag, Plane, CheckCircle, Moon, Sun } from "lucide-react"
 import NotificationDropdown from './NotificationDropdown';
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 import { useState } from "react";
@@ -19,6 +19,28 @@ interface SimpleNavigationProps {
 
 export function SimpleNavigation({ user, onLogout }: SimpleNavigationProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [theme, setTheme] = useState<'light' | 'dark'>(() => {
+    if (typeof window === 'undefined') return 'light'
+    const saved = localStorage.getItem('theme') as 'light' | 'dark' | null
+    if (saved) return saved
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
+    return prefersDark ? 'dark' : 'light'
+  })
+
+  // apply theme to <html>
+  if (typeof document !== 'undefined') {
+    const root = document.documentElement
+    if (theme === 'dark') root.classList.add('dark')
+    else root.classList.remove('dark')
+  }
+
+  function toggleTheme() {
+    setTheme((t) => {
+      const next = t === 'dark' ? 'light' : 'dark'
+      if (typeof window !== 'undefined') localStorage.setItem('theme', next)
+      return next
+    })
+  }
   return (
     <nav className="w-full bg-white/90 backdrop-blur-md shadow-sm sticky top-0 z-50 border-b border-gray-100">
       <div className="max-w-7xl mx-auto flex items-center justify-between px-4 py-2 gap-2">
@@ -31,6 +53,18 @@ export function SimpleNavigation({ user, onLogout }: SimpleNavigationProps) {
         <div className="hidden md:flex items-center justify-center gap-2"></div>
         {/* Right: Notification + Dropdown + User */}
         <div className="flex items-center gap-2">
+          {/* Theme toggle */}
+          <button
+            onClick={toggleTheme}
+            title={theme === 'dark' ? 'โหมดสว่าง' : 'โหมดมืด'}
+            className="rounded-full p-2 border border-gray-200 hover:bg-gray-100 transition"
+          >
+            {theme === 'dark' ? (
+              <Sun className="h-5 w-5" />
+            ) : (
+              <Moon className="h-5 w-5" />
+            )}
+          </button>
           <DropdownMenu.Root>
             <DropdownMenu.Trigger asChild>
               <button className="rounded-full flex items-center gap-2 px-4 py-2 font-semibold border shadow hover:bg-gray-100 transition">

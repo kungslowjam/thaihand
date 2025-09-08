@@ -6,6 +6,7 @@ import { Plane, User, Calendar, BadgeDollarSign, Star, MessageCircle } from 'luc
 import Link from 'next/link';
 import { useSession } from "next-auth/react";
 import { Progress } from '@/components/progress';
+import Link from 'next/link';
 export default function MyCarryOrdersPage() {
   const { data: session } = useSession();
   const [flights, setFlights] = useState<any[]>([]);
@@ -25,6 +26,13 @@ export default function MyCarryOrdersPage() {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-white py-10 px-2">
         <div className="max-w-5xl mx-auto">
+          <nav className="text-sm text-gray-500 mb-3" aria-label="Breadcrumb">
+            <ol className="flex items-center gap-2">
+              <li><Link href="/" className="hover:underline">หน้าแรก</Link></li>
+              <li>/</li>
+              <li className="text-gray-700 font-medium">รอบเดินทางที่ฉันรับหิ้ว</li>
+            </ol>
+          </nav>
           <h1 className="text-2xl font-extrabold text-gray-900 mb-8 text-center tracking-tight flex items-center justify-center gap-2">
             <Plane className="h-7 w-7 text-blue-400" /> เที่ยวบิน/รอบเดินทางที่ฉันรับหิ้ว
           </h1>
@@ -42,6 +50,13 @@ export default function MyCarryOrdersPage() {
     <>
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-white py-10 px-2">
         <div className="max-w-5xl mx-auto">
+          <nav className="text-sm text-gray-500 mb-3" aria-label="Breadcrumb">
+            <ol className="flex items-center gap-2">
+              <li><Link href="/" className="hover:underline">หน้าแรก</Link></li>
+              <li>/</li>
+              <li className="text-gray-700 font-medium">รอบเดินทางที่ฉันรับหิ้ว</li>
+            </ol>
+          </nav>
           <h1 className="text-2xl font-extrabold text-gray-900 mb-8 text-center tracking-tight flex items-center justify-center gap-2">
             <Plane className="h-7 w-7 text-blue-400" /> เที่ยวบิน/รอบเดินทางที่ฉันรับหิ้ว
           </h1>
